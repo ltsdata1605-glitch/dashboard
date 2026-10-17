@@ -10,6 +10,8 @@ import { getExportFilenamePrefix, getRowValue, sanitizeFilename } from '../../ut
 import { COL, DATA_STATUS_COLORS } from '../../constants';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
 // Import refactored components
 import HeadToHeadTable from './head-to-head/HeadToHeadTable';
@@ -37,6 +39,19 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     const { filterState } = useDashboardContext();
     
     const tableRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+
+    useEffect(() => {
+        return registerYcxAutoExportRunner('Phân Tích Nhân Viên - 7 Ngày', async () => {
+            const el = typeof ref === 'function' ? null : ref?.current;
+            if (!el) return null;
+            const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - 7 Ngày.png', {
+                isCompactTable: true,
+                fitAllColumns: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+    }, [ref]);
     
     const allSubgroups = useMemo(() => {
         const subgroups = new Set<string>();
@@ -338,6 +353,20 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>
                         )}
+                        <AreaAutoExportButton
+                            areaId="Phân Tích Nhân Viên - 7 Ngày"
+                            areaName="Nhân Viên: 7 Ngày"
+                            onTestExport={async () => {
+                                const el = typeof ref === 'function' ? null : ref?.current;
+                                if (!el) return null;
+                                const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - 7 Ngày.png', {
+                                    isCompactTable: true,
+                                    fitAllColumns: true,
+                                    mode: 'blob-only',
+                                });
+                                return (res instanceof Blob) ? res : null;
+                            }}
+                        />
                     </div>
                 </div>
 

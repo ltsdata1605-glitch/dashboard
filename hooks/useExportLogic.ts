@@ -93,7 +93,7 @@ export const useExportLogic = ({
             };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
-            if (blob) {
+            if (blob && options.mode !== 'blob-only') {
                 // Tự tải về máy + Tự sao chép ảnh vào clipboard để dán trực tiếp
                 downloadBlob(blob, filename);
             }

@@ -4,9 +4,10 @@ import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import Sortable from 'sortablejs';
 import type { SummaryTableNode, GrandTotal } from '../../types';
-import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
+import { abbreviateName, formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { exportElementAsImage } from '../../services/uiService';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { processSummaryTable } from '../../services/summaryService';
 import { saveSummaryTableConfig } from '../../services/dbService';
@@ -103,6 +104,18 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         }
     }, [setLocalDrilldownOrder, setExpandedIds]);
 
+    useEffect(() => {
+        return registerYcxAutoExportRunner('Bảng Tổng Hợp', async () => {
+            if (!tableContainerRef.current) return null;
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            return exportElementAsImage(tableContainerRef.current, `${prefix} - Chi Tiết Ngành Hàng.png`, {
+                fitCategoryColumn: true,
+                fitAllColumns: true,
+                mode: 'blob-only',
+            });
+        });
+    }, [filterState.kho]);
+
     if (!standardSummaryData && !compTree) return null;
 
     const renderDelta = (val: number, type: 'currency' | 'number' | 'percent') => {
@@ -143,6 +156,15 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                     isComparisonMode={isComparisonMode}
                     compMode={compMode}
                     handleExport={handleExport}
+                    onTestExport={async () => {
+                        if (!tableContainerRef.current) return null;
+                        const prefix = getExportFilenamePrefix(filterState.kho);
+                        return exportElementAsImage(tableContainerRef.current, `${prefix} - Chi Tiết Ngành Hàng.png`, {
+                            fitCategoryColumn: true,
+                            fitAllColumns: true,
+                            mode: 'blob-only',
+                        });
+                    }}
                     isExporting={isExporting}
                     activeFilterKey={activeFilterKey}
                     setActiveFilterKey={setActiveFilterKey}

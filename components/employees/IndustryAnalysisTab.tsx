@@ -8,6 +8,9 @@ import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, So
 import { useIndustryAnalysisLogic } from './industry/useIndustryAnalysisLogic';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
 import { DATA_STATUS_COLORS } from '../../constants';
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { exportElementAsImage } from '../shared/export/captureEngine';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
 // Dữ liệu 1 dòng hiển thị chi tiết: có thể là 1 nhân viên (ExploitationData mở rộng) hoặc groupTotals/grandTotal (Record<string, number>)
 // Không khai báo index signature ở đây để tránh phá vỡ khả năng gán từ các kiểu cụ thể hơn (employee/groupTotals/grandTotal)
@@ -50,6 +53,19 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         dynamicHeaderGroups
     } = useIndustryAnalysisLogic(data, baseFilteredData, productConfig, customExploitationTabs, efficiencyExploitationTabs);
     
+    React.useEffect(() => {
+        return registerYcxAutoExportRunner('Phân Tích Nhân Viên - Khai Thác', async () => {
+            const el = typeof ref === 'function' ? null : ref?.current;
+            if (!el) return null;
+            const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - Khai Thác.png', {
+                isCompactTable: true,
+                fitAllColumns: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+    }, [ref]);
+
     const showDeptHeaders = Object.keys(processedData).length > 1 || (Object.keys(processedData).length === 1 && Object.keys(processedData)[0] !== 'Không Phân Ca');
     
     const formatPct = (value: number | undefined) => value !== undefined && value > 0 ? `${value.toFixed(0)}%` : '-';
@@ -332,6 +348,20 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>
                         )}
+                        <AreaAutoExportButton
+                            areaId="Phân Tích Nhân Viên - Khai Thác"
+                            areaName="Nhân Viên: Khai Thác"
+                            onTestExport={async () => {
+                                const el = typeof ref === 'function' ? null : ref?.current;
+                                if (!el) return null;
+                                const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - Khai Thác.png', {
+                                    isCompactTable: true,
+                                    fitAllColumns: true,
+                                    mode: 'blob-only',
+                                });
+                                return (res instanceof Blob) ? res : null;
+                            }}
+                        />
                     </div>
                 </div>
             </div>

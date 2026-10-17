@@ -17,6 +17,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
 import StringMultiSelect from '../shared/ui/StringMultiSelect';
 import { FULLSCREEN_LAYER_CLASS } from '../shared/ui/Overlay';
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 /** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
  *  phải mảng hoặc có phần tử rỗng → migrateColumns() ném lỗi và bảng treo mãi ở "Đang tải cấu hình
  *  cột…" (chủ dự án báo 2026-10-07). Chỉ giữ phần tử là object có `id` dạng chuỗi. */
@@ -439,6 +441,24 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         } else if (tuDong) throw new Error('Bảng "Chi tiết theo kho" chưa hiển thị');
     };
 
+    useEffect(() => {
+        return registerYcxAutoExportRunner('Chi Tiết Theo Kho', async () => {
+            if (!summaryRef.current) return null;
+            const currentKho = viewMode === 'vertical' && verticalKhoFilter.length > 0
+                ? verticalKhoFilter
+                : filterState.kho;
+            const prefix = getExportFilenamePrefix(currentKho);
+            const fileName = prefix ? `${prefix} - Chi Tiết Theo Kho.png` : 'Chi Tiết Theo Kho.png';
+            const res = await handleExport(summaryRef.current, fileName, {
+                elementsToHide: ['.hide-on-export'],
+                fitAllColumns: true,
+                fitWidthToTable: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+    }, [handleExport, viewMode, verticalKhoFilter, filterState.kho]);
+
     const { allIndustries, allGroups } = useMemo(() => {
         if (!productConfig) return { allIndustries: [] as string[], allGroups: [] as string[] };
         const industries = new Set<string>();
@@ -785,6 +805,26 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
                             {isExporting ? <><AppIcon name="loading" size="md" spin /></> : <><AppIcon name="exportImage" size="md" /></>}
                         </Button>
+
+                        <AreaAutoExportButton
+                            areaId="Chi Tiết Theo Kho"
+                            areaName="Chi Tiết Theo Kho"
+                            onTestExport={async () => {
+                                if (!summaryRef.current) return null;
+                                const currentKho = viewMode === 'vertical' && verticalKhoFilter.length > 0
+                                    ? verticalKhoFilter
+                                    : filterState.kho;
+                                const prefix = getExportFilenamePrefix(currentKho);
+                                const fileName = prefix ? `${prefix} - Chi Tiết Theo Kho.png` : 'Chi Tiết Theo Kho.png';
+                                const res = await handleExport(summaryRef.current, fileName, {
+                                    elementsToHide: ['.hide-on-export'],
+                                    fitAllColumns: true,
+                                    fitWidthToTable: true,
+                                    mode: 'blob-only',
+                                });
+                                return (res instanceof Blob) ? res : null;
+                            }}
+                        />
                     </div>
                 </SectionHeader>
 

@@ -1,42 +1,39 @@
-# Task Plan: Toàn diện kiểm tra & khắc phục Lưu trữ 2 nơi (IndexedDB + Firebase) cho toàn bộ dự án
+# Task Plan: Tự Động Xuất Ảnh Báo Cáo Cho Bot LINE (bcrt / bclk / bc)
 
-## Mục tiêu
-Đảm bảo **tất cả** thao tác người dùng (cấu hình, ẩn/hiện, sắp xếp, target, bộ lọc, dữ liệu nhập, danh sách, mẫu in...) trên toàn bộ các phân hệ/modal/module của ứng dụng đều được tự động lưu trữ đầy đủ vào **2 nơi**:
-1. **IndexedDB** (cục bộ theo tài khoản, tức thì, bảo toàn offline).
-2. **Firebase** (Firestore Cloud theo tài khoản `users/{uid}`, đồng bộ xuyên thiết bị, không mất khi reload/đổi máy).
+## Mục Tiêu
+Sau khi tự chạy Auto Sync (BI Realtime/Luỹ kế, YCX Realtime/Luỹ kế) hoàn tất:
+1. Các khu vực được người dùng thiết lập xuất ảnh sẽ tự động render (chụp) và lưu lên Firebase (Storage `bot_media` + Firestore `report_commands`).
+2. Khi người dùng / admin gõ cú pháp trong nhóm LINE hoặc chat bot:
+   - `bcrt`: Bot tự động lấy ảnh báo cáo Realtime mới nhất gửi vào nhóm.
+   - `bclk`: Bot tự động lấy ảnh báo cáo Luỹ kế mới nhất gửi vào nhóm.
+   - `bc`: Bot tự động gửi ảnh báo cáo mới nhất (hoặc cả realtime/luỹ kế).
+   - Hỗ trợ gửi tối đa 4 ảnh + 1 tiêu đề tóm tắt (trong 1 lượt ReplyToken hoàn toàn MIỄN PHÍ).
+3. Người dùng có thể thiết lập:
+   - Ngay tại các khu vực xuất ảnh (Chi Tiết Theo Kho, Tổng Quan Doanh Thu, và modal ExportOptionsModal).
+   - Tại Modal Cài Đặt Hẹn Giờ Auto Sync Dock (quản lý tập trung mọi khu vực).
 
----
+## Trạng Thái Các Pha
+- [ ] Pha 1: Thiết kế & xây dựng dịch vụ cấu hình & tự động xuất ảnh `autoReportExportService.ts`
+- [ ] Pha 2: Cập nhật Cloud Function `lineBotWebhook.ts` hỗ trợ lệnh `bcrt`, `bclk`, `bc`, và gửi nhiều ảnh (multi-image reply)
+- [ ] Pha 3: Tích hợp thiết lập xuất ảnh tại các khu vực (Chi Tiết Theo Kho, Tổng Quan Doanh Thu, ExportOptionsModal, AutoSyncScheduleButton)
+- [ ] Pha 4: Kích hoạt tự động xuất sau khi chạy Auto Sync (YCX Realtime/Luỹ kế trong `DashboardView.tsx` và BI Realtime/Luỹ kế trong `Dashboard.tsx` / `useBiAutoSync.ts`)
+- [ ] Pha 5: Kiểm thử tự động (Unit tests + Typecheck + Lint) và xác nhận hoạt động
 
-## Các giai đoạn thực hiện
-
-- [x] **Giai đoạn 1: Khảo sát & Kiểm kê toàn bộ Modal, Module, Thao tác người dùng**
-  - Rà soát tất cả các modal cấu hình (KPI, Bảng kho, Bảng đối đầu, Tab khai thác, Nhân viên, Sticker, Phân ca, Thi đua, Ngành hàng, v.v.).
-  - Rà soát các thao tác chỉnh sửa trực tiếp trên giao diện (nhập target, lọc kho, chế độ xem, v.v.).
-  - Đối chiếu danh mục khóa lưu trữ với `isLightSyncKey`, `HEAVY_SYNC_KEYS`, và cơ chế sync Firebase.
-  - Ghi nhận chi tiết vào `findings.md`.
-
-- [x] **Giai đoạn 2: Thiết kế giải pháp chuẩn hóa cơ chế Auto-Save & Cloud-Sync**
-  - Đảm bảo mọi modal đều áp dụng cơ chế:
-    - Lưu tức thì khi thao tác (không phụ thuộc vào nút "Hoàn tất" hay đóng modal).
-    - Cập nhật IndexedDB ngay lập tức.
-    - Kích hoạt sự kiện đồng bộ `ycx-setting-changed` / Firebase sync.
-    - Khi đóng modal (`onClose`), tự động flush sync lên Firebase.
-  - Kiểm tra và bổ sung các khóa còn thiếu trong hệ thống đồng bộ Cloud (`HEAVY_SYNC_KEYS` hoặc `isLightSyncKey`).
-
-- [x] **Giai đoạn 3: Thực hiện khắc phục theo từng Module**
-  - Nhóm 1: Các Modal cấu hình trong Phân Tích (`KpiCardConfigModal`, `HeadToHeadConfigModal`, `CustomExploitationTabModal`, `EfficiencyExploitationTabModal`, `EmployeeManagerModal`, `ColumnConfigModal`, v.v.).
-  - Nhóm 2: Các thao tác Target & Bộ lọc trực tiếp (`warehouseColumnTargets`, `storeOpenCloseHours`, `industryVisibleGroups`, v.v.).
-  - Nhóm 3: Module Report BI (`features/bi-dashboard`).
-  - Nhóm 4: Module In Sticker & Sự kiện (`features/sticker-event`).
-  - Nhóm 5: Module Phân ca (`features/phan-ca`).
-
-- [x] **Giai đoạn 4: Kiểm chứng & Đo lường thực tế**
-  - Chạy `npm run typecheck` đảm bảo 0 lỗi TypeScript (PASS).
-  - Chạy các targeted unit tests liên quan đến storage & sync (`tests/unit/light-sync-keys.test.ts` 43/43 PASS).
-  - Chạy Silent Headless Verification (Playwright: `test-warehouse-auto-save.spec.ts` & `test-kpi-auto-save.spec.ts` PASS 100%).
-
----
-
-## Quyết định kỹ thuật
-- Mọi thao tác người dùng đều được ghi nhận qua hàm lưu chuẩn phát event `ycx-setting-changed`.
-- Đồng bộ đa thiết bị: khi Cloud cập nhật, các view lắng nghe `indexeddb-change` để tự động render lại không cần F5.
+## Quyết Định Kỹ Thuật
+1. Lưu cấu hình: `saveSetting('auto_report_export_config')` (IndexedDB + Cloud sync).
+2. Lưu ảnh Bot: `bot_media` và `line_bots/{botId}/report_commands/{cmd}` với `cmd = 'bcrt' | 'bclk' | 'bc'`.
+3. Cấu trúc Firestore document:
+   ```ts
+   {
+     command: 'bcrt' | 'bclk' | 'bc',
+     reportKey: string,
+     imageUrl: string,
+     previewUrl: string,
+     images: Array<{ reportKey: string; imageUrl: string; previewUrl: string }>,
+     caption: string,
+     mode: 'realtime' | 'luyke',
+     updatedAt: string,
+     updatedBy: string
+   }
+   ```
+4. LINE Messaging API Reply: Gửi 1 tin text + tối đa 4 tin ảnh (`replyMsgs <= 5`), hoàn toàn miễn phí không trừ quota bot.

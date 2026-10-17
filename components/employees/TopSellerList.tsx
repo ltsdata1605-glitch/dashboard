@@ -8,6 +8,9 @@ import { saveTopSellerAnalysis } from '../../services/dbService';
 import { RankBadge } from './performance/PerformanceTableUtils';
 import { Button } from '../shared/ui/Button';
 import { onActivateKey } from '../shared/ui';
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { exportElementAsImage } from '../shared/export/captureEngine';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
 interface TopSellerListProps {
     fullSellerArray: Employee[];
@@ -60,6 +63,17 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
             return acc;
         }, {} as { [key: string]: Employee[] });
     }, [displayedSellers]);
+
+    useEffect(() => {
+        return registerYcxAutoExportRunner('Phân Tích Nhân Viên - Top', async () => {
+            const el = typeof ref === 'function' ? null : ref?.current;
+            if (!el) return null;
+            const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - Top.png', {
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+    }, [ref]);
 
     const sellerRanks = useMemo(() => {
         const ranks = new Map<string, number>();
@@ -127,6 +141,18 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                         </Button>
                     )}
+                    <AreaAutoExportButton
+                        areaId="Phân Tích Nhân Viên - Top"
+                        areaName="Nhân Viên: Top"
+                        onTestExport={async () => {
+                            const el = typeof ref === 'function' ? null : ref?.current;
+                            if (!el) return null;
+                            const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - Top.png', {
+                                mode: 'blob-only',
+                            });
+                            return (res instanceof Blob) ? res : null;
+                        }}
+                    />
                 </div>
             </div>
             <div className="space-y-2 sm:space-y-4">

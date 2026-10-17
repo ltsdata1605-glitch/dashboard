@@ -16,6 +16,7 @@ import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { getExportFilenamePrefix, sanitizeFilename } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
 import { Switch } from '../shared/ui/Switch';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 import type { ContestTableConfig } from '../../types';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
@@ -176,6 +177,23 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             await handleExport(industryAnalysisTabRef.current, filename, { isCompactTable: true, fitAllColumns: true });
         }
     }, [filterState.kho, handleExport]);
+
+    useEffect(() => {
+        return registerYcxAutoExportRunner('Phân Tích Nhân Viên', async () => {
+            if (!exportRef.current) return null;
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            const tabName = defaultTabs.find(t => t.id === activeTab)?.label || 
+                            customTabs.find(t => t.id === activeTab)?.name || 
+                            activeTab;
+            const safeTabName = sanitizeFilename(tabName).trim();
+            const filename = `${prefix} - Phân Tích Nhân Viên - ${safeTabName}.png`;
+            const compactTabs = ['performanceTable', 'headToHead', 'summarySynthesis', 'industryAnalysis'];
+            const isCustomTab = !defaultTabs.find(t => t.id === activeTab);
+            const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true, fitAllColumns: true, mode: 'blob-only' as const } : { mode: 'blob-only' as const };
+            const res = await handleExport(exportRef.current, filename, options);
+            return (res instanceof Blob) ? res : null;
+        });
+    }, [activeTab, defaultTabs, customTabs, filterState.kho, handleExport]);
 
     // Nhánh 'industryAnalysis' tra cứu trong industryAnalysisTables (CustomContestTab[], không phải ContestTableConfig[])
     // — không có setModalState nào thực sự gán tabId này, giữ nguyên hành vi cũ bằng cast an toàn qua unknown.

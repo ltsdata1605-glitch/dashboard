@@ -44,6 +44,8 @@ const UploadTypeSelectionModal = React.lazy(() => import('../modals/UploadTypeSe
 const KpiCardConfigModal = React.lazy(() => import('../kpis/modals/KpiCardConfigModal'));
 const ExportOptionsModal = React.lazy(() => import('../shared/export/ExportOptionsModal'));
 const ShiftWarehouseInputModal = React.lazy(() => import('../modals/ShiftWarehouseInputModal'));
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
 import ProcessingLoader from '../common/ProcessingLoader';
 import { BusyBar } from '../shared/ui/BusyBar';
@@ -298,6 +300,33 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             });
         } else if (tuDong) throw new Error('Khối "Tổng quan doanh thu" chưa hiển thị');
     };
+
+    useEffect(() => {
+        const unregister1 = registerYcxAutoExportRunner('Tổng Quan Doanh Thu', async () => {
+            if (!kpiCardsOnlyRef.current) return null;
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            const res = await handleExport(kpiCardsOnlyRef.current, `${prefix} - Tổng Quan Doanh Thu.png`, {
+                captureAsDisplayed: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+
+        const unregister2 = registerYcxAutoExportRunner('Toàn Bộ Bản Tin', async () => {
+            if (!businessOverviewRef.current) return null;
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            const res = await handleExport(businessOverviewRef.current, `${prefix} - Toàn Bộ Bản Tin.png`, {
+                captureAsDisplayed: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+
+        return () => {
+            unregister1();
+            unregister2();
+        };
+    }, [handleExport, filterState.kho]);
 
     useEffect(() => {
         document.body.classList.remove('is-capturing');
@@ -596,6 +625,19 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất ảnh toàn báo cáo" aria-label="Xuất ảnh toàn báo cáo" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <AppIcon name="exportImage" size="md" />
                                                         </Button>
+                                                        <AreaAutoExportButton
+                                                            areaId="Tổng Quan Doanh Thu"
+                                                            areaName="Tổng Quan Doanh Thu"
+                                                            onTestExport={async () => {
+                                                                if (!kpiCardsOnlyRef.current) return null;
+                                                                const prefix = getExportFilenamePrefix(filterState.kho);
+                                                                const res = await handleExport(kpiCardsOnlyRef.current, `${prefix} - Tổng Quan Doanh Thu.png`, {
+                                                                    captureAsDisplayed: true,
+                                                                    mode: 'blob-only',
+                                                                });
+                                                                return (res instanceof Blob) ? res : null;
+                                                            }}
+                                                        />
                                                     </div>
                                                 </SectionHeader>
                                             </div>

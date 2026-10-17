@@ -15,6 +15,8 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
 import { Button } from '../shared/ui/Button';
 import { industryToneByKey } from '../../utils/industryColors';
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
 // Ramp phân loại nhóm — chỉ dùng sắc độ của 5 màu semantic (sky/emerald/amber/rose/slate)
 // + indigo (alias primary hợp lệ), đủ tương phản để phân biệt tới 12 nhóm mà vẫn trong palette.
@@ -170,6 +172,18 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         setIsExporting(false);
     };
 
+    useEffect(() => {
+        return registerYcxAutoExportRunner('Phân Tích Ngành Hàng', async () => {
+            if (!cardRef.current) return null;
+            const prefix = getExportFilenamePrefix(filters.kho);
+            return exportElementAsImage(cardRef.current, `${prefix} - Tỷ Trọng Ngành Hàng.png`, {
+                elementsToHide: ['.hide-on-export'],
+                forcedWidth: 1024,
+                mode: 'blob-only',
+            });
+        });
+    }, [filters.kho]);
+
     // Cards are drillable only at levels 0 and 1 (industry & group)
     const isDrillable = drilldownPath.length < 2;
 
@@ -273,6 +287,19 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                         {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                     </Button>
+                    <AreaAutoExportButton
+                        areaId="Phân Tích Ngành Hàng"
+                        areaName="Phân Tích Ngành Hàng"
+                        onTestExport={async () => {
+                            if (!cardRef.current) return null;
+                            const prefix = getExportFilenamePrefix(filters.kho);
+                            return exportElementAsImage(cardRef.current, `${prefix} - Tỷ Trọng Ngành Hàng.png`, {
+                                elementsToHide: ['.hide-on-export'],
+                                forcedWidth: 1024,
+                                mode: 'blob-only',
+                            });
+                        }}
+                    />
                     {drilldownPath.length > 0 && (
                         <Button
                             variant="unstyled" size="none"

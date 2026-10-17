@@ -11,6 +11,9 @@ import {
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { Button } from '../../shared/ui/Button';
 import { ActionMenu, type ActionMenuItem } from '../../shared/ui/ActionMenu';
+import AreaAutoExportButton from '../../shared/export/AreaAutoExportButton';
+import { exportElementAsImage } from '../../shared/export/captureEngine';
+import { registerYcxAutoExportRunner } from '../../../services/autoReportExportService';
 
 // Khớp object trả về bởi trueGrandTotal (useMemo) trong PerformanceTable.tsx
 interface GrandTotalData {
@@ -67,6 +70,47 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
     const dataToRender = groupType === 'vuotTroi' ? outstandingData : groupedData;
 
     const [renderLimit, setRenderLimit] = useState(20);
+
+    const areaId = groupType === 'doanhThu'
+        ? 'Phân Tích Nhân Viên - Hiệu Suất (D.Thu)'
+        : groupType === 'khaiThac'
+            ? 'Phân Tích Nhân Viên - Hiệu Suất (T.Chậm)'
+            : 'Phân Tích Nhân Viên - Hiệu Suất (V.Trội)';
+
+    const areaName = groupType === 'doanhThu'
+        ? 'Hiệu Suất: Doanh Thu'
+        : groupType === 'khaiThac'
+            ? 'Hiệu Suất: Trả Chậm'
+            : 'Hiệu Suất: Vượt Trội';
+
+    const getTableElement = () => (typeof tableRef === 'function' ? null : tableRef?.current);
+
+    React.useEffect(() => {
+        const unreg1 = registerYcxAutoExportRunner(areaId, async () => {
+            const el = getTableElement();
+            if (!el) return null;
+            const res = await exportElementAsImage(el, `${areaId}.png`, {
+                isCompactTable: true,
+                fitAllColumns: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+        const unreg2 = registerYcxAutoExportRunner('Phân Tích Nhân Viên - Hiệu Suất', async () => {
+            const el = getTableElement();
+            if (!el) return null;
+            const res = await exportElementAsImage(el, 'Phân Tích Nhân Viên - Hiệu Suất.png', {
+                isCompactTable: true,
+                fitAllColumns: true,
+                mode: 'blob-only',
+            });
+            return (res instanceof Blob) ? res : null;
+        });
+        return () => {
+            unreg1();
+            unreg2();
+        };
+    }, [areaId, tableRef]);
 
     // Optimize lag by lazy rendering
     React.useEffect(() => {
@@ -283,6 +327,20 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                             {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                         </Button>
+                        <AreaAutoExportButton
+                            areaId={areaId}
+                            areaName={areaName}
+                            onTestExport={async () => {
+                                const el = getTableElement();
+                                if (!el) return null;
+                                const res = await exportElementAsImage(el, `${areaId}.png`, {
+                                    isCompactTable: true,
+                                    fitAllColumns: true,
+                                    mode: 'blob-only',
+                                });
+                                return (res instanceof Blob) ? res : null;
+                            }}
+                        />
                     </div>
                 </div>
             </div>

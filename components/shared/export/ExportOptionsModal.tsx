@@ -10,11 +10,37 @@ interface ExportOptionsModalProps {
     onShare: () => void;
     canShare: boolean;
     filename: string;
+    areaId?: string;
 }
 
-const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose, onDownload, onShare, canShare, filename }) => {
+const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose, onDownload, onShare, canShare, filename, areaId }) => {
     const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
+    const resolvedAreaId = areaId || (
+        filename.toLowerCase().includes('chi_tiet_theo_kho') || filename.toLowerCase().includes('kho') ? 'Chi Tiết Theo Kho'
+        : filename.toLowerCase().includes('tong_quan') || filename.toLowerCase().includes('kpi') ? 'Tổng Quan Doanh Thu'
+        : filename.toLowerCase().includes('xu_huong') ? 'Xu Hướng Doanh Thu'
+        : filename.toLowerCase().includes('ban_tin') ? 'Toàn Bộ Bản Tin'
+        : undefined
+    );
+
+    const [botSetting, setBotSetting] = useState<{ realtime: boolean; luyke: boolean }>({ realtime: false, luyke: false });
+
+    useEffect(() => {
+        setMounted(true);
+        if (resolvedAreaId) {
+            import('../../../services/autoReportExportService').then(({ getAreaExportSetting }) => {
+                setBotSetting(getAreaExportSetting(resolvedAreaId));
+            });
+        }
+    }, [resolvedAreaId]);
+
+    const handleToggleBot = async (type: 'realtime' | 'luyke') => {
+        if (!resolvedAreaId) return;
+        const { setAreaExportSetting, getAreaExportSetting } = await import('../../../services/autoReportExportService');
+        const nextVal = !botSetting[type];
+        await setAreaExportSetting(resolvedAreaId, { [type]: nextVal });
+        setBotSetting(getAreaExportSetting(resolvedAreaId));
+    };
 
     if (!mounted) return null;
 
@@ -88,6 +114,43 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                 <AppIcon name="chevronRight" size="xs" className="text-slate-400 group-hover:text-emerald-700" />
                             </div>
                         </Button>
+                    )}
+
+                    {/* Bot LINE Auto-Export Config Card */}
+                    {resolvedAreaId && (
+                        <div className="p-3 rounded-xl border border-sky-100 dark:border-sky-900/50 bg-sky-50/50 dark:bg-sky-950/20 space-y-2 mt-2">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-sky-800 dark:text-sky-300 font-bold text-[12px]">
+                                    <AppIcon name="bot" size="xs" />
+                                    <span>Tự lưu lên Bot khi Auto Sync</span>
+                                </div>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400">{resolvedAreaId}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handleToggleBot('realtime')}
+                                    className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                                        botSetting.realtime
+                                            ? 'bg-sky-600 border-sky-600 text-white shadow-xs'
+                                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                                    }`}
+                                >
+                                    Realtime (bcrt): {botSetting.realtime ? 'Bật' : 'Tắt'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleToggleBot('luyke')}
+                                    className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                                        botSetting.luyke
+                                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                                    }`}
+                                >
+                                    Luỹ kế (bclk): {botSetting.luyke ? 'Bật' : 'Tắt'}
+                                </button>
+                            </div>
+                        </div>
                     )}
 
                     {/* Cancel button */}

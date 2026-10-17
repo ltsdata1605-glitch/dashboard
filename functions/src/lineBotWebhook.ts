@@ -2533,23 +2533,23 @@ export const lineBotWebhook = onRequest(
                 const cleanCmd = lower.replace(/^[./!#\s]+/, '').replace(/\s+/g, '').trim();
                 if (cleanCmd === 'dsbc' || lower === 'lệnh bc' || lower === 'lenh bc' || lower === 'danh sách báo cáo' || lower === 'danh sach bao cao') {
                     let reportList = '📋 DANH SÁCH LỆNH NHẬN ẢNH BÁO CÁO:\n━━━━━━━━━━━━━━━━━━━━━\n';
-                    let foundCount = 0;
+                    reportList += '• "bcrt": Báo cáo Realtime mới nhất (Tự động sau Auto Realtime)\n';
+                    reportList += '• "bclk": Báo cáo Luỹ kế mới nhất (Tự động sau Auto Luỹ kế)\n';
+                    reportList += '• "bc": Báo cáo tổng quan mới nhất\n';
+                    let customCount = 0;
                     try {
                         const snap = await db.collection('line_bots').doc(uid).collection('report_commands').get();
                         if (!snap.empty) {
                             snap.docs.forEach((d) => {
                                 const data = d.data();
-                                if (data.command) {
+                                if (data.command && !['bc', 'bcrt', 'bclk'].includes(data.command)) {
                                     reportList += `• "${data.command}": ${data.reportKey || 'Báo cáo'}\n`;
-                                    foundCount++;
+                                    customCount++;
                                 }
                             });
                         }
                     } catch (err) {
                         console.warn('[lineBotWebhook] Lỗi đọc report_commands:', err);
-                    }
-                    if (foundCount === 0) {
-                        reportList += `• "bc": Chi Tiết Theo Kho\n`;
                     }
                     reportList += '━━━━━━━━━━━━━━━━━━━━━\n💡 Gõ lệnh tương ứng vào nhóm LINE để Bot gửi ảnh mới nhất (Hoàn toàn MIỄN PHÍ)!';
                     await replyLineMessage(token, replyToken, [
@@ -2562,16 +2562,50 @@ export const lineBotWebhook = onRequest(
                     continue;
                 }
 
-                // 1.3. Xử lý gõ lệnh nhận ảnh báo cáo (ví dụ "bc", "cttk", "dt", "thidua"...)
+                // 1.3. Xử lý gõ lệnh nhận ảnh báo cáo (ví dụ "bc", "bcrt", "bclk", "cttk", "dt", "thidua"...)
                 // Cơ chế Reply qua LINE Messaging API: Hoàn toàn MIỄN PHÍ & KHÔNG GIỚI HẠN
-                if (cleanCmd && cleanCmd.length >= 2 && cleanCmd.length <= 30 && laIdDocHopLe(cleanCmd) && !['id', 'admin', 'lineid', 'groupid', 'hd', 'help', 'huongdan', 'cp', 'tk', 'csd', 'huy', 'tra'].includes(cleanCmd)) {
+                const isReportCmd = ['bc', 'bcrt', 'bclk'].includes(cleanCmd) ||
+                    (cleanCmd && cleanCmd.length >= 2 && cleanCmd.length <= 30 && laIdDocHopLe(cleanCmd) && !['id', 'admin', 'lineid', 'groupid', 'hd', 'help', 'huongdan', 'cp', 'tk', 'csd', 'huy', 'tra'].includes(cleanCmd));
+
+                if (isReportCmd) {
                     let cmdDoc = await db.collection('line_bots').doc(uid).collection('report_commands').doc(cleanCmd).get();
                     let cmdData = cmdDoc.exists ? cmdDoc.data() : null;
 
-                    // Audit S09: bỏ tra bảng lệnh TOÀN HỆ THỐNG (report_commands/{cmd}) — bot này từng trả ảnh
-                    // báo cáo của bot/Kho khác. Lệnh chỉ đọc theo bot (Dashboard luôn ghi bản theo bot).
+                    // Fallback thông minh:
+                    // 1. Nếu gõ "bc": nếu chưa có doc "bc", kiểm tra "bcrt" hoặc "bclk" mới hơn
+                    if (!cmdData && cleanCmd === 'bc') {
+                        try {
+                            const [rtDoc, lkDoc] = await Promise.all([
+                                db.collection('line_bots').doc(uid).collection('report_commands').doc('bcrt').get(),
+                                db.collection('line_bots').doc(uid).collection('report_commands').doc('bclk').get(),
+                            ]);
+                            const rtData = rtDoc.exists ? rtDoc.data() : null;
+                            const lkData = lkDoc.exists ? lkDoc.data() : null;
+                            if (rtData && lkData) {
+                                const tRt = new Date(rtData.updatedAt || 0).getTime();
+                                const tLk = new Date(lkData.updatedAt || 0).getTime();
+                                cmdData = tRt >= tLk ? rtData : lkData;
+                            } else {
+                                cmdData = rtData || lkData || null;
+                            }
+                        } catch (e) {
+                            console.warn('[lineBotWebhook] Fallback bcrt/bclk cho bc lỗi:', e);
+                        }
+                    }
 
-                    // Fallback mặc định cho lệnh "bc": nếu chưa có trong collection, tìm ảnh Chi Tiết Theo Kho mới nhất trong bot_media
+                    // 2. Fallback cho bcrt/bclk nếu chưa có: thử lấy doc "bc"
+                    if (!cmdData && (cleanCmd === 'bcrt' || cleanCmd === 'bclk')) {
+                        try {
+                            const fallbackBc = await db.collection('line_bots').doc(uid).collection('report_commands').doc('bc').get();
+                            if (fallbackBc.exists) {
+                                cmdData = fallbackBc.data();
+                            }
+                        } catch (e) {
+                            console.warn('[lineBotWebhook] Fallback bc cho bcrt/bclk lỗi:', e);
+                        }
+                    }
+
+                    // 3. Fallback mặc định cho lệnh "bc": nếu vẫn chưa có, tìm ảnh Chi Tiết Theo Kho mới nhất trong bot_media
                     if (!cmdData && cleanCmd === 'bc') {
                         try {
                             const mSnap = await db.collection('bot_media')
@@ -2580,7 +2614,6 @@ export const lineBotWebhook = onRequest(
                                 .limit(30)
                                 .get();
                             const matchDoc = mSnap.docs.find(d => {
-                                // Chỉ ảnh do CHÍNH chủ bot xuất (ownerUid) — trước đây lấy ảnh mới nhất của bất kỳ ai.
                                 if (d.data().ownerUid !== uid) return false;
                                 const n = (d.data().name || '').toLowerCase();
                                 return n.includes('chi tiết theo kho') || n.includes('chi tiet theo kho') || n.includes('kho tổng hợp');
@@ -2602,12 +2635,44 @@ export const lineBotWebhook = onRequest(
                         }
                     }
 
-                    if (cmdData || cleanCmd === 'bc') {
-                        const reportTitle = cmdData?.reportKey || (cleanCmd === 'bc' ? 'Chi Tiết Theo Kho' : 'Báo Cáo');
+                    const isTargetReport = ['bc', 'bcrt', 'bclk'].includes(cleanCmd);
+                    if (cmdData || isTargetReport) {
+                        const reportTitle = cmdData?.reportKey || (cleanCmd === 'bcrt' ? 'Realtime' : (cleanCmd === 'bclk' ? 'Luỹ Kế' : 'Chi Tiết Theo Kho'));
+                        const hasImagesArray = cmdData?.images && Array.isArray(cmdData.images) && cmdData.images.length > 0;
                         const imgUrl = cmdData?.imageUrl;
                         const prvUrl = cmdData?.previewUrl || imgUrl;
 
-                        if (imgUrl) {
+                        // Trường hợp nhiều ảnh được tự xuất & nạp lên (Multi-Image Reply)
+                        if (cmdData && hasImagesArray) {
+                            const replyMsgs: any[] = [];
+                            const modeStr = cmdData.mode === 'luyke' ? 'LŨY KẾ' : (cmdData.mode === 'realtime' ? 'REALTIME' : '');
+                            const captionHeader = cmdData.caption || `📊 BÁO CÁO ${modeStr ? `${modeStr} ` : ''}(Lệnh "${cleanCmd.toUpperCase()}")`;
+                            replyMsgs.push({
+                                type: 'text',
+                                text: `${captionHeader}\n━━━━━━━━━━━━━━━━━━━━━\n👉 Bao gồm ${cmdData.images.length} phần báo cáo:`,
+                                quoteToken: event.message?.quoteToken
+                            });
+
+                            // LINE Messaging API cho phép tối đa 5 message objects trong 1 lượt reply.
+                            // 1 text + tối đa 4 ảnh = 5 message objects hoàn toàn hợp lệ.
+                            const imagesToSend = (cmdData.images as any[]).slice(0, 4);
+                            for (const im of imagesToSend) {
+                                const mUrl = im.imageUrl || im.url;
+                                const pUrl = im.previewUrl || mUrl;
+                                if (mUrl) {
+                                    replyMsgs.push({
+                                        type: 'image',
+                                        originalContentUrl: mUrl,
+                                        previewImageUrl: pUrl
+                                    });
+                                }
+                            }
+
+                            await replyLineMessage(token, replyToken, replyMsgs);
+                            console.info(`[lineBotWebhook] Đã reply ${imagesToSend.length} ảnh báo cáo cho lệnh "${cleanCmd}" (${reportTitle})`);
+                            continue;
+                        } else if (imgUrl) {
+                            // Trường hợp 1 ảnh đơn lẻ
                             const replyMsgs: any[] = [];
                             const captionText = cmdData?.caption || `📊 Báo cáo ${reportTitle} — cập nhật mới nhất`;
                             replyMsgs.push({
@@ -2621,14 +2686,15 @@ export const lineBotWebhook = onRequest(
                                 previewImageUrl: prvUrl
                             });
                             await replyLineMessage(token, replyToken, replyMsgs);
-                            console.info(`[lineBotWebhook] Đã reply ảnh báo cáo cho lệnh "${cleanCmd}" (${reportTitle})`);
+                            console.info(`[lineBotWebhook] Đã reply 1 ảnh báo cáo cho lệnh "${cleanCmd}" (${reportTitle})`);
                             continue;
                         } else {
-                            // Đã có lệnh nhưng chưa có ảnh nào được xuất lên Bot
+                            // Đã có lệnh hoặc gõ bc/bcrt/bclk nhưng chưa có ảnh nào được xuất lên Bot
+                            const cmdUpper = cleanCmd.toUpperCase();
                             await replyLineMessage(token, replyToken, [
                                 {
                                     type: 'text',
-                                    text: `📊 BÁO CÁO: ${reportTitle.toUpperCase()} (Lệnh "${cleanCmd}")\n━━━━━━━━━━━━━━━━━━━━━\n⚠️ Chưa có ảnh báo cáo mới nào trong kho lệnh.\n👉 Bạn hãy vào Dashboard YCX bấm "Xuất ảnh" mục ${reportTitle} hoặc bật Auto Sync để nạp ảnh mới nhất lên Bot nhé!`,
+                                    text: `📊 BÁO CÁO: ${reportTitle.toUpperCase()} (Lệnh "${cmdUpper}")\n━━━━━━━━━━━━━━━━━━━━━\n⚠️ Chưa có ảnh báo cáo nào được lưu cho lệnh "${cmdUpper}".\n👉 Bạn hãy chạy Auto Sync (BI/YCX Realtime hoặc Luỹ kế) trên Dashboard để hệ thống tự động xuất và nạp ảnh mới nhất lên Bot nhé!`,
                                     quoteToken: event.message?.quoteToken
                                 }
                             ]);

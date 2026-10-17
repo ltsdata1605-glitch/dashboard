@@ -5,6 +5,7 @@ import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
 import { Switch } from '../../shared/ui/Switch';
 import { onActivateKey } from '../../shared/ui';
+import AreaAutoExportButton from '../../shared/export/AreaAutoExportButton';
 import type { FilterState } from '../../../types';
 
 interface SummaryTableHeaderProps {
@@ -20,6 +21,7 @@ interface SummaryTableHeaderProps {
     isComparisonMode: boolean;
     compMode: string;
     handleExport: () => void;
+    onTestExport?: () => Promise<Blob | null>;
     isExporting: boolean;
     activeFilterKey: string | null;
     setActiveFilterKey: React.Dispatch<React.SetStateAction<string | null>>;
@@ -34,7 +36,7 @@ interface SummaryTableHeaderProps {
 export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
     displayTitle, displayDescription, reportSubTitle, filterState, tableMode, setTableMode,
     isCrossSellingMode, userRole, setIsBuilderOpen, isComparisonMode, compMode,
-    handleExport, isExporting, activeFilterKey, setActiveFilterKey, visibleColumns,
+    handleExport, onTestExport, isExporting, activeFilterKey, setActiveFilterKey, visibleColumns,
     setVisibleColumns, columnsPopupRef, isFullScreen, setIsFullScreen, dateDisplay
 }) => {
     return (
@@ -117,16 +119,19 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
 
                         <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>
                             {isCrossSellingMode ? (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={handleExport}
-                                    disabled={isExporting}
-                                    title="Xuất Ảnh"
-                                    className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
-                                >
-                                    {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
-                                    {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
-                                </Button>
+                                <div className="flex items-center gap-1.5">
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        onClick={handleExport}
+                                        disabled={isExporting}
+                                        title="Xuất Ảnh"
+                                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                                    >
+                                        {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                                        {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
+                                    </Button>
+                                    <AreaAutoExportButton areaId="Bảng Tổng Hợp" areaName="Bảng Tổng Hợp" onTestExport={onTestExport} />
+                                </div>
                             ) : (
                                 <>
                                     <div className="flex items-center gap-2 lg:gap-1.5">
@@ -148,6 +153,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                             {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                                         </Button>
+                                        <AreaAutoExportButton areaId="Bảng Tổng Hợp" areaName="Bảng Tổng Hợp" onTestExport={onTestExport} />
                                     </div>
 
                                     {activeFilterKey === 'columns' && (

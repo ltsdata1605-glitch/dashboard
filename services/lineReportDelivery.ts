@@ -160,7 +160,7 @@ export async function lineHdSupported(): Promise<boolean> {
     return ok;
 }
 
-async function uploadLineImage(base64: string, name: string, contentType = 'image/jpeg', mediaId?: string): Promise<string> {
+export async function uploadLineImage(base64: string, name: string, contentType = 'image/jpeg', mediaId?: string): Promise<string> {
     const t = testOverride();
     if (t?.uploadUrl) {
         (globalThis as unknown as { __YCX_TEST_LINE_UPLOADS__?: number[] }).__YCX_TEST_LINE_UPLOADS__?.push(base64.length);
@@ -175,7 +175,7 @@ async function uploadLineImage(base64: string, name: string, contentType = 'imag
 }
 
 /** Ghi bản HD thành nhiều mảnh `<id>_p<i>` + document đầu `<id>` {parts} — function ghép lại khi LINE tải ảnh */
-async function uploadLineHdImage(base64: string, contentType: string, name: string): Promise<string> {
+export async function uploadLineHdImage(base64: string, contentType: string, name: string): Promise<string> {
     const id = `report_${Date.now()}_${Math.random().toString(36).slice(2, 8)}_hd`;
     const parts = splitBase64(base64);
     const t = testOverride();

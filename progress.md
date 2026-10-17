@@ -1,9 +1,9 @@
-# Progress Log: Toàn diện kiểm tra & khắc phục Lưu trữ 2 nơi
+# Progress: Tự Động Xuất Ảnh Cho Bot LINE
 
-## Nhật ký tiến trình
-
-| Thời gian | Giai đoạn | Hành động đã thực hiện | Kết quả |
-|-----------|-----------|------------------------|---------|
-| 2026-10-13 12:18 | Chuẩn bị | Đã xử lý xong `WarehouseSettingsModal` (tự động lưu ẩn hiện khi thao tác, flush Firebase khi đóng modal, test E2E pass) | Hoàn thành |
-| 2026-10-13 12:58 | Giai đoạn 1 | Khởi tạo `task_plan.md`, `findings.md`, `progress.md` | Đang rà soát toàn bộ dự án |
-
+## Milestones
+- [x] Initial Research & Plan
+- [ ] Pha 1: `services/autoReportExportService.ts`
+- [ ] Pha 2: Cập nhật `functions/src/lineBotWebhook.ts`
+- [ ] Pha 3: Cập nhật UI thiết lập tại các khu vực (Chi Tiết Theo Kho, Tổng Quan Doanh Thu, ExportOptionsModal, Modal Auto Sync)
+- [ ] Pha 4: Kích hoạt tự động xuất sau khi chạy Auto Sync (YCX & BI)
+- [ ] Pha 5: Kiểm thử (Vitest unit tests, typecheck, lint-ratchet)

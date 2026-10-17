@@ -23,6 +23,8 @@ import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 import { Tabs } from '../shared/ui/Tabs';
 import { ActionMenu } from '../shared/ui/ActionMenu';
+import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
+import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
 const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payload?: { payload: RechartsTrendData }[]; metricName: string }) => {
     if (!active || !payload?.length) return null;
@@ -305,7 +307,18 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           handleExport(chartCardRef.current, `${prefix} - Xu Hướng Doanh Thu.png`, { captureAsDisplayed: true });
       }
   };
-  // Tự xuất & gửi LINE sau Auto Sync YCX Realtime (khi nút đặt đích "nhóm LINE") — chỉ ở dạng biểu đồ
+
+  useEffect(() => {
+    return registerYcxAutoExportRunner('Xu Hướng Doanh Thu', async () => {
+      if (!chartCardRef.current) return null;
+      const prefix = getExportFilenamePrefix(filterState.kho);
+      const res = await handleExport(chartCardRef.current, `${prefix} - Xu Hướng Doanh Thu.png`, {
+        captureAsDisplayed: true,
+        mode: 'blob-only',
+      });
+      return (res instanceof Blob) ? res : null;
+    });
+  }, [handleExport, filterState.kho]);
   
   const textColor = '#64748b';
   const gridColor = '#f1f5f9';
@@ -510,6 +523,20 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name={displayMode === 'calendar' ? 'exportBatch' : 'exportImage'} size="md" className="lg:hidden" />}
             {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name={displayMode === 'calendar' ? 'exportBatch' : 'exportImage'} size="md" className="hidden lg:block" />}
           </Button>
+
+          <AreaAutoExportButton
+            areaId="Xu Hướng Doanh Thu"
+            areaName="Xu Hướng Doanh Thu"
+            onTestExport={async () => {
+              if (!chartCardRef.current) return null;
+              const prefix = getExportFilenamePrefix(filterState.kho);
+              const res = await handleExport(chartCardRef.current, `${prefix} - Xu Hướng Doanh Thu.png`, {
+                captureAsDisplayed: true,
+                mode: 'blob-only',
+              });
+              return (res instanceof Blob) ? res : null;
+            }}
+          />
         </div>
       </SectionHeader>
 
