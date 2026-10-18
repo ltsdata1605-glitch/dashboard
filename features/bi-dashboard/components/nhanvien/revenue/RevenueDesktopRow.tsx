@@ -50,46 +50,46 @@ export const RevenueDesktopRow = React.memo(({
 
     return (
         <tr
-            style={{ borderLeft: `4px solid ${stripeColor}` }}
-            className={`border-l-[4px] transition-colors text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}
+            style={{ borderLeft: `3.5px solid ${stripeColor}` }}
+            className={`border-l-[3.5px] transition-colors duration-150 text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'}`}
         >
-            <td className="px-2 py-[3px] whitespace-nowrap min-w-[190px] border-r border-slate-100 dark:border-slate-700/50">
+            <td className="px-2.5 py-[3px] whitespace-nowrap min-w-[190px] border-r border-slate-100 dark:border-slate-800/60">
                 <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
                     <div role="button" tabIndex={0} className="flex flex-col cursor-pointer" onClick={() => onHighlightToggle(row.originalName!)} onKeyDown={onActivateKey(() => onHighlightToggle(row.originalName!))}>
-                        <span className="font-bold text-slate-800 dark:text-slate-100 text-[13px] whitespace-nowrap">{row.name}</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-100 text-[13px] tracking-tight whitespace-nowrap hover:text-sky-600 dark:hover:text-sky-400 transition-colors">{row.name}</span>
                     </div>
                 </div>
             </td>
-            <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+            <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-100 dark:border-slate-800/60">
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
-            <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
+            <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
                 <div>{f.format(roundUp(row.dtlk))}</div>
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
             {/* NỔI BẬT 1: DTQĐ */}
             <td 
-                className="export-col-revenue px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-sky-50/70 dark:bg-sky-950/30" 
+                className="export-col-revenue px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 bg-sky-50/70 dark:bg-sky-950/30" 
                 style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}
             >
                 <div className="font-bold text-[13.5px] tracking-tight">{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
             {!isRealtimeMode && (
-                <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 text-slate-800 dark:text-slate-100">
+                <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-800 dark:text-slate-100">
                     <div>{f.format(roundUp(row.duKien || 0))}</div>
                     <DeltaBadge current={row.duKien} previous={prev?.duKien} isCurrency />
                 </td>
             )}
-            <td className="export-col-revenue px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+            <td className="export-col-revenue px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
                 <Pill className="font-bold" color={getDkhtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
                 <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
             </td>
             {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN */}
-            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
                 {row.comp_total ? (
                     <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-bold'}>
                         {row.comp_dat ?? 0}/{row.comp_total}
@@ -98,7 +98,7 @@ export const RevenueDesktopRow = React.memo(({
                     <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
                 )}
             </td>
-            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
                 {row.comp_total ? (
                     <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold'}>
                         {roundUp(row.comp_pct_dat || 0)}%
@@ -109,10 +109,10 @@ export const RevenueDesktopRow = React.memo(({
             </td>
             {isShowRemaining && (
                 <>
-                    <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">
+                    <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">
                         <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                     </td>
-                    <td className={`export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-amber-50/10 dark:bg-amber-950/5 ${
+                    <td className={`export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 bg-amber-50/10 dark:bg-amber-950/5 ${
                         row.type === 'employee' && row.remaining_daily_status === 'warning' ? 'text-rose-600 dark:text-rose-400' :
                         row.type === 'employee' && row.remaining_daily_status === 'success' ? 'text-emerald-600 dark:text-emerald-400' :
                         'text-amber-700 dark:text-amber-400'
@@ -122,12 +122,12 @@ export const RevenueDesktopRow = React.memo(({
                 </>
             )}
             {/* NỔI BẬT 2: HQQĐ */}
-            <td className="export-col-performance px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-emerald-50/50 dark:bg-emerald-950/20">
+            <td className="export-col-performance px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 bg-emerald-50/50 dark:bg-emerald-950/20">
                 <Pill className="font-bold" color={getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={Number(prev?.hqqd) * 100} isPercent />
             </td>
             {/* NỔI BẬT 3: %T.Chậm */}
-            <td className={`export-col-performance px-2 py-[3px] text-center font-bold tabular-nums bg-amber-50/50 dark:bg-amber-950/20 ${!isRealtimeMode ? 'border-r border-slate-100 dark:border-slate-700/50' : ''}`}>
+            <td className={`export-col-performance px-2 py-[3px] text-center font-bold tabular-nums bg-amber-50/50 dark:bg-amber-950/20 ${!isRealtimeMode ? 'border-r border-slate-100 dark:border-slate-800/60' : ''}`}>
                 <Pill className="font-bold" color={getMetricColorByTarget(row.calculatedInstallment, targetTraGop)}>{roundUp(row.calculatedInstallment)}%</Pill>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>

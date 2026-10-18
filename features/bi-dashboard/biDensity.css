@@ -68,15 +68,13 @@
    tính lại style cả tài liệu (kể cả cây Phân tích đang ẩn) ngay lúc chuyển tab. Ở đây nó nạp cùng chunk lúc tải trước. ── */
 /* KHÔNG BO GÓC cho tất cả bảng, viền trong toàn bộ phân hệ Report BI (ngoại trừ thẻ KPI .kpi-overview-card, avatar tròn & floating dock)
    — và segmented control dùng chung ([data-segmented], GĐ6): vuông thì không còn là segmented kiểu iOS. */
+/* KHÔNG BO GÓC RIÊNG CHO CÁC BẢNG DỮ LIỆU để giữ mật độ số liệu tối đa và hiển thị phẳng chuyên nghiệp */
 .bi-report-module table,
 .bi-report-module thead,
 .bi-report-module tbody,
 .bi-report-module tfoot,
 .bi-report-module tr,
 .bi-report-module th,
-.bi-report-module td,
-.bi-report-module .card:not(.kpi-overview-card),
-.bi-report-module .rounded:not(.kpi-overview-card),
-.bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.industry-kpi-card):not(.industry-kpi-card *):not(.preserve-rounded):not(.preserve-rounded *):not([data-segmented]):not([data-segmented] *) {
+.bi-report-module td {
     border-radius: 0px !important;
 }

@@ -142,7 +142,7 @@ export const BonusView: React.FC<{
                         size="none"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors flex items-center justify-center shrink-0 ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded transition-all duration-150 active:scale-[0.94] flex items-center justify-center shrink-0 ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                         {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                     </Button>
@@ -159,7 +159,7 @@ export const BonusView: React.FC<{
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={`ycx-hit inline-flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 cursor-pointer ${periodMode === 'summary' ? 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'}`}
+                                className={`ycx-hit inline-flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded transition-all duration-150 active:scale-[0.94] shrink-0 cursor-pointer ${periodMode === 'summary' ? 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'}`}
                             >
                                 <AppIcon name={activePeriodMode.icon} size="md" />
                             </span>
@@ -180,7 +180,8 @@ export const BonusView: React.FC<{
 
             {/* 4. Bảng thưởng */}
             <div className="w-full overflow-hidden px-4 pb-4">
-                <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
+                <div className="rounded-card preserve-rounded border border-slate-200/80 dark:border-slate-800/80 shadow-2xs overflow-hidden bg-white dark:bg-slate-900">
+                    <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                         {isCompare ? (
                             <BonusCompareTable
                                 employees={monthlyEmployees}
@@ -248,8 +249,9 @@ export const BonusView: React.FC<{
                                 supermarketName={supermarketName}
                             />
                         )}
-                        </div>
                     </div>
+                </div>
+            </div>
         </div>
     );
 });

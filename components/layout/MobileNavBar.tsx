@@ -50,7 +50,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBa
             {/* truncate + leading-[22px]: tiêu đề dài ("Phân quyền & duyệt yêu cầu") không chèn sang nút bên phải; dòng cao đủ
                 cho dấu tiếng Việt (khung quá thấp + overflow hidden từng xén dấu ở iPhone SE). */}
             <div data-navbar-title="" className="min-w-0 flex-1 flex flex-col justify-center pl-1.5 pr-1">
-                <h1 className="text-[17px] leading-[22px] font-semibold tracking-[-0.01em] text-slate-900 truncate">{title}</h1>
+                <h1 className="text-[17px] leading-[22px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100 truncate">{title}</h1>
                 <div id="mobile-topbar-subtitle" className="type-footnote text-slate-500 truncate max-w-full empty:hidden" />
             </div>
             {/* min-w-0 + shrink (không shrink-0): khe portal rộng phải co lại và tự cuộn ngang bên trong, không đẩy trang tràn

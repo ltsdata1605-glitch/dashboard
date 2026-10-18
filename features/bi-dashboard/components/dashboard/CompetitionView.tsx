@@ -287,7 +287,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="unstyled"
                 size="none"
                 onClick={handleCopyCommentary}
-                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 transition-colors rounded-lg flex items-center justify-center shrink-0 ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] ${
                     copiedCommentary
                         ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 shadow-2xs font-semibold'
                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -307,7 +307,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="unstyled"
                 size="none"
                 onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 transition-colors rounded-lg shrink-0 flex items-center justify-center ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded shrink-0 flex items-center justify-center transition-all duration-150 active:scale-[0.94] ${
                     groupingMode === 'configured'
                         ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -328,7 +328,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     variant="unstyled"
                     size="none"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className={`ycx-hit relative w-8 h-8 lg:w-9 lg:h-9 transition-colors rounded-lg shrink-0 flex items-center justify-center ${
+                    className={`ycx-hit relative w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded shrink-0 flex items-center justify-center transition-all duration-150 active:scale-[0.94] ${
                         isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
                             ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                             : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -466,7 +466,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="unstyled"
                 size="none"
                 onClick={handleOpenTargetThiDua}
-                className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 title="Cấu hình Thi đua"
             >
                 <AppIcon name="settings" size="md" />

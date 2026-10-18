@@ -415,7 +415,7 @@ const RevenueView: React.FC<{
             <TieuDeBaoCao title={cardTitle} subtitle={cardSubtitle} />
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
-            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full relative z-20">
+            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-2 bg-slate-50/80 dark:bg-slate-900/60 backdrop-blur-md no-print border-b border-slate-200/80 dark:border-slate-800/80 gap-1 sm:gap-2 w-full relative z-20">
                 <div className="flex gap-1 sm:gap-1.5 items-center shrink-0 min-w-0 overflow-x-auto scrollbar-hide py-0.5">
                     {!isRealtimeMode && (
                         <Button
@@ -429,12 +429,12 @@ const RevenueView: React.FC<{
                                 }
                             }}
                             title={!prevMonthRaw ? 'Nhập dữ liệu cùng kỳ' : (isShowPrevMonth ? 'Bấm để tắt so sánh cùng kỳ' : 'Bấm để bật so sánh cùng kỳ')}
-                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all duration-150 active:scale-[0.97] inline-flex items-center justify-center shrink-0 ${
                                 prevMonthRaw
                                     ? isShowPrevMonth
                                         ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs'
                                         : 'bg-slate-100 border-slate-300 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500'
-                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-50 shadow-2xs'
                             }`}
                         >
                             <AppIcon name="clock" size="md" className={prevMonthRaw && isShowPrevMonth ? 'text-emerald-600' : 'text-slate-400'} />
@@ -469,10 +469,10 @@ const RevenueView: React.FC<{
                             variant="unstyled"
                             size="none"
                             onClick={() => setIsShowRemaining(p => !p)}
-                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all duration-150 active:scale-[0.97] inline-flex items-center justify-center shrink-0 ${
                                 isShowRemaining 
                                     ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 shadow-2xs' 
-                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-50 shadow-2xs'
                             }`}
                         >
                             <AppIcon name={isShowRemaining ? 'checkboxOn' : 'checkboxOff'} size="md" className={isShowRemaining ? 'text-amber-600' : 'text-slate-400'} />
@@ -484,10 +484,10 @@ const RevenueView: React.FC<{
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsRealtimeMode(p => !p)}
-                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-3.5 text-[11px] sm:text-xs font-bold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-3.5 text-[11px] sm:text-xs font-bold rounded-full border transition-all duration-150 active:scale-[0.97] inline-flex items-center justify-center shrink-0 ${
                             isRealtimeMode
                                 ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/40'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-50 shadow-2xs'
                         }`}
                         title={isRealtimeMode ? 'Đang xem Doanh thu Realtime (Bấm để xem Luỹ kế)' : 'Bấm để xem Doanh thu Realtime trong ngày'}
                     >
@@ -502,18 +502,18 @@ const RevenueView: React.FC<{
                         size="none"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors flex items-center justify-center shrink-0 ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded transition-all duration-150 active:scale-[0.94] flex items-center justify-center shrink-0 ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                         <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="md" />
                     </Button>
-                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                    <div className="h-4 w-px bg-slate-200/80 dark:bg-slate-750 mx-0.5" />
                     <Button
                         variant="unstyled"
                         size="none"
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors flex items-center justify-center shrink-0 disabled:opacity-40 ${isExportingByDept ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded transition-all duration-150 active:scale-[0.94] flex items-center justify-center shrink-0 disabled:opacity-40 ${isExportingByDept ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                         {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>
@@ -539,56 +539,56 @@ const RevenueView: React.FC<{
                             <span>Chưa có dữ liệu Doanh thu Realtime. Vui lòng vào mục <strong>Cập nhật &gt; Cấu hình siêu thị &amp; Nhân viên &gt; Dữ liệu</strong> (ô <strong>REALTIME</strong> của DOANH THU NHÂN VIÊN) để dán dữ liệu.</span>
                         </div>
                     )}
-                    <div className="w-full overflow-hidden px-4 pb-4">
-                        <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            <div className="border border-slate-200 dark:border-slate-700">
+                    <div className="w-full px-3.5 sm:px-4 pb-4">
+                        <div className="rounded-card preserve-rounded border border-slate-200/80 dark:border-slate-800/80 shadow-2xs overflow-hidden bg-white dark:bg-slate-900">
+                            <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                                 <table className="table-pin-first w-full border-collapse">
-                                    <thead className="sticky top-0 z-10">
+                                    <thead className="sticky top-0 z-10 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-xs border-b border-slate-200/80 dark:border-slate-700/80">
                                         {/* Tier 1: Group Headers */}
                                         <tr>
-                                            <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[4px] border-l-slate-200 dark:border-l-slate-700 border-b border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors min-w-[190px]" onClick={() => handleSort('name')}>
+                                            <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-l-[3.5px] border-l-slate-200 dark:border-l-slate-700 border-b border-r border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors min-w-[190px]" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th colSpan={isRealtimeMode ? 4 : 5} className="export-col-revenue px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
+                                            <th colSpan={isRealtimeMode ? 4 : 5} className="export-col-revenue px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-r border-slate-200/70 dark:border-slate-700/70">
                                                 Doanh thu
                                             </th>
-                                            <th colSpan={2} className="export-col-competition px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
+                                            <th colSpan={2} className="export-col-competition px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-r border-slate-200/70 dark:border-slate-700/70">
                                                 Thi đua
                                             </th>
                                             {isShowRemaining && (
-                                                <th colSpan={2} className="export-col-revenue px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
+                                                <th colSpan={2} className="export-col-revenue px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-r border-slate-200/70 dark:border-slate-700/70">
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={isRealtimeMode ? 2 : 3} className="export-col-performance px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                                            <th colSpan={isRealtimeMode ? 2 : 3} className="export-col-performance px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-slate-200/70 dark:border-slate-700/70">
                                                 Hiệu suất
                                             </th>
                                         </tr>
                                         {/* Tier 2: Column Headers */}
                                         <tr>
-                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
-                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
                                             {/* NỔI BẬT 1: DTQĐ */}
-                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-900 dark:text-sky-100 bg-sky-100 dark:bg-sky-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-200/80 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-900 dark:text-sky-200 bg-sky-100/80 dark:bg-sky-950/70 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-sky-200/80 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
                                             {!isRealtimeMode && (
-                                                <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('duKien')}>D.Kiến</th>
+                                                <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('duKien')}>D.Kiến</th>
                                             )}
-                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('pctDkht')}>{isRealtimeMode ? '%HT' : '%D.KIẾN'}</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('pctDkht')}>{isRealtimeMode ? '%HT' : '%D.KIẾN'}</th>
                                             {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN */}
-                                            <th className="export-col-competition px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_dat')}>Đạt</th>
-                                            <th className="export-col-competition px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_pct_dat')}>%Đạt</th>
+                                            <th className="export-col-competition px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_dat')}>Đạt</th>
+                                            <th className="export-col-competition px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_pct_dat')}>%Đạt</th>
                                             {isShowRemaining && (
                                                 <>
-                                                    <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
-                                                    <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
+                                                    <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
+                                                    <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
                                                 </>
                                             )}
                                             {/* NỔI BẬT 2: HQQĐ */}
-                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 bg-emerald-100 dark:bg-emerald-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
+                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200 bg-emerald-100/80 dark:bg-emerald-950/70 border-r border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             {/* NỔI BẬT 3: %T.Chậm */}
-                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors`} onClick={() => handleSort('installment')}>%T.Chậm</th>
+                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200 bg-amber-100/80 dark:bg-amber-950/70 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors`} onClick={() => handleSort('installment')}>%T.Chậm</th>
                                             {!isRealtimeMode && (
-                                                <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
+                                                <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-slate-200/70 dark:border-slate-700/70 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                             )}
                                         </tr>
                                     </thead>
@@ -609,20 +609,29 @@ const RevenueView: React.FC<{
                                             return (
                                                 <tr
                                                     key={`${row.type}-${idx}`}
-                                                    style={rowStripeColor ? { borderLeft: `4px solid ${rowStripeColor}` } : undefined}
-                                                    className={`${rowStripeColor ? 'border-l-[4px]' : ''} ${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}
+                                                    style={rowStripeColor ? { borderLeft: `3.5px solid ${rowStripeColor}` } : undefined}
+                                                    className={`${rowStripeColor ? 'border-l-[3.5px]' : ''} ${isGrandTotal ? 'bg-emerald-50/90 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50/90 dark:bg-slate-850 font-bold text-slate-700 dark:text-slate-300'} border-t border-b border-slate-200/80 dark:border-slate-700/80`}
                                                 >
-                                                    <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'} whitespace-nowrap min-w-[190px]`}>{row.name}</td>
-                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold`}>
+                                                    <td className={`px-2.5 ${isGrandTotal ? 'py-1 text-[13px] text-center font-black' : 'py-1 text-[12px] font-extrabold'} uppercase tracking-wider border-r border-slate-200/70 dark:border-slate-700/70 whitespace-nowrap min-w-[190px]`}>
+                                                        {isGrandTotal ? (
+                                                            <span>{row.name}</span>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                                                                <span>{row.name}</span>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r border-slate-200/70 dark:border-slate-700/70 tabular-nums text-slate-800 dark:text-slate-200 font-bold`}>
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
-                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r border-slate-200/70 dark:border-slate-700/70 tabular-nums font-bold`}>
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                     </td>
                                                     {/* NỔI BẬT 1: DTQĐ */}
-                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[14px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-sky-50/70 dark:bg-sky-950/30`}>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[14px]' : 'py-1 text-[13px]'} text-center border-r border-slate-200/70 dark:border-slate-700/70 tabular-nums font-bold bg-sky-50/70 dark:bg-sky-950/30`}>
                                                         <div className="font-bold text-[13px]" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>{f.format(roundUp(row.dtqd))}</div>
                                                         <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                     </td>
