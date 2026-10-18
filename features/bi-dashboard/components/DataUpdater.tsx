@@ -805,7 +805,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         size="none"
                         onClick={() => setIsConfirmingClear(true)}
                         title="Đặt lại toàn bộ dữ liệu về mặc định"
-                        className="h-8 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors shrink-0"
+                        className="ycx-hit h-8 flex items-center gap-1.5 px-3.5 text-xs font-semibold rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors shrink-0"
                     >
                         <AppIcon name="reset" size="md" className="text-rose-500" />
                         <span className="text-[11px] sm:text-xs tracking-wide">Đặt lại</span>

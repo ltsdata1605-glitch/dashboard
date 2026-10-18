@@ -473,7 +473,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                 <Button
                                     variant="primary"
                                     onClick={() => setActiveMainTab('cumulative')}
-                                    className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm cursor-pointer"
+                                    className="ycx-hit inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-full shadow-2xs cursor-pointer"
                                 >
                                     <AppIcon name="trendUp" size="md" />
                                     <span>Xem báo cáo Luỹ kế</span>
@@ -483,7 +483,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                 <Button
                                     variant="primary"
                                     onClick={() => setActiveMainTab('realtime')}
-                                    className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm cursor-pointer"
+                                    className="ycx-hit inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-full shadow-2xs cursor-pointer"
                                 >
                                     <AppIcon name="clock" size="md" />
                                     <span>Xem báo cáo Realtime</span>
@@ -492,7 +492,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                             <Button
                                 variant="outline"
                                 onClick={() => onNavigateToUpdater({ configTab: 'data' })}
-                                className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                                className="ycx-hit inline-flex items-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-semibold rounded-full border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs cursor-pointer"
                             >
                                 <AppIcon name="upload" size="md" className="text-sky-500" />
                                 <span>Cập nhật dữ liệu</span>

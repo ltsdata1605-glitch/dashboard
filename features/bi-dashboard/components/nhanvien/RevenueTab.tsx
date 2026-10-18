@@ -429,7 +429,7 @@ const RevenueView: React.FC<{
                                 }
                             }}
                             title={!prevMonthRaw ? 'Nhập dữ liệu cùng kỳ' : (isShowPrevMonth ? 'Bấm để tắt so sánh cùng kỳ' : 'Bấm để bật so sánh cùng kỳ')}
-                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
                                 prevMonthRaw
                                     ? isShowPrevMonth
                                         ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs'
@@ -457,7 +457,7 @@ const RevenueView: React.FC<{
                                             setIsShowPrevMonth(true);
                                         }
                                     }}
-                                    className="ml-0.5 p-0.5 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
+                                    className="ml-0.5 p-0.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
                                 >
                                     <AppIcon name="close" size="sm" />
                                 </span>
@@ -469,7 +469,7 @@ const RevenueView: React.FC<{
                             variant="unstyled"
                             size="none"
                             onClick={() => setIsShowRemaining(p => !p)}
-                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
                                 isShowRemaining 
                                     ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 shadow-2xs' 
                                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
@@ -479,12 +479,12 @@ const RevenueView: React.FC<{
                             <span>Còn lại</span>
                         </Button>
                     )}
-                    {/* Nút chuyển chế độ REALTIME — gom về cùng nhóm bộ lọc bên trái */}
+                    {/* Nút chuyển chế độ REALTIME — capsule con nhộng bo tròn hoàn hảo */}
                     <Button
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsRealtimeMode(p => !p)}
-                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-3.5 text-[11px] sm:text-xs font-bold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
                             isRealtimeMode
                                 ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/40'
                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'

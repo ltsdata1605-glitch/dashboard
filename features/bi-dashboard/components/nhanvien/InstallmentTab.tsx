@@ -408,7 +408,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={() => importFileRef.current?.click()}
-                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
                             prevMonthRaw 
                                 ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs' 
                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
@@ -417,19 +417,19 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         <AppIcon name="clock" size="md" className={prevMonthRaw ? 'text-emerald-600' : 'text-slate-400'} />
                         <span>Cùng kỳ</span>
                         {prevMonthRaw && (
-                            <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800">
+                            <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded-full hover:bg-emerald-200 dark:hover:bg-emerald-800">
                                 <AppIcon name="close" size="sm" />
                             </Button>
                         )}
                     </Button>
 
-                    {/* Nút bật/tắt cột % — đưa về nhóm cấu hình bên trái, chuẩn hoá kiểu dáng CHUẨN */}
+                    {/* Nút bật/tắt cột % — capsule con nhộng bo tròn chuẩn */}
                     <Button
                         variant="unstyled"
                         size="none"
                         onClick={() => setHidePercent(v => !v)}
                         title={hidePercent ? 'Bấm để hiện cột %' : 'Bấm để ẩn cột %'}
-                        className={`h-8 min-h-0 gap-1 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`ycx-hit h-8 min-h-0 gap-1 px-3 text-[11px] sm:text-xs font-bold rounded-full border transition-all inline-flex items-center justify-center shrink-0 ${
                             !hidePercent
                                 ? 'bg-sky-50 border-sky-300 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:border-sky-800 dark:text-sky-300 shadow-2xs'
                                 : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'

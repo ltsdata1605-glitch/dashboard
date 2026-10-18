@@ -611,7 +611,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     <select
                         value={selectedGroupFilter}
                         onChange={(e) => setSelectedGroupFilter(e.target.value)}
-                        className="text-[11px] font-bold h-7 sm:h-7.5 pl-2 pr-5 sm:pl-2.5 sm:pr-6 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer appearance-none shadow-sm hover:border-sky-300 dark:hover:border-sky-600 transition-colors max-w-[95px] xs:max-w-[125px] sm:max-w-none truncate"
+                        className="text-[11px] font-bold h-7 sm:h-7.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 py-0.5 sm:py-1 rounded-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer appearance-none shadow-2xs hover:border-sky-300 dark:hover:border-sky-600 transition-colors max-w-[95px] xs:max-w-[125px] sm:max-w-none truncate"
                         title="Lọc theo nhóm tiêu chí"
                     >
                         <option value="all">Tất cả ({rawVisibleHeaders.length})</option>

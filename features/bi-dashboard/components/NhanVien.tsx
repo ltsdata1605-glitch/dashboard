@@ -510,7 +510,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         <Button
                             variant="primary"
                             onClick={() => setAppActiveTab('analysis')}
-                            className="font-bold text-xs sm:text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm inline-flex items-center gap-2"
+                            className="ycx-hit font-bold text-xs sm:text-sm px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full shadow-2xs inline-flex items-center gap-2 cursor-pointer transition-all active:scale-95"
                         >
                             <span>Chuyển đến Phân Tích để cập nhật</span>
                             <AppIcon name="next" size="md" />

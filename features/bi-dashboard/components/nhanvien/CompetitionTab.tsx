@@ -672,13 +672,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     })}
 
                     {hasUnsavedVersionChanges && (
-                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="h-6 px-2 bg-amber-500 text-white rounded text-[11px] font-bold hover:bg-amber-600 flex items-center shadow-xs transition-colors shrink-0">Cập nhật</Button>
+                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="h-6 px-2.5 bg-amber-500 text-white rounded-full text-[11px] font-bold hover:bg-amber-600 flex items-center shadow-xs transition-colors shrink-0">Cập nhật</Button>
                     )}
 
                     {activeVersionName === 'new' ? (
-                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-sky-300 dark:border-sky-600 shadow-xs shrink-0 my-1">
+                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-0.5 rounded-full border border-sky-300 dark:border-sky-600 shadow-xs shrink-0 my-1">
                             <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên bản lưu..."} className="w-28 text-xs h-6 border-0 focus:ring-0" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
-                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-6 px-2 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-300 flex items-center transition-colors" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
+                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-6 px-2.5 bg-sky-600 text-white rounded-full text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-300 flex items-center transition-colors" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
                             <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><AppIcon name="close" size="sm" /></Button>
                         </div>
                     ) : (
@@ -703,10 +703,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
                             {activeCompetitionTab === 'nhom' && (
                                 <>
-                                    {/* Lọc nhóm — MultiSelectDropdown */}
+                                    {/* Lọc nhóm — MultiSelectDropdown dạng con nhộng */}
                                     <MultiSelectDropdown
                                         className="w-auto shrink-0"
-                                        triggerClassName="h-7.5 sm:h-8 min-h-0 py-0 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg shadow-2xs inline-flex items-center"
+                                        triggerClassName="ycx-hit h-7.5 sm:h-8 min-h-0 py-0 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-full shadow-2xs inline-flex items-center"
                                         icon={<AppIcon name="filter" size="sm" className="text-sky-500" />}
                                         triggerLabel="Lọc nhóm"
                                         count={isFiltered ? activeFilterCount : undefined}
@@ -722,13 +722,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         maxHeightClass="max-h-[80vh]"
                                         usePortal
                                     />
-                                    {/* Highlight */}
+                                    {/* Highlight dạng con nhộng */}
                                     <div className="relative shrink-0" ref={employeeFilterRef}>
                                         <Button
                                             variant="unstyled"
                                             size="none"
                                             onClick={handleToggleEmployeeFilter}
-                                            className={`h-7.5 sm:h-8 min-h-0 gap-1 sm:gap-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border rounded-lg shadow-2xs transition-all inline-flex items-center shrink-0 ${
+                                            className={`ycx-hit h-7.5 sm:h-8 min-h-0 gap-1 sm:gap-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold border rounded-full shadow-2xs transition-all inline-flex items-center shrink-0 ${
                                                 isEmployeeFilterOpen || highlightedEmployees.size > 0
                                                     ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700'
                                                     : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'
@@ -737,7 +737,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             <AppIcon name="users" size="sm" />
                                             <span className="hidden sm:inline">Highlight</span>
                                             {highlightedEmployees.size > 0 && (
-                                                <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">
+                                                <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded-full">
                                                     {highlightedEmployees.size}
                                                 </span>
                                             )}
@@ -779,12 +779,12 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             )}
                             {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                                 <>
-                                    {/* Nút chuyển đổi Chế độ xem: Mặc định vs Tuỳ chỉnh */}
+                                    {/* Nút chuyển đổi Chế độ xem: Mặc định vs Tuỳ chỉnh dạng con nhộng */}
                                     <Button
                                         variant="unstyled"
                                         size="none"
                                         onClick={() => setCanhanGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                                        className={`h-7 sm:h-8 min-h-0 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border rounded-lg shadow-2xs transition-all cursor-pointer shrink-0 ${
+                                        className={`ycx-hit h-7.5 sm:h-8 min-h-0 inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold border rounded-full shadow-2xs transition-all cursor-pointer shrink-0 ${
                                             canhanGroupingMode === 'configured'
                                                 ? 'border-sky-300 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:border-sky-700 dark:text-sky-300'
                                                 : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
@@ -800,10 +800,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         <span>{canhanGroupingMode === 'configured' ? 'Tuỳ chỉnh' : 'Mặc định'}</span>
                                     </Button>
 
-                                    {/* Lọc nhóm — MultiSelectDropdown */}
+                                    {/* Lọc nhóm — MultiSelectDropdown dạng con nhộng */}
                                     <MultiSelectDropdown
                                         className="w-auto shrink-0"
-                                        triggerClassName="h-7 sm:h-8 min-h-0 py-0 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg shadow-2xs inline-flex items-center"
+                                        triggerClassName="ycx-hit h-7.5 sm:h-8 min-h-0 py-0 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-full shadow-2xs inline-flex items-center"
                                         icon={<AppIcon name="filter" size="sm" className="text-sky-500" />}
                                         triggerLabel="Lọc nhóm"
                                         count={isFiltered ? activeFilterCount : undefined}

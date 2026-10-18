@@ -397,7 +397,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                     variant="unstyled"
                     size="none"
                     onClick={() => setUseAdjustedTarget(!useAdjustedTarget)}
-                    className={`ycx-hit h-8 w-8 sm:w-auto px-0 sm:px-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors relative shrink-0 ${
+                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center transition-colors relative shrink-0 ${
                         useAdjustedTarget
                             ? 'border border-sky-300 dark:border-sky-700 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold shadow-2xs'
                             : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -407,9 +407,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 >
                     <AppIcon name="target" size="md" className={useAdjustedTarget ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400 dark:text-slate-500'} />
                     {useAdjustedTarget && (
-                        <span className="sm:hidden absolute top-1 right-1 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
                     )}
-                    <span className="hidden sm:inline text-xs whitespace-nowrap">Target sau chỉnh</span>
                 </Button>
             )}
             {supermarketFilterDropdown}

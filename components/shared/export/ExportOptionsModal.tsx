@@ -23,7 +23,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
         : undefined
     );
 
-    const [botSetting, setBotSetting] = useState<{ realtime: boolean; luyke: boolean }>({ realtime: false, luyke: false });
+    const [botSetting, setBotSetting] = useState<{ realtime: boolean; luyke: boolean; realtimeCommand?: string; luykeCommand?: string }>({ realtime: false, luyke: false });
 
     useEffect(() => {
         setMounted(true);
@@ -136,7 +136,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                                     }`}
                                 >
-                                    Realtime (bcrt): {botSetting.realtime ? 'Bật' : 'Tắt'}
+                                    Realtime ({botSetting.realtimeCommand || 'bcrt'}): {botSetting.realtime ? 'Bật' : 'Tắt'}
                                 </button>
                                 <button
                                     type="button"
@@ -147,7 +147,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                                     }`}
                                 >
-                                    Luỹ kế (bclk): {botSetting.luyke ? 'Bật' : 'Tắt'}
+                                    Luỹ kế ({botSetting.luykeCommand || 'bclk'}): {botSetting.luyke ? 'Bật' : 'Tắt'}
                                 </button>
                             </div>
                         </div>

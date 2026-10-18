@@ -158,7 +158,7 @@ const EmployeeSelector: React.FC<{
 
     return (
         <div className="relative w-full max-w-[200px]" ref={ref}>
-            <Button variant="unstyled" size="none" onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full px-2 sm:px-3 py-1 sm:py-1.5 h-7.5 sm:h-8 text-[11px] sm:text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded shadow-sm">
+            <Button variant="unstyled" size="none" onClick={() => setIsOpen(!isOpen)} className="ycx-hit flex items-center justify-between w-full px-2.5 sm:px-3 py-1 sm:py-1.5 h-7.5 sm:h-8 text-[11px] sm:text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded-full shadow-2xs">
                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : placeholder}</span>
                 <AppIcon name="chevronDown" size="sm" className="ml-1 sm:ml-2 text-slate-400 shrink-0" />
             </Button>
@@ -417,9 +417,9 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     </div>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded border border-slate-200 dark:border-slate-700">
-                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`px-2 py-0.5 sm:py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
-                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-0.5 sm:py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`ycx-hit px-2.5 py-0.5 sm:py-1 text-[11px] font-bold rounded-full transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`ycx-hit px-2.5 py-0.5 sm:py-1 text-[11px] font-bold rounded-full transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
                     <Button
                         variant="unstyled" size="none"

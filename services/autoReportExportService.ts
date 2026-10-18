@@ -27,8 +27,28 @@ import { toast } from '../components/shared/ui/toast';
 export type ReportExportMode = 'realtime' | 'luyke';
 
 export interface AreaExportSetting {
-    realtime: boolean; // Tự xuất khi chạy Realtime -> gán lệnh 'bcrt'
-    luyke: boolean;    // Tự xuất khi chạy Luỹ kế -> gán lệnh 'bclk'
+    realtime: boolean; // Tự xuất khi chạy Realtime -> gán lệnh 'bcrt' (hoặc lệnh tuỳ chỉnh)
+    luyke: boolean;    // Tự xuất khi chạy Luỹ kế -> gán lệnh 'bclk' (hoặc lệnh tuỳ chỉnh)
+    realtimeCommand?: string; // Tùy chỉnh lệnh Realtime (mặc định 'bcrt', hỗ trợ nhiều lệnh: 'bcrt, rt')
+    luykeCommand?: string;    // Tùy chỉnh lệnh Luỹ kế (mặc định 'bclk', hỗ trợ nhiều lệnh: 'bclk, lk')
+}
+
+export const RESERVED_COMMANDS = [
+    'id', 'admin', 'lineid', 'groupid', 'hd', 'help', 'huongdan',
+    'cp', 'tk', 'csd', 'huy', 'tra', 'dsbc', 'ping', 'menu'
+];
+
+/**
+ * Phân tích và chuẩn hoá danh sách lệnh từ chuỗi người dùng nhập
+ * Hỗ trợ các lệnh ngăn cách bởi dấu phẩy, chấm phẩy hoặc khoảng trắng.
+ */
+export function parseCommands(cmdStr?: string, defaultCmd = 'bcrt'): string[] {
+    if (!cmdStr || !cmdStr.trim()) return [defaultCmd];
+    const rawList = cmdStr.split(/[,;\s]+/);
+    const cleaned = rawList
+        .map(c => c.trim().toLowerCase().replace(/^[./!#\s]+/, '').replace(/[^a-z0-9_-]/g, ''))
+        .filter(c => c.length >= 2 && c.length <= 30 && !RESERVED_COMMANDS.includes(c));
+    return cleaned.length > 0 ? Array.from(new Set(cleaned)) : [defaultCmd];
 }
 
 export type AutoExportSettingsMap = Record<string, AreaExportSetting>;
@@ -110,7 +130,13 @@ export function getAutoExportSettings(): AutoExportSettingsMap {
 
 /** Lấy cấu hình của 1 khu vực cụ thể */
 export function getAreaExportSetting(areaId: string): AreaExportSetting {
-    return store.map[areaId] || { realtime: false, luyke: false };
+    const raw = store.map[areaId] || { realtime: false, luyke: false };
+    return {
+        realtime: Boolean(raw.realtime),
+        luyke: Boolean(raw.luyke),
+        realtimeCommand: raw.realtimeCommand || 'bcrt',
+        luykeCommand: raw.luykeCommand || 'bclk',
+    };
 }
 
 /** Lưu cấu hình cho 1 khu vực */
@@ -120,6 +146,8 @@ export async function setAreaExportSetting(areaId: string, setting: Partial<Area
     const nextSetting: AreaExportSetting = {
         realtime: setting.realtime !== undefined ? setting.realtime : current.realtime,
         luyke: setting.luyke !== undefined ? setting.luyke : current.luyke,
+        realtimeCommand: setting.realtimeCommand !== undefined ? setting.realtimeCommand : (current.realtimeCommand || 'bcrt'),
+        luykeCommand: setting.luykeCommand !== undefined ? setting.luykeCommand : (current.luykeCommand || 'bclk'),
     };
 
     const nextMap = { ...store.map, [areaId]: nextSetting };
@@ -175,6 +203,7 @@ export async function saveAutoReportImagesToFirebase(params: {
     images: { reportKey: string; blob: Blob; fileName?: string }[];
     user: any;
     departmentId?: string | null;
+    customCommands?: string[];
 }): Promise<{ ok: boolean; count: number; commands: string[] }> {
     if (!params.images || params.images.length === 0) {
         return { ok: false, count: 0, commands: [] };
@@ -248,12 +277,30 @@ export async function saveAutoReportImagesToFirebase(params: {
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
     const nowIso = now.toISOString();
-    const modeLabel = params.mode === 'luyke' ? 'LŨY KẾ' : 'REALTIME';
-    const targetCmd = params.mode === 'luyke' ? 'bclk' : 'bcrt';
+    const defaultCmd = params.mode === 'luyke' ? 'bclk' : 'bcrt';
     const summaryTitle = uploadedImages.map((u) => u.reportKey).join(', ');
 
-    const docPayload = {
-        command: targetCmd,
+    // 1. Gom tất cả custom commands (từ params và từ cấu hình các khu vực được xuất)
+    const customCmdSet = new Set<string>();
+    if (params.customCommands && params.customCommands.length > 0) {
+        params.customCommands.forEach(c => {
+            parseCommands(c, defaultCmd).forEach(parsed => customCmdSet.add(parsed));
+        });
+    }
+
+    for (const item of uploadedImages) {
+        const areaCfg = getAreaExportSetting(item.reportKey);
+        const configuredCmdStr = params.mode === 'luyke' ? areaCfg.luykeCommand : areaCfg.realtimeCommand;
+        if (configuredCmdStr) {
+            parseCommands(configuredCmdStr, defaultCmd).forEach(parsed => customCmdSet.add(parsed));
+        }
+    }
+
+    // 2. Danh sách lệnh tổng thể: [defaultCmd, 'bc', ...customCmdSet]
+    const allTargetCommands = Array.from(new Set([defaultCmd, 'bc', ...customCmdSet]));
+
+    // 3. Chuẩn bị payload cơ sở (gửi toàn bộ ảnh cho defaultCmd và 'bc')
+    const basePayload = {
         reportKey: summaryTitle,
         imageUrl: uploadedImages[0].imageUrl,
         previewUrl: uploadedImages[0].previewUrl,
@@ -264,23 +311,49 @@ export async function saveAutoReportImagesToFirebase(params: {
         ...(uid ? { updatedBy: uid } : {}),
     };
 
-    const targetCommands = [targetCmd, 'bc'];
+    const commandPayloads = new Map<string, typeof basePayload & { command: string }>();
+    for (const cmd of allTargetCommands) {
+        commandPayloads.set(cmd, { ...basePayload, command: cmd });
+    }
+
+    // 4. Nếu khu vực có lệnh riêng (khác bcrt/bclk/bc), gán ảnh chuyên biệt của khu vực đó cho lệnh đó
+    for (const item of uploadedImages) {
+        const areaCfg = getAreaExportSetting(item.reportKey);
+        const configuredCmdStr = params.mode === 'luyke' ? areaCfg.luykeCommand : areaCfg.realtimeCommand;
+        if (configuredCmdStr) {
+            const areaCmds = parseCommands(configuredCmdStr, defaultCmd);
+            for (const ac of areaCmds) {
+                if (ac !== 'bc' && ac !== defaultCmd) {
+                    commandPayloads.set(ac, {
+                        command: ac,
+                        reportKey: item.reportKey,
+                        imageUrl: item.imageUrl,
+                        previewUrl: item.previewUrl,
+                        images: [item],
+                        caption: `📊 ${item.reportKey} — cập nhật ${timeStr}`,
+                        mode: params.mode,
+                        updatedAt: nowIso,
+                        ...(uid ? { updatedBy: uid } : {}),
+                    });
+                }
+            }
+        }
+    }
 
     try {
         const botIdList = Array.from(targetBotIds);
+        const entries = Array.from(commandPayloads.entries());
+
         await Promise.all(
             botIdList.flatMap((bId) =>
-                targetCommands.map((cmd) =>
-                    setDoc(doc(db, 'line_bots', bId, 'report_commands', cmd), {
-                        ...docPayload,
-                        command: cmd,
-                    }, { merge: true })
+                entries.map(([cmd, payload]) =>
+                    setDoc(doc(db, 'line_bots', bId, 'report_commands', cmd), payload, { merge: true })
                 )
             )
         );
 
-        console.info(`[AutoExport] Đã lưu ${uploadedImages.length} ảnh cho lệnh "${targetCmd}" và "bc" trên các Bot [${botIdList.join(', ')}]`);
-        return { ok: true, count: uploadedImages.length, commands: targetCommands };
+        console.info(`[AutoExport] Đã lưu ${uploadedImages.length} ảnh cho các lệnh [${allTargetCommands.join(', ')}] trên các Bot [${botIdList.join(', ')}]`);
+        return { ok: true, count: uploadedImages.length, commands: allTargetCommands };
     } catch (err) {
         console.error('[AutoExport] Lỗi lưu Firestore report_commands:', err);
         return { ok: false, count: uploadedImages.length, commands: [] };
@@ -334,8 +407,12 @@ export async function triggerYcxAutoReportExport(
 
         if (res.ok) {
             const cmdName = mode === 'luyke' ? 'bclk' : 'bcrt';
+            const extraCmds = res.commands.filter(c => c !== 'bc' && c !== cmdName);
+            const cmdMsg = extraCmds.length > 0
+                ? `Lệnh "${cmdName}", "${extraCmds.join('", "')}" & "bc"`
+                : `Lệnh "${cmdName}" / "bc"`;
             toast.success(
-                `🤖 Đã tự động lưu ${res.count} ảnh báo cáo lên Bot LINE (Lệnh "${cmdName}" / "bc")`,
+                `🤖 Đã tự động lưu ${res.count} ảnh báo cáo lên Bot LINE (${cmdMsg})`,
                 { duration: 4000 }
             );
         }
@@ -399,8 +476,12 @@ export async function triggerBiAutoReportExport(
 
         if (res.ok) {
             const cmdName = mode === 'luyke' ? 'bclk' : 'bcrt';
+            const extraCmds = res.commands.filter(c => c !== 'bc' && c !== cmdName);
+            const cmdMsg = extraCmds.length > 0
+                ? `Lệnh "${cmdName}", "${extraCmds.join('", "')}" & "bc"`
+                : `Lệnh "${cmdName}" / "bc"`;
             toast.success(
-                `🤖 Đã tự động lưu ${res.count} ảnh Report BI lên Bot LINE (Lệnh "${cmdName}" / "bc")`,
+                `🤖 Đã tự động lưu ${res.count} ảnh Report BI lên Bot LINE (${cmdMsg})`,
                 { duration: 4000 }
             );
         }

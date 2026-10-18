@@ -129,7 +129,7 @@ export const BonusView: React.FC<{
                         variant="unstyled"
                         size="none"
                         onClick={() => { setHrmWindowRef(window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank')); onBatchUpdate(); }}
-                        className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-md transition-all active:scale-95 shrink-0"
+                        className="ycx-hit inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-3 sm:px-3.5 text-[11px] sm:text-xs font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-full transition-all active:scale-95 shrink-0"
                     >
                         <AppIcon name="upload" size="md" />
                         <span>Thủ công</span>
