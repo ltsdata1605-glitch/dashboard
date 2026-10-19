@@ -10,6 +10,7 @@ import { getExportFilenamePrefix, getRowValue, sanitizeFilename } from '../../ut
 import { COL, DATA_STATUS_COLORS } from '../../constants';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
+import { ActionMenu, type ActionMenuItem } from '../shared/ui/ActionMenu';
 import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
 import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
 
@@ -291,6 +292,30 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
 
     const activeTable = tables.find(t => t.id === activeTableId);
 
+    const crudMenuItems = useMemo<ActionMenuItem[]>(() => [
+        {
+            id: 'add-table',
+            label: 'Thêm Bảng Mới',
+            icon: 'add',
+            onSelect: () => setModalState({ type: 'ADD' }),
+        },
+        ...(activeTable ? [
+            {
+                id: 'edit-table',
+                label: `Sửa Bảng "${activeTable.tableName}"`,
+                icon: 'edit' as const,
+                onSelect: () => setModalState({ type: 'EDIT', data: activeTable }),
+            },
+            {
+                id: 'delete-table',
+                label: `Xóa Bảng "${activeTable.tableName}"`,
+                icon: 'delete' as const,
+                destructive: true,
+                onSelect: () => setModalState({ type: 'DELETE', data: activeTable }),
+            },
+        ] : []),
+    ], [activeTable]);
+
     return (
         <div ref={ref}>
             {/* Merged Header */}
@@ -305,20 +330,14 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         </div>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-1.5 hide-on-export shrink-0">
-                        {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
-                            <AppIcon name="add" size="md" />
-                        </Button>
-                        {activeTable && (
-                            <>
-                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
-                                    <AppIcon name="edit" size="md" />
-                                </Button>
-                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
-                                    <AppIcon name="delete" size="md" />
-                                </Button>
-                            </>
-                        )}
+                        {/* Menu thao tác Bảng: Thêm, Sửa, Xoá gom gọn vào nút dấu 3 chấm chuẩn như Topbar */}
+                        <ActionMenu
+                            items={crudMenuItems}
+                            title="Tùy chọn Bảng 7 Ngày"
+                            label="Tùy chọn Bảng"
+                            data-testid="h2h-crud-action-menu"
+                            triggerClassName="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        />
 
                         {/* Separator */}
                         <div className="w-px h-4 lg:h-5 bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1" />

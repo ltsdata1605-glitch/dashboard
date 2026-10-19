@@ -28,7 +28,7 @@ import {
   Columns2, Compass, Contact, Copy, CornerDownLeft, Cpu, CreditCard, Crown, Database, Download, Droplets,
   EllipsisVertical, ExternalLink, Eye, EyeOff, Factory, Fan, FastForward, FileCheck, FileKey2, FilePlus, FileScan,
   FileSpreadsheet, FileText, Film, Filter, Flame, Flashlight, FlashlightOff, FolderOpen, GalleryHorizontalEnd,
-  Gamepad2, Gift, Glasses, Globe, GripVertical, HardDrive, Hash, Headphones, History, House, Image, ImageDown,
+  Gamepad2, Gift, Glasses, Globe, GripVertical, HardDrive, Hash, Headphones, History, Hourglass, House, Image, ImageDown,
   Images, Inbox, Info, Italic, Key, Keyboard, Laptop, Layers, LayoutDashboard, LayoutGrid, LayoutTemplate, Lightbulb,
   Link, List, LoaderCircle, Lock, LogIn, LogOut, Mail, MapPin, Maximize2, Medal, Megaphone, MemoryStick, Menu,
   MessageCircle, Mic, Minimize2, Minus, MousePointer2, MousePointerClick, Package, PackageX, Paintbrush, Palette,
@@ -139,6 +139,8 @@ export const ICON_REGISTRY = {
   checkboxOff: Square,
   live: Radio,                       // chế độ Realtime / trực tiếp
   clock: Clock,                      // thời gian / cùng kỳ
+  hourglass: Hourglass,              // thời gian / chỉ tiêu còn lại (Report BI)
+  remaining: Hourglass,
   schedule: CalendarClock,           // hẹn giờ, lịch tự động
   calendar: Calendar,
   dateRange: CalendarRange,          // khoảng ngày / luỹ kế

@@ -482,7 +482,7 @@ const buildRevenueRowsFromMap = (dataMap: SingleRevenueParsedMap): RevenueRow[] 
         donGia: 0
     };
     totalRow.hieuQuaQD = calculateHieuQuaQDFraction(totalRow.dtqd, totalRow.dtlk);
-    if (totalRow.dtlk > 0 || totalRow.dtqd > 0 || totalRow.soLuong > 0) {
+    if (totalRow.dtlk > 0 || totalRow.dtqd > 0 || (totalRow.soLuong || 0) > 0) {
         rows.push(totalRow);
     }
 
@@ -550,9 +550,11 @@ export const mergeRevenueData = (thucRaw?: string, qdRaw?: string): RevenueRow[]
     const tMap = thucMap!;
     const qMap = qdMap!;
 
+    type ParsedEmpItem = SingleRevenueParsedMap['empMap'] extends Map<any, infer V> ? V : never;
+
     // Tạo chỉ mục phụ cho bảng Quy đổi theo empId và canonicalName
-    const qdById = new Map<string, typeof qMap.empMap extends Map<any, infer V> ? V : never>();
-    const qdByCanonical = new Map<string, typeof qMap.empMap extends Map<any, infer V> ? V : never>();
+    const qdById = new Map<string, ParsedEmpItem>();
+    const qdByCanonical = new Map<string, ParsedEmpItem>();
     for (const [key, item] of qMap.empMap.entries()) {
         if (item.empId) qdById.set(item.empId, item);
         qdByCanonical.set(item.canonicalName.toLowerCase(), item);
@@ -564,7 +566,7 @@ export const mergeRevenueData = (thucRaw?: string, qdRaw?: string): RevenueRow[]
 
     // 1. Duyệt tất cả nhân viên trong bảng Thực
     for (const [tKey, tItem] of tMap.empMap.entries()) {
-        let qItem: typeof qMap.empMap extends Map<any, infer V> ? V : undefined;
+        let qItem: ParsedEmpItem | undefined = undefined;
 
         if (tItem.empId && qdById.has(tItem.empId)) {
             qItem = qdById.get(tItem.empId);
@@ -657,7 +659,7 @@ export const mergeRevenueData = (thucRaw?: string, qdRaw?: string): RevenueRow[]
     }
 
     const rows: RevenueRow[] = [];
-    if (totalRow.dtlk > 0 || totalRow.dtqd > 0 || totalRow.soLuong > 0) {
+    if (totalRow.dtlk > 0 || totalRow.dtqd > 0 || (totalRow.soLuong || 0) > 0) {
         rows.push(totalRow);
     }
     for (const dept of deptMap.values()) {

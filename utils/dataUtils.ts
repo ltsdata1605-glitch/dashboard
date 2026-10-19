@@ -465,6 +465,13 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
     if (!name) return '';
     if (overrides && overrides[name]) return overrides[name];
 
+    // Khử tiền tố tháng ở đầu (ví dụ: T10/, T09/, T09/T10, T10 , T10- ...) để tên nhóm thi đua ngắn gọn, không bị lặp
+    const cleanName = name
+        .replace(/^(?:T\d{1,2}[\/\s-]+)+/i, '')
+        .trim();
+
+    if (overrides && overrides[cleanName]) return overrides[cleanName];
+
     const rules: { [key: string]: string } = {
         'Thi đua Iphone 17 series': 'IPHONE 17',
         'BÁN HÀNG PANASONIC': 'Panasonic',
@@ -501,12 +508,20 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
         'THI ĐUA ĐIỆN GIA DỤNG': 'TĐ Gia Dụng',
         'THI ĐUA DỊCH VỤ': 'TĐ Dịch Vụ',
         'CE - THI ĐUA HÃNG': 'TĐ Hãng',
+        'NẠP/RÚT TIỀN TÀI KHOẢN NGÂN HÀNG': 'Nạp/Rút NH',
+        'BẢO HIỂM THỢ ĐMX_CE': 'BH Thợ ĐMX',
+        'BẢO HIỂM THỢ ĐMX_ICT': 'BH Thợ ĐMX_ICT',
+        'TABLET ANDROID VÀ MÁY ĐỌC SÁCH': 'Tab Android/MĐS',
+        'ĐIỆN THOẠI/TABLET ANDROID': 'ĐT/Tab Android',
+        'TC FECREDIT, SHINHAN, SAMSUNG FINANCE/': 'TC FE/Shinhan/SS Fin',
+        'TC FECREDIT, SHINHAN, SAMSUNG FINANCE': 'TC FE/Shinhan/SS Fin',
     };
 
     if (rules[name]) return rules[name];
+    if (rules[cleanName]) return rules[cleanName];
 
     // Dynamic replacement for common long strings and separators
-    let processed = name;
+    let processed = cleanName || name;
     const wordReplacements: Record<string, string> = {
         'MOBIFONE': 'Mobi',
         'VINAPHONE': 'Vina',
@@ -519,7 +534,26 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
         'ĐỒNG HỒ': 'ĐH',
         'THI ĐUA': 'TĐ',
         'DOANH THU': 'DT',
-        'TRẢ CHẬM': 'TC'
+        'TRẢ CHẬM': 'TC',
+        'TRẢ GÓP': 'TG',
+        'ĐIỆN THOẠI': 'ĐT',
+        'ĐIỆN TỬ': 'ĐTử',
+        'ĐIỆN LẠNH': 'ĐLạnh',
+        'GIA DỤNG': 'GD',
+        'BẢO HIỂM': 'BH',
+        'MÁY ĐỌC SÁCH': 'MĐS',
+        'TÀI KHOẢN NGÂN HÀNG': 'TK NH',
+        'NGÂN HÀNG': 'NH',
+        'NẠP/RÚT TIỀN': 'Nạp/Rút',
+        'NẠP RÚT TIỀN': 'Nạp/Rút',
+        'FECREDIT': 'FE',
+        'FE CREDIT': 'FE',
+        'HOMECREDIT': 'HC',
+        'HOME CREDIT': 'HC',
+        'SAMSUNG FINANCE': 'SS Fin',
+        'TABLET': 'Tab',
+        'SMARTPHONE': 'Smart',
+        'MÁY LỌC NƯỚC': 'MLN',
     };
 
     Object.keys(wordReplacements).forEach(word => {
@@ -534,6 +568,13 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
         .replace(/\s*-\s*/g, '/');
 
     processed = processed.replace(/\/+/g, '/').trim();
+
+    // Dọn dẹp SERIES và IPHONE DUO
+    processed = processed.replace(/\s*SERIES/gi, '');
+    processed = processed.replace(/\s*,?\s*IPHONE DUO/gi, '/Duo');
+
+    // Dọn dẹp dấu gạch chéo hoặc dấu phẩy thừa ở cuối chuỗi (ví dụ: SAMSUNG FINANCE/)
+    processed = processed.replace(/[\/,\-_\s]+$/, '').trim();
 
     if (processed !== name) {
         return processed;

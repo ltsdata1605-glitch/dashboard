@@ -79,7 +79,7 @@ for (const [label, width, px, tap] of [['iPhone 390', 390, 18, 32], ['laptop 136
         const icons = await doThanh(page);
         expect(icons, 'không thấy thanh công cụ Doanh thu').not.toBeNull();
         const names = icons!.map((i) => i.name);
-        for (const n of ['clock', 'checkboxOff', 'live', 'exportBatch', 'exportImage']) expect(names).toContain(n);
+        for (const n of ['clock', 'hourglass', 'live', 'exportBatch', 'exportImage']) expect(names).toContain(n);
         expect(names.some((n) => n === 'viewGrid' || n === 'viewList')).toBe(true);
 
         for (const i of icons!) {
@@ -93,12 +93,12 @@ for (const [label, width, px, tap] of [['iPhone 390', 390, 18, 32], ['laptop 136
             }
         }
 
-        // Bấm "Còn lại" → ô tích chuyển sang trạng thái đã tích, vẫn cùng cỡ.
+        // Bấm "Còn lại" → nút chuyển sang trạng thái active, icon hourglass vẫn cùng cỡ.
         await page.getByRole('button', { name: 'Còn lại' }).click();
         const sau = await doThanh(page);
-        const tick = sau!.find((i) => i.name === 'checkboxOn');
-        expect(tick, 'ô tích phải chuyển sang đã tích').toBeTruthy();
-        expect([tick!.w, tick!.h]).toEqual([px, px]);
+        const remainingIcon = sau!.find((i) => i.name === 'hourglass');
+        expect(remainingIcon, 'icon còn lại phải tồn tại').toBeTruthy();
+        expect([remainingIcon!.w, remainingIcon!.h]).toEqual([px, px]);
 
         const bar = page.locator('.no-print', { has: page.getByRole('button', { name: 'Realtime' }) }).first();
         await bar.screenshot({ path: `test-results/icon-thanh-bi-${width}.png` });

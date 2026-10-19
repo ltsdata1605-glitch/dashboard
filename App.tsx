@@ -393,7 +393,7 @@ function AppContent() {
                     {/* --dock-left / --dock-right: bề rộng 2 dock nổi laptop (left-8 + 56px + khe 8px; right-7 + 48px thu gọn) — trang tràn
                         ngang dùng qua lớp `ycx-tranh-dock` (styles.css) để không bị dock che. */}
                     <div
-                        className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-[calc(64px+env(safe-area-inset-bottom,0px))] lg:pb-0'} flex flex-col`}
+                        className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-[calc(52px+env(safe-area-inset-bottom,0px))] lg:pb-0'} flex flex-col`}
                         style={{ '--dock-left': isDesktopMenuOpen ? '96px' : '0px', '--dock-right': '84px' } as React.CSSProperties}
                     >
                         <ErrorBoundary name="MainContent">

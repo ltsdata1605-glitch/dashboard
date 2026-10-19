@@ -86,11 +86,12 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                     {/* Điện thoại (GĐ6): chỉ còn icon đồng hồ — chữ "THỜI GIAN" + "30/31" + "97%" không vừa ô 130px ở thanh công cụ
                         Thi đua, số bị chồng lên nhau ("39/31"). Từ sm hiện đủ "Quỹ thời gian". */}
-                    <div role="img" aria-label="Quỹ thời gian" title="Quỹ thời gian" className="flex items-center gap-1 sm:gap-1.5 px-1 sm:px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40 rounded-md shrink-0 whitespace-nowrap">
-                        <AppIcon name="clock" size="sm" className="text-sky-600" />
-                        <span className="hidden sm:inline text-[11px] font-bold text-sky-900 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
-                            Quỹ thời gian
+                    <div role="img" aria-label="Quỹ thời gian" title="Quỹ thời gian" className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                        <span className="relative flex h-2 w-2 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                         </span>
+                        <AppIcon name="clock" size="sm" className="text-sky-600 dark:text-sky-400 shrink-0" />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap shrink-0">
                         {progressData.isRealtime ? (

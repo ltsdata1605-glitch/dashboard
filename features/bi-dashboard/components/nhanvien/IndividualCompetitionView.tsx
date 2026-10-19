@@ -749,24 +749,27 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         allEmployees={allEmployees}
                         onSelectIndividual={onSelectIndividual}
                     />
-                    <div className="overflow-hidden">
-                        <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-                            <table className="w-full border-collapse compact-export-table">
+                    <div className="overflow-x-auto hide-scrollbar touch-auto">
+                        <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-none sm:rounded-lg overflow-hidden">
+                            <table className="w-full table-fixed border-collapse compact-export-table">
                                 <thead>
                                     <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
-                                        <th className="text-center px-2 py-[5px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-10">#</th>
+                                        <th className="w-7 sm:w-8 text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[11px]">#</th>
                                         <th
-                                            className={`text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap transition-colors ${
+                                            className={`min-w-0 text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle transition-colors ${
                                                 sortConfig?.key === 'name'
                                                     ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
                                                     : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                             }`}
                                             onClick={() => handleSort('name')}
                                         >
-                                            NHÓM THI ĐUA {renderSortIcon('name')}
+                                            <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
+                                                <span className="truncate">NHÓM THI ĐUA</span>
+                                                {renderSortIcon('name')}
+                                            </div>
                                         </th>
                                         <th
-                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                            className={`w-[46px] sm:w-[54px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
                                                 sortConfig?.key === 'actual'
                                                     ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
                                                     : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
@@ -776,7 +779,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                             LUỸ<br/>KẾ {renderSortIcon('actual')}
                                         </th>
                                         <th
-                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                            className={`w-[42px] sm:w-[50px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
                                                 sortConfig?.key === 'target'
                                                     ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
                                                     : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
@@ -786,7 +789,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                             TAR {renderSortIcon('target')}
                                         </th>
                                         <th
-                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                            className={`w-[48px] sm:w-[56px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
                                                 sortConfig?.key === 'dkht'
                                                     ? 'bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 font-black'
                                                     : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
@@ -797,7 +800,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                             %DKHT {renderSortIcon('dkht')}
                                         </th>
                                         <th
-                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                            className={`w-[44px] sm:w-[52px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
                                                 sortConfig?.key === 'remaining'
                                                     ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
                                                     : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
@@ -824,7 +827,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                         return (
                                             <tbody key={groupKey}>
                                                 <tr className={`${palette.bgRow} ${palette.border}`}>
-                                                    <td colSpan={100} className="px-2.5 py-[3px]">
+                                                    <td colSpan={6} className="px-2.5 py-[3px]">
                                                         <div className="flex items-center justify-between gap-2 flex-wrap">
                                                             <div className="flex items-center gap-2">
                                                                 <div className={`w-2.5 h-2.5 rounded-xs ${palette.square} shrink-0`}></div>
@@ -868,22 +871,27 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
                                                     return (
                                                         <tr key={`${groupKey}-${item.originalTitle}`} className={`border-l-[3px] ${stripeClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
-                                                            <td className="px-2 py-[3px] text-center text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
+                                                            <td className="px-0.5 sm:px-1 py-[3px] text-center text-[11px] sm:text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
                                                                 {(index + 1).toString().padStart(2, '0')}
                                                             </td>
-                                                            <td className="px-2 py-[3px] text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight text-left">
-                                                                {item.name}
+                                                            <td 
+                                                                className="px-1.5 sm:px-2 py-[3px] text-[11.5px] sm:text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 uppercase tracking-tight text-left min-w-0 overflow-hidden"
+                                                                title={item.originalTitle || item.name}
+                                                            >
+                                                                <span className="block truncate" title={item.originalTitle || item.name}>
+                                                                    {item.name}
+                                                                </span>
                                                             </td>
-                                                            <td className="px-2 py-[3px] text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
+                                                            <td className="px-0.5 sm:px-1 py-[3px] text-center text-[12px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
                                                                 {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(item.actual))}
                                                             </td>
-                                                            <td className="px-2 py-[3px] text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
+                                                            <td className="px-0.5 sm:px-1 py-[3px] text-center text-[12px] sm:text-[13px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums">
                                                                 {hasTarget ? new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(item.target)) : '-'}
                                                             </td>
-                                                            <td className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${dkhtColor}`}>
+                                                            <td className={`px-0.5 sm:px-1 py-[3px] text-center text-[12px] sm:text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${dkhtColor}`}>
                                                                 {hasTarget && daysPassed > 0 ? `${roundUp(dkhtVal)}%` : (item.actual > 0 ? '100%' : '0%')}
                                                             </td>
-                                                            <td className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${remainingColor}`}>
+                                                            <td className={`px-0.5 sm:px-1 py-[3px] text-center text-[12px] sm:text-[13px] font-bold whitespace-nowrap tabular-nums ${remainingColor}`}>
                                                                 {new Intl.NumberFormat('vi-VN').format(Math.ceil(item.remaining))}
                                                             </td>
                                                         </tr>

@@ -550,7 +550,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                 onClearSalesData={handleSalesDataClear}
                                 salesClearTitle={salesClearTitle}
                             />
-                            <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
+                            <main id="dashboard-container" className="pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-0.5 lg:py-1 space-y-3 lg:space-y-4">
 
                                     {/* Cloud Data Sync Banner — Hiển thị trên 1 dòng nhỏ gọn, nằm ngay dưới thông báo đỏ */}

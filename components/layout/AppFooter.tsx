@@ -16,7 +16,7 @@ export const AppFooter: React.FC<AppFooterProps> = React.memo(({ className }) =>
     const { totalVisits, onlineUsers } = useSystemTraffic();
 
     return (
-        <footer className={`w-full mt-auto pt-8 pb-5 px-4 flex flex-col items-center justify-center gap-2 select-none hide-on-export ${className || ''}`}>
+        <footer className={`w-full mt-auto pt-3 sm:pt-4 pb-2 sm:pb-3 px-4 flex flex-col items-center justify-center gap-1.5 select-none hide-on-export ${className || ''}`}>
             {/* Apple-style Capsule Badge */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 backdrop-blur-md shadow-2xs text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 transition-all hover:bg-slate-100 dark:hover:bg-slate-800">
                 {/* Online status */}

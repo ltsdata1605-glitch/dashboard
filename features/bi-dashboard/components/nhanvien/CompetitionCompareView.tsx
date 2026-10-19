@@ -66,9 +66,9 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
 
     // Epsilon tránh sai số dấu phẩy động (vd 2000/3000*100 vs 4000/6000*100) hiển thị nhầm
     // "+0%" thay vì "Hòa" dù 2 tỉ lệ về mặt toán học là bằng nhau.
-    if (diff > 1e-9) return <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 tabular-nums">◀ +{formatDiff(diff)}</span>;
-    if (diff < -1e-9) return <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 tabular-nums">+{formatDiff(Math.abs(diff))} ▶</span>;
-    return <span className="text-[11px] font-bold text-slate-400">Hòa</span>;
+    if (diff > 1e-9) return <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 tabular-nums whitespace-nowrap">◀ +{formatDiff(diff)}</span>;
+    if (diff < -1e-9) return <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 tabular-nums whitespace-nowrap">+{formatDiff(Math.abs(diff))} ▶</span>;
+    return <span className="text-[11px] font-bold text-slate-400 whitespace-nowrap">Hòa</span>;
 };
 
 const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmployees?: RevenueRow[] }> = ({ emp, colorClass, fallbackEmployees }) => {
@@ -507,15 +507,16 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     </div>
 
                     {/* Detailed Competition Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    {/* Detailed Competition Table */}
+                    <div className="overflow-x-auto hide-scrollbar touch-auto">
+                        <table className="w-full table-fixed text-left border-collapse compact-export-table">
                             <thead>
                                 <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                                    <th className="px-2 sm:px-4 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 w-8 sm:w-10 text-center">#</th>
-                                    <th className="px-2 sm:px-4 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300">Chương trình thi đua</th>
-                                    <th className="px-1.5 sm:px-2 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-20 sm:w-24 truncate">{empA.name.split(' ').pop()}</th>
-                                    <th className="px-1.5 sm:px-2 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center w-20 sm:w-28">Chênh Lệch</th>
-                                    <th className="px-1.5 sm:px-2 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-20 sm:w-24 truncate">{empB.name.split(' ').pop()}</th>
+                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 w-7 sm:w-8 text-center">#</th>
+                                    <th className="px-2 sm:px-3 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 min-w-0">Chương trình thi đua</th>
+                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-[52px] sm:w-[64px] truncate" title={empA.name}>{empA.name.split(' ').pop()}</th>
+                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center w-[64px] sm:w-[76px] whitespace-nowrap">Chênh Lệch</th>
+                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-[52px] sm:w-[64px] truncate" title={empB.name}>{empB.name.split(' ').pop()}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -527,27 +528,27 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                         return (
                                             <React.Fragment key={crit}>
                                                 <tr className={`${cStyle.bg}`}>
-                                                    <td colSpan={5} className={`px-4 py-1 text-[11px] font-black uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
+                                                    <td colSpan={5} className={`px-2.5 sm:px-4 py-1 text-[11px] font-black uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
                                                         <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {crit}
                                                     </td>
                                                 </tr>
                                                 {critRows.map((row, idx) => (
                                                     <tr key={`${row.criterion}-${row.originalTitle}`} className="border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                                                        <td className="px-4 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">#{idx + 1}</td>
-                                                        <td className="px-4 py-1 border-r border-slate-100 dark:border-slate-800/50">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200 uppercase">{row.name}</span>
-                                                            </div>
+                                                        <td className="px-1 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50 tabular-nums">#{idx + 1}</td>
+                                                        <td className="px-1.5 sm:px-2 py-1 border-r border-slate-100 dark:border-slate-800/50 min-w-0 overflow-hidden">
+                                                            <span className="block truncate text-[11px] sm:text-[12px] font-bold text-slate-800 dark:text-slate-200 uppercase leading-snug" title={row.originalTitle}>
+                                                                {row.name}
+                                                            </span>
                                                         </td>
-                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">
+                                                        <td className="px-0.5 sm:px-1 py-1 text-center text-[12px] sm:text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10 tabular-nums whitespace-nowrap">
                                                             {displayMode === 'pct' ? `${row.pctA.toFixed(0)}%` : fMoney.format(row.actualA)}
                                                         </td>
-                                                        <td className="px-2 py-1 text-center">
+                                                        <td className="px-0.5 sm:px-1 py-1 text-center tabular-nums whitespace-nowrap">
                                                             <div className="flex justify-center">
                                                                 <DeltaBadge a={displayMode === 'pct' ? row.pctA : row.actualA} b={displayMode === 'pct' ? row.pctB : row.actualB} mode={displayMode} />
                                                             </div>
                                                         </td>
-                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10">
+                                                        <td className="px-0.5 sm:px-1 py-1 text-center text-[12px] sm:text-[13px] font-black text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10 tabular-nums whitespace-nowrap">
                                                             {displayMode === 'pct' ? `${row.pctB.toFixed(0)}%` : fMoney.format(row.actualB)}
                                                         </td>
                                                     </tr>

@@ -104,6 +104,8 @@ export const LEGACY_ICON_NAMES: Record<string, IconName> = {
   'headphones': 'headphones',
   'help-circle': 'help',
   'history': 'history',
+  'hourglass': 'hourglass',
+  'remaining': 'remaining',
   'images': 'exportBatch',
   'inbox': 'empty',
   'info': 'info',

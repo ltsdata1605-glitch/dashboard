@@ -8,6 +8,7 @@ import HeadToHeadTab from './HeadToHeadTab';
 import ContestTable from './ContestTable';
 import type { ExploitationData, CustomContestTab, CustomExploitationTabConfig, DataRow, Employee, EmployeeData, ProductConfig, ContestTableConfig, ModalState } from '../../types';
 import { Button } from '../shared/ui/Button';
+import { ActionMenu } from '../shared/ui/ActionMenu';
 import type { Tab } from './EmployeeAnalysisTabs';
 
 type ColorTheme = { header: string; activeTab: string; row: string; border: string };
@@ -234,22 +235,37 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                                     <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
                                 </div>
                             </div>
-                            <div className="px-1.5 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
-                                <div className="flex items-center gap-0.5 sm:gap-1.5 flex-wrap">
-                                    <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} title="Tạo Bảng Thi Đua Mới" className="p-1.5 lg:p-2 text-slate-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all">
-                                        <AppIcon name="add" size="md" />
-                                    </Button>
-                                    <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT_TAB', data: { tabId: customTab.id, initialName: customTab.name, initialIcon: customTab.icon }})} title="Sửa Tên Tab" className="p-1.5 lg:p-2 text-slate-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all">
-                                        <AppIcon name="edit" size="md" />
-                                    </Button>
-                                    <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'CONFIRM_DELETE_TAB', data: { tabId: customTab.id, tabName: customTab.name }})} title="Xóa Tab" className="p-1.5 lg:p-2 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg sm:rounded-xl transition-all">
-                                        <AppIcon name="delete" size="md" />
-                                    </Button>
-                                    <div className="h-4 sm:h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
-                                    <Button variant="unstyled" size="none" onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="p-1.5 lg:p-2 text-slate-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all">
-                                        {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
-                                    </Button>
-                                </div>
+                            <div className="flex items-center gap-1.5 hide-on-export shrink-0">
+                                <ActionMenu
+                                    items={[
+                                        {
+                                            id: 'create-table',
+                                            label: 'Tạo Bảng Thi Đua Mới',
+                                            icon: 'add',
+                                            onSelect: () => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }}),
+                                        },
+                                        {
+                                            id: 'edit-tab',
+                                            label: 'Sửa Tên Tab',
+                                            icon: 'edit',
+                                            onSelect: () => setModalState({ type: 'EDIT_TAB', data: { tabId: customTab.id, initialName: customTab.name, initialIcon: customTab.icon }}),
+                                        },
+                                        {
+                                            id: 'delete-tab',
+                                            label: 'Xóa Tab Này',
+                                            icon: 'delete',
+                                            destructive: true,
+                                            onSelect: () => setModalState({ type: 'CONFIRM_DELETE_TAB', data: { tabId: customTab.id, tabName: customTab.name }}),
+                                        },
+                                    ]}
+                                    title={`Tùy chọn ${customTab.name}`}
+                                    label="Tùy chọn Tab"
+                                    triggerClassName="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                />
+                                <div className="h-4 sm:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
+                                <Button variant="unstyled" size="none" onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all disabled:opacity-40">
+                                    {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
+                                </Button>
                             </div>
                         </div>
                         {customTab.tables.length === 0 ? (

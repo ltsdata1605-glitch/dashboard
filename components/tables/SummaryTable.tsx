@@ -138,7 +138,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
     const fullScreenClasses = isFullScreen
         ? `${FULLSCREEN_LAYER_CLASS} z-[1000] bg-white dark:bg-slate-900 overflow-y-auto w-full h-full p-4 custom-scrollbar`
-        : `bg-white dark:bg-slate-900 shadow-sm lg:hover:shadow-md border-y lg:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-sky-100 dark:border-sky-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
+        : `bg-white dark:bg-slate-900 shadow-sm lg:hover:shadow-md border-y lg:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-sky-100 dark:border-sky-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-2 sm:mb-4 transition-all duration-300`;
 
     return (
         <>

@@ -843,40 +843,40 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     </div>
                 </SectionHeader>
 
-                {/* Thanh Bar Quỹ Thời Gian (Đồng bộ style với Design System & Bảng dữ liệu) */}
+                {/* Thanh Quỹ Thời Gian Hiện Đại & Tinh Gọn (Inline Modern Progress Strip) */}
                 <div 
-                    onDoubleClick={() => setIsStoreHoursModalOpen(true)}
-                    className="px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 border-b border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors select-none group hide-on-export"
-                    title="Nhấp đúp (2 cái) để thay đổi giờ Mở / Đóng cửa siêu thị"
+                    onClick={() => setIsStoreHoursModalOpen(true)}
+                    className="px-3 sm:px-4 lg:px-6 py-1.5 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 transition-all duration-200 cursor-pointer select-none group hide-on-export flex items-center gap-2.5 sm:gap-3"
+                    title={isLuyKe ? `Tiến độ tháng: ${daysPassed}/${daysInMonth} ngày (${Math.round(timeUsedPct)}%). Bấm để đổi giờ mở/đóng cửa siêu thị.` : `Quỹ thời gian hôm nay: ${storeHours.open} - ${storeHours.close} (Đã dùng ${Math.round(timeUsedPct)}%). Bấm để đổi giờ mở/đóng cửa.`}
                 >
-                    <div className="flex items-center justify-between mb-1.5 text-[11px] sm:text-xs">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded shrink-0">
-                                <AppIcon name="clock" size="xs" className="text-slate-400" />
-                                <span className="text-[11px] font-black uppercase tracking-wider">Quỹ thời gian</span>
-                            </div>
-                            <span className="text-[11px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
-                                ({storeHours.open} - {storeHours.close})
-                            </span>
-                            <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 hidden sm:inline">
-                                • Nhấp đúp để đổi giờ mở/đóng cửa
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-[11px] font-black text-sky-700 dark:text-sky-400 tabular-nums">
-                                {Math.round(timeUsedPct)}%
-                            </span>
-                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 hidden sm:inline">
-                                đã dùng
-                            </span>
-                        </div>
+                    {/* Cụm thông tin thời gian bên trái */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="relative flex h-2 w-2 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                        </span>
+                        <AppIcon name="clock" size="sm" className="text-sky-600 dark:text-sky-400 shrink-0" />
+                        <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 tabular-nums">
+                            {isLuyKe ? `${daysPassed}/${daysInMonth} ngày` : `${storeHours.open} – ${storeHours.close}`}
+                        </span>
+                        <span className="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                            <AppIcon name="edit" size="xs" />
+                        </span>
                     </div>
-                    {/* Progress Bar Container */}
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+
+                    {/* Thanh tiến độ ở giữa */}
+                    <div className="flex-1 min-w-[60px] bg-slate-200/70 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                         <div 
-                            className="bg-gradient-to-r from-sky-500 to-sky-600 h-full rounded-full transition-all duration-500" 
+                            className="bg-gradient-to-r from-sky-500 via-sky-500 to-blue-600 h-full rounded-full transition-all duration-500 shadow-2xs" 
                             style={{ width: `${Math.min(100, Math.max(0, timeUsedPct))}%` }}
                         />
+                    </div>
+
+                    {/* Tỷ lệ phần trăm bên phải */}
+                    <div className="flex items-baseline gap-0.5 shrink-0">
+                        <span className="text-[11px] sm:text-xs font-black text-sky-600 dark:text-sky-400 tabular-nums">
+                            {Math.round(timeUsedPct)}%
+                        </span>
                     </div>
                 </div>
 
