@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.32
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT, đợi có dữ liệu từng khu vực & tự động rà soát vét lại toàn cụm đảm bảo 100% có dữ liệu) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy; tự động điền mã bảo mật & tra cứu TNB Data trên admintnb.com/data
+// @version      7.34
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động cập nhật đầy đủ cả Doanh thu THỰC và Doanh thu QUY ĐỔI cho nhân viên, tự chọn DT thực & DT quy đổi & Trả góp & Chi tiết doanh thu, lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT, đợi có dữ liệu từng khu vực & tự động rà soát vét lại toàn cụm đảm bảo 100% có dữ liệu) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy; tự động điền mã bảo mật & tra cứu TNB Data trên admintnb.com/data
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
@@ -34,6 +34,18 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.34 — NÂNG CẤP TỰ ĐỘNG CẬP NHẬT REALTIME & LUỸ KẾ BI: THÊM DỮ LIỆU DT THỰC (2026-10-19):
+ * - Tự động cập nhật song song cả DOANH THU THỰC và DOANH THU QUY ĐỔI khi chạy tự động Realtime & Luỹ kế BI.
+ * - Direct API Engine: Tạo đồng thời bộ dữ liệu Thực (employeeThucByStore, employeeByStore) và bộ dữ liệu Quy đổi (employeeQdByStore), đổ đúng vào ô REALTIME / REALTIME QĐ và LUỸ KẾ / LUỸ KẾ QĐ.
+ * - UI Automation Fallback: Sau khi sao chép Doanh thu Quy đổi (kèm Chi tiết doanh thu), tự động chuyển toggle sang "DT thực" để sao chép tiếp Doanh thu Thực.
+ * - Tối ưu ensureToggleActive: Đảm bảo chuyển đổi hai chiều chính xác giữa "DT thực" và "DT quy đổi", kiểm tra trạng thái đối nghịch để kích hoạt toggle tin cậy.
+ *
+ * BẢN 7.33 — TỰ ĐỘNG CHECK "CHI TIẾT DOANH THU" KHI CHẠY REALTIME / LUỸ KẾ BI (2026-10-19):
+ * - Tự động nhận diện và kích hoạt nút toggle "Chi tiết doanh thu" (/html/body/div[1]/div[2]/div[4]/main/div/div/div[6]/div[2]/button[3]) khi chạy tự động Realtime (Bước 4) và Luỹ kế (Bước 3) trên trang baocao.dienmayxanh.com/dashboard/revenue-consolidated.
+ * - Hỗ trợ đầy đủ bộ nhận diện trạng thái: dấu checkmark ✓, class Tailwind (bg-blue-50, text-blue-700, border-blue-300...), thẻ span con border-blue-600 bg-blue-600 text-white, aria-pressed/data-state.
+ * - Bổ sung hàm ensureChiTietDoanhThuActive() và findChiTietDoanhThuButton() với độ ưu tiên kép: thử trực tiếp XPath chính xác và quét dự phòng fuzzy text / toggle candidates.
+ * - Đồng bộ ACP_AUTO_TOGGLES và Bookmarklet Auto Click+ 1-Click để tự động bật "Chi tiết doanh thu" khi người dùng thao tác sao chép tab Nhân viên.
+ *
  * BẢN 7.32 — TỰ ĐỘNG ĐIỀN MÃ BẢO MẬT & TRA CỨU TNB DATA (2026-10-16):
  * - Hỗ trợ trang https://admintnb.com/data/: Tự động nhận diện mã bảo mật từ Dashboard YCX (qua URL hash/param) hoặc bộ nhớ Tampermonkey.
  * - Tự động điền mã bảo mật vào ô <input id="mbm-code"> và tự động click <button id="mbm-btn">XÁC NHẬN</button>.
@@ -2020,7 +2032,7 @@
     return nodes.find((el) => aliases.includes(labelOf(el)))
       || nodes.find((el) => {
         const t = labelOf(el);
-        return aliases.some((a) => t.includes(a)) && t.length <= 24;
+        return aliases.some((a) => t.includes(a)) && t.length <= 32;
       })
       || null;
   }
@@ -2067,6 +2079,7 @@
   const ACP_AUTO_TOGGLES = [
     { label: 'Trả góp', aliases: ['trả góp', 'tra gop', 'trả chậm', 'tra cham'] },
     { label: 'DT quy đổi', aliases: ['dt quy đổi', 'dt quy doi', 'doanh thu quy đổi', 'dtqđ', 'dt qđ'] },
+    { label: 'Chi tiết doanh thu', aliases: ['chi tiết doanh thu', 'chi tiet doanh thu', 'chi tiết dt', 'chi tiet dt'], optional: true },
   ];
 
   /**
@@ -2081,10 +2094,20 @@
     for (const toggle of ACP_AUTO_TOGGLES) {
       const aliases = toggle.aliases || [toggle.label];
       const btn = acpFindToggleButton(aliases);
-      if (!btn) { notFound.push(toggle.label); continue; }
+      if (!btn) {
+        if (!toggle.optional) {
+          notFound.push(toggle.label);
+        }
+        continue;
+      }
       const state = acpToggleState(btn);
       if (state === 'on') continue;
-      if (state === 'unknown') { unknown.push(toggle.label); continue; }
+      if (state === 'unknown') {
+        if (!toggle.optional) {
+          unknown.push(toggle.label);
+        }
+        continue;
+      }
       if (onProgress) onProgress(toggle.label);
       btn.click();
       await acpWaitForSpinnersToClear(ACP_SPINNER_MAX_WAIT_MS, ACP_SPINNER_POLL_MS, ACP_TOGGLE_SETTLE_MS);
@@ -2549,8 +2572,8 @@
       btn.classList.contains('active');
 
     // Nếu đang muốn chọn "DT quy đổi", kiểm tra xem "DT thực" có đang chiếm active không
-    if (toggleName === 'DT quy đổi' || toggleName.toLowerCase().includes('quy đổi')) {
-      const dtThucBtn = findButtonByText(['DT thực', 'dt thuc']);
+    if (toggleName === 'DT quy đổi' || toggleName.toLowerCase().includes('quy đổi') || toggleName.toLowerCase().includes('quy doi')) {
+      const dtThucBtn = findButtonByText(['DT thực', 'dt thuc', 'DT thuc']);
       if (dtThucBtn) {
         const thucStyle = window.getComputedStyle(dtThucBtn);
         const thucIsActive =
@@ -2560,6 +2583,23 @@
           thucStyle.backgroundColor.includes('37, 99, 235') ||
           thucStyle.backgroundColor.includes('59, 130, 246');
         if (thucIsActive) {
+          isAlreadyActive = false;
+        }
+      }
+    }
+
+    // Nếu đang muốn chọn "DT thực", kiểm tra xem "DT quy đổi" có đang chiếm active không
+    if (toggleName === 'DT thực' || toggleName.toLowerCase().includes('thực') || toggleName.toLowerCase().includes('thuc')) {
+      const dtQdBtn = findButtonByText(['DT quy đổi', 'dt quy doi', 'DT quy doi']);
+      if (dtQdBtn) {
+        const qdStyle = window.getComputedStyle(dtQdBtn);
+        const qdIsActive =
+          dtQdBtn.classList.contains('bg-blue-600') ||
+          dtQdBtn.classList.contains('bg-blue-500') ||
+          dtQdBtn.classList.contains('bg-indigo-600') ||
+          qdStyle.backgroundColor.includes('37, 99, 235') ||
+          qdStyle.backgroundColor.includes('59, 130, 246');
+        if (qdIsActive) {
           isAlreadyActive = false;
         }
       }
@@ -2684,6 +2724,124 @@
     }
 
     return await ensureCheckboxChecked('Trả góp');
+  }
+
+  function findChiTietDoanhThuButton() {
+    // 1. Ưu tiên 1: XPath chính xác do người dùng cung cấp
+    try {
+      const xpath = '/html/body/div[1]/div[2]/div[4]/main/div/div/div[6]/div[2]/button[3]';
+      const res = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      const node = res.singleNodeValue;
+      if (node && node.nodeType === 1 && acpIsVisible(node)) {
+        const txt = (node.textContent || '').trim().toLowerCase();
+        if (txt.includes('chi tiết doanh thu') || txt.includes('chi tiet doanh thu') || txt.includes('doanh thu')) {
+          return node;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Ưu tiên 2: Tìm theo textContent trên các button/div/label
+    const candidates = Array.from(document.querySelectorAll('button, div.flex > button, [role="button"], label, div[class*="cursor-pointer"]'));
+    const matched = candidates.find((el) => {
+      if (!acpIsVisible(el)) return false;
+      const txt = (el.textContent || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      return txt.includes('chi tiết doanh thu') || txt.includes('chi tiet doanh thu') || txt.includes('chi tiết dt') || txt.includes('chi tiet dt');
+    });
+    if (matched) return matched.closest('button, [role="button"]') || matched;
+
+    // 3. Ưu tiên 3: Dự phòng qua acpFindToggleButton
+    return acpFindToggleButton(['chi tiết doanh thu', 'chi tiet doanh thu', 'chi tiết dt', 'chi tiet dt']);
+  }
+
+  function isChiTietDoanhThuActive(btn) {
+    if (!btn) return false;
+    const txt = (btn.textContent || '').trim();
+    const cls = btn.getAttribute('class') || '';
+    const style = window.getComputedStyle(btn);
+    const mark = btn.querySelector(':scope > span') || btn.querySelector('span');
+
+    // 1. Có dấu checkmark ✓
+    if (txt.includes('✓')) return true;
+    if (mark) {
+      if (mark.textContent.includes('✓') || !!mark.querySelector('svg, [class*="check"]')) return true;
+      const mCls = mark.getAttribute('class') || '';
+      if (mCls.includes('bg-blue-600') || mCls.includes('text-white') || mCls.includes('border-blue-600')) return true;
+    }
+
+    // 2. Class Tailwind active
+    if (
+      cls.includes('bg-blue-50') ||
+      cls.includes('text-blue-700') ||
+      cls.includes('border-blue-300') ||
+      cls.includes('border-blue-500') ||
+      cls.includes('border-blue-600') ||
+      cls.includes('bg-blue-600') ||
+      cls.includes('bg-blue-500') ||
+      cls.includes('text-blue-600')
+    ) {
+      return true;
+    }
+
+    // 3. Thuộc tính ARIA / data-state
+    if (
+      btn.getAttribute('aria-pressed') === 'true' ||
+      btn.getAttribute('aria-checked') === 'true' ||
+      btn.getAttribute('data-state') === 'on' ||
+      btn.getAttribute('data-state') === 'checked'
+    ) {
+      return true;
+    }
+
+    // 4. Computed style màu xanh active
+    if (
+      style.backgroundColor.includes('37, 99, 235') ||
+      style.backgroundColor.includes('239, 246, 255') ||
+      style.color.includes('29, 78, 216') ||
+      style.borderColor.includes('147, 197, 253')
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async function ensureChiTietDoanhThuActive() {
+    console.log('[BI-Sync] Đang kiểm tra nút toggle "Chi tiết doanh thu"...');
+    let btn = findChiTietDoanhThuButton();
+    if (!btn) {
+      for (let i = 0; i < 6; i++) {
+        await sleep(300);
+        btn = findChiTietDoanhThuButton();
+        if (btn) break;
+      }
+    }
+
+    if (btn) {
+      if (!isChiTietDoanhThuActive(btn)) {
+        console.log('[BI-Sync] Kích hoạt bật nút "Chi tiết doanh thu"...');
+        acpTriggerClick(btn);
+        try { btn.click(); } catch (_) {}
+        await sleep(200);
+        await acpWaitForLoadingComplete(15000, 200, 200);
+
+        // Chờ xác nhận đã active
+        const start = Date.now();
+        while (Date.now() - start < 2000) {
+          const fresh = findChiTietDoanhThuButton();
+          if (fresh && isChiTietDoanhThuActive(fresh)) {
+            console.log('[BI-Sync] Đã bật thành công "Chi tiết doanh thu".');
+            return true;
+          }
+          await sleep(100);
+        }
+      } else {
+        console.log('[BI-Sync] Nút "Chi tiết doanh thu" đã active sẵn (có dấu ✓ hoặc viền/chữ xanh).');
+      }
+      return true;
+    }
+
+    console.warn('[BI-Sync] Không tìm thấy button "Chi tiết doanh thu", thử fallback qua checkbox...');
+    return await ensureCheckboxChecked('Chi tiết doanh thu');
   }
 
   async function selectTabOrSection(tabName) {
@@ -3722,6 +3880,54 @@
            (cleanName && industryByStore[cleanName.toUpperCase()]);
   }
 
+  function acpSerializeStaffThuc(staffRows, luyKe) {
+    const list = Array.isArray(staffRows) ? staffRows : [];
+    const lines = [
+      'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU\t% TỈ TRỌNG\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP'
+    ];
+    let sumSl = 0, sumThuc = 0, sumTg = 0;
+
+    for (const item of list) {
+      const name = `${item.rowcode || ''} - ${item.rowname || ''}`.replace(/^[-\s]+/, '');
+      const sl = Math.round(Number(item.quantity || 0));
+      const thuc = Math.round(Number(item.revenue || 0));
+      const tg = Math.round(Number(item.revenue_tragop || 0));
+      const pctTg = thuc > 0 ? ((tg / thuc) * 100).toFixed(1) + '%' : '0.0%';
+
+      sumSl += sl; sumThuc += thuc; sumTg += tg;
+      const [tgtCell, htCell] = acpLkTargetCells(item, luyKe);
+      lines.push(`${name}\t${sl.toLocaleString('en-US')}\t${thuc.toLocaleString('en-US')}\t—\t${tgtCell}\t${htCell}\t—\t—\t${tg.toLocaleString('en-US')}\t${pctTg}`);
+    }
+
+    const totalPctTg = sumThuc > 0 ? ((sumTg / sumThuc) * 100).toFixed(1) + '%' : '0.0%';
+    lines.push(`Tổng\t${sumSl.toLocaleString('en-US')}\t${sumThuc.toLocaleString('en-US')}\t100.0%\t—\t—\t—\t—\t${sumTg.toLocaleString('en-US')}\t${totalPctTg}`);
+    return lines.join('\n');
+  }
+
+  function acpSerializeStaffQd(staffRows, luyKe) {
+    const list = Array.isArray(staffRows) ? staffRows : [];
+    const lines = [
+      'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP'
+    ];
+    let sumSl = 0, sumQd = 0, sumTg = 0;
+
+    for (const item of list) {
+      const name = `${item.rowcode || ''} - ${item.rowname || ''}`.replace(/^[-\s]+/, '');
+      const sl = Math.round(Number(item.quantity || 0));
+      const qd = Math.round(Number(item.revenue_kfactor || 0));
+      const tg = Math.round(Number(item.revenue_tragop || 0));
+      const pctTg = qd > 0 ? ((tg / qd) * 100).toFixed(1) + '%' : '0.0%';
+
+      sumSl += sl; sumQd += qd; sumTg += tg;
+      const [tgtCell, htCell] = acpLkTargetCells(item, luyKe);
+      lines.push(`${name}\t${sl.toLocaleString('en-US')}\t${qd.toLocaleString('en-US')}\t—\t${tgtCell}\t${htCell}\t—\t—\t${tg.toLocaleString('en-US')}\t${pctTg}`);
+    }
+
+    const totalPctTg = sumQd > 0 ? ((sumTg / sumQd) * 100).toFixed(1) + '%' : '0.0%';
+    lines.push(`Tổng\t${sumSl.toLocaleString('en-US')}\t${sumQd.toLocaleString('en-US')}\t100.0%\t—\t—\t—\t—\t${sumTg.toLocaleString('en-US')}\t${totalPctTg}`);
+    return lines.join('\n');
+  }
+
   function acpSerializeStaffRealtime(staffRows, luyKe) {
     const list = Array.isArray(staffRows) ? staffRows : [];
     const lines = [
@@ -3986,9 +4192,11 @@
             results.industryByStore = industryByStore;
             console.log('[BI-Sync] [API] Bước 3 Xong: Ngành hàng BI cho', Object.keys(industryByStore).length, 'kho/key');
 
-            // BƯỚC 4: Doanh thu nhân viên — Tải song song cho toàn bộ siêu thị
+            // BƯỚC 4: Doanh thu nhân viên (Thực & QĐ) — Tải song song cho toàn bộ siêu thị
             const employeeByStore = {};
-            await reportProgress(4, totalSteps, 'Doanh thu nhân viên', `Đang tải nhân viên song song cho ${storeList.length} siêu thị...`);
+            const employeeThucByStore = {};
+            const employeeQdByStore = {};
+            await reportProgress(4, totalSteps, 'Doanh thu nhân viên', `Đang tải nhân viên (Thực & QĐ) song song cho ${storeList.length} siêu thị...`);
             await Promise.all(storeList.map(async (st) => {
               try {
                 const staffData = await acpFetchBiApi('revenue-consolidated-staff-get', {
@@ -4005,15 +4213,45 @@
                   PAGESIZE: 50,
                 }, token);
                 const serializedStaff = acpSerializeStaffRealtime(staffData, isLuyKe);
+                const serializedThuc = acpSerializeStaffThuc(staffData, isLuyKe);
+                const serializedQd = acpSerializeStaffQd(staffData, isLuyKe);
+                const stNumId = String(st.id || '').match(/^\d+/)?.[0] || String(st.id || '');
+                const shortSt = acpShortenStoreName(st.name);
+
+                employeeThucByStore[st.name] = serializedThuc;
+                employeeThucByStore[st.id] = serializedThuc;
+                if (stNumId) employeeThucByStore[stNumId] = serializedThuc;
+                if (shortSt) {
+                  employeeThucByStore[shortSt] = serializedThuc;
+                  employeeThucByStore[shortSt.toUpperCase()] = serializedThuc;
+                }
+
+                employeeQdByStore[st.name] = serializedQd;
+                employeeQdByStore[st.id] = serializedQd;
+                if (stNumId) employeeQdByStore[stNumId] = serializedQd;
+                if (shortSt) {
+                  employeeQdByStore[shortSt] = serializedQd;
+                  employeeQdByStore[shortSt.toUpperCase()] = serializedQd;
+                }
+
                 employeeByStore[st.name] = serializedStaff;
                 employeeByStore[st.id] = serializedStaff;
+                if (stNumId) employeeByStore[stNumId] = serializedStaff;
+                if (shortSt) {
+                  employeeByStore[shortSt] = serializedStaff;
+                  employeeByStore[shortSt.toUpperCase()] = serializedStaff;
+                }
               } catch (err) {
                 console.warn('[BI-Sync] [API] Lỗi tải nhân viên cho', st.name, err);
               }
             }));
-            results.employee = Object.values(employeeByStore)[0] || '';
+            results.employee = Object.values(employeeThucByStore)[0] || '';
+            results.employeeThuc = results.employee;
+            results.employeeQd = Object.values(employeeQdByStore)[0] || '';
             results.employeeByStore = employeeByStore;
-            console.log('[BI-Sync] [API] Bước 4 Xong: Doanh thu nhân viên cho', Object.keys(employeeByStore).length, 'siêu thị');
+            results.employeeThucByStore = employeeThucByStore;
+            results.employeeQdByStore = employeeQdByStore;
+            console.log('[BI-Sync] [API] Bước 4 Xong: Doanh thu nhân viên (Thực & QĐ) cho', Object.keys(employeeThucByStore).length, 'siêu thị');
 
             // BƯỚC 5 (chỉ Luỹ kế): ô "THI ĐUA & TRẢ CHẬM" của từng siêu thị — Tải song song siêu tốc:
             // Thi đua theo nhân viên (tận dụng allCompStaff bulk + fallback acpFetchCompetitionStaff) + Trả chậm nhân viên
@@ -4248,9 +4486,38 @@
         await selectTabOrSection('Nhân viên');
         await acpWaitForLoadingComplete(35000, 600, 500);
 
-        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang sao chép doanh thu nhân viên...');
-        results.employee = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 4: Doanh thu nhân viên', results.employee?.length);
+        // BẮT BUỘC: Tự động check nút "Chi tiết doanh thu" nếu chưa bật
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang kiểm tra & bật "Chi tiết doanh thu"...');
+        await ensureChiTietDoanhThuActive();
+        await sleep(250);
+        await acpWaitForLoadingComplete(20000, 400, 300);
+
+        // 1. Sao chép Doanh thu Quy đổi trước
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang bật "DT quy đổi"...');
+        await ensureToggleActive('DT quy đổi');
+        await sleep(200);
+        await acpWaitForLoadingComplete(20000, 300, 200);
+        await ensureChiTietDoanhThuActive();
+        await sleep(150);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang sao chép doanh thu nhân viên (Quy đổi)...');
+        results.employeeQd = await collectCurrentBiData();
+        console.log('[BI-Sync] Đã xong Bước 4: Doanh thu nhân viên (Quy đổi)', results.employeeQd?.length);
+
+        // 2. Chuyển sang "DT thực" và sao chép Doanh thu Thực
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang chuyển sang "DT thực"...');
+        await ensureToggleActive('DT thực');
+        await sleep(200);
+        await acpWaitForLoadingComplete(25000, 400, 300);
+        await ensureChiTietDoanhThuActive();
+        await sleep(150);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang sao chép doanh thu nhân viên (Thực)...');
+        results.employeeThuc = await collectCurrentBiData();
+        results.employee = results.employeeThuc;
+        console.log('[BI-Sync] Đã xong Bước 4: Doanh thu nhân viên (Thực)', results.employeeThuc?.length);
 
         await reportDone(results);
 
@@ -4325,8 +4592,38 @@
         await ensureSelectAllChecked();
         await acpWaitForLoadingComplete(30000, 500, 400);
 
-        results.employee = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 3: Nhân viên', results.employee?.length);
+        // BẮT BUỘC: Tự động check nút "Chi tiết doanh thu" nếu chưa bật
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Đang kiểm tra & bật "Chi tiết doanh thu"...');
+        await ensureChiTietDoanhThuActive();
+        await sleep(250);
+        await acpWaitForLoadingComplete(20000, 400, 300);
+
+        // 1. Sao chép Doanh thu Quy đổi trước
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Đang bật "DT quy đổi"...');
+        await ensureToggleActive('DT quy đổi');
+        await sleep(200);
+        await acpWaitForLoadingComplete(20000, 300, 200);
+        await ensureChiTietDoanhThuActive();
+        await sleep(150);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Đang sao chép doanh thu nhân viên (Quy đổi)...');
+        results.employeeQd = await collectCurrentBiData();
+        console.log('[BI-Sync] Đã xong Bước 3: Nhân viên (Quy đổi)', results.employeeQd?.length);
+
+        // 2. Chuyển sang "DT thực" và sao chép Doanh thu Thực
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Đang chuyển sang "DT thực"...');
+        await ensureToggleActive('DT thực');
+        await sleep(200);
+        await acpWaitForLoadingComplete(25000, 400, 300);
+        await ensureChiTietDoanhThuActive();
+        await sleep(150);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Đang sao chép doanh thu nhân viên (Thực)...');
+        results.employeeThuc = await collectCurrentBiData();
+        results.employee = results.employeeThuc;
+        console.log('[BI-Sync] Đã xong Bước 3: Nhân viên (Thực)', results.employeeThuc?.length);
 
         // --- BƯỚC 4: Thi đua ---
         await reportProgress(4, totalSteps, 'Thi đua', 'Đang chuyển sang Thi đua...');

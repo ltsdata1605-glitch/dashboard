@@ -70,6 +70,8 @@ export type BIKey =
   | `hidden-employees-${string}`
   | `config-${string}-danhsach`
   | `config-${string}-danhsach-ts`
+  | `config-${string}-danhsach-qd`
+  | `config-${string}-danhsach-qd-ts`
   | `config-${string}-thidua`
   | `config-${string}-thidua-ts`
   | `config-${string}-tragop`
@@ -82,6 +84,8 @@ export type BIKey =
   | `config-${string}-industry-luyke-ts`
   | `config-${string}-employee-realtime`
   | `config-${string}-employee-realtime-ts`
+  | `config-${string}-employee-realtime-qd`
+  | `config-${string}-employee-realtime-qd-ts`
   | `comptarget-${string}-targets`
   | `bonus-data-${string}`
   | `bonus-history-${string}`
@@ -203,7 +207,7 @@ export const get = async <T = unknown>(key: BIKey): Promise<T | undefined> => {
       }
       // Fallback cho key cấu hình siêu thị (VD: config-HÙNG VƯƠNG-industry-luyke vs bi_config-Hùng Vương-industry-luyke)
       if (typeof key === 'string' && key.startsWith('config-')) {
-        const configTypes = ['-industry-realtime', '-industry-luyke', '-employee-realtime', '-danhsach', '-thidua', '-tragop', '-bankem'];
+        const configTypes = ['-industry-realtime', '-industry-luyke', '-employee-realtime', '-employee-realtime-qd', '-danhsach', '-danhsach-qd', '-thidua', '-tragop', '-bankem'];
         const matchedType = configTypes.find(t => key.endsWith(t));
         if (matchedType) {
           const rawSm = key.slice('config-'.length, key.length - matchedType.length);

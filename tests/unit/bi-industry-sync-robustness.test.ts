@@ -92,4 +92,86 @@ describe('BI Industry Sync Robustness Tests', () => {
         // Không được lưu dữ liệu rỗng/hỏng
         expect(savedIndustryKeys).toHaveLength(0);
     });
+
+    it('applyBiSyncResults for Realtime stores both employee Thực and employee Quy đổi', async () => {
+        const mockSet = vi.spyOn(db, 'set').mockResolvedValue();
+
+        const sampleStaffThuc = [
+            'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU\t% TỈ TRỌNG\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+            '107617 - Phạm Anh Nhân\t230\t791\t—\t—\t—\t—\t—\t50\t6.3%',
+            'Tổng\t230\t791\t100.0%\t—\t—\t—\t—\t50\t6.3%'
+        ].join('\n');
+
+        const sampleStaffQd = [
+            'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+            '107617 - Phạm Anh Nhân\t230\t850\t—\t—\t—\t—\t—\t50\t5.9%',
+            'Tổng\t230\t850\t100.0%\t—\t—\t—\t—\t50\t5.9%'
+        ].join('\n');
+
+        const results = {
+            summary: 'sample summary line 1\nsample summary line 2',
+            employeeThucByStore: {
+                '9560 - ĐMX HÙNG VƯƠNG': sampleStaffThuc
+            },
+            employeeQdByStore: {
+                '9560 - ĐMX HÙNG VƯƠNG': sampleStaffQd
+            }
+        };
+
+        const res = await applyBiSyncResults('realtime', results as any, 'HÙNG VƯƠNG');
+        expect(res.successCount).toBeGreaterThan(0);
+        expect(res.errors).toHaveLength(0);
+
+        const savedKeys = mockSet.mock.calls.map(call => call[0]);
+        // Lưu Thực vào config-*-employee-realtime
+        expect(savedKeys).toContain('config-ĐMX HÙNG VƯƠNG-employee-realtime');
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-employee-realtime');
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-employee-realtime-ts');
+
+        // Lưu Quy đổi vào config-*-employee-realtime-qd
+        expect(savedKeys).toContain('config-ĐMX HÙNG VƯƠNG-employee-realtime-qd');
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-employee-realtime-qd');
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-employee-realtime-qd-ts');
+    });
+
+    it('applyBiSyncResults for Luỹ kế stores both employee Thực and employee Quy đổi under danhsach & employee-luyke', async () => {
+        const mockSet = vi.spyOn(db, 'set').mockResolvedValue();
+
+        const sampleStaffThuc = [
+            'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU\t% TỈ TRỌNG\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+            '107617 - Phạm Anh Nhân\t230\t791\t—\t—\t—\t—\t—\t50\t6.3%',
+            'Tổng\t230\t791\t100.0%\t—\t—\t—\t—\t50\t6.3%'
+        ].join('\n');
+
+        const sampleStaffQd = [
+            'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+            '107617 - Phạm Anh Nhân\t230\t850\t—\t—\t—\t—\t—\t50\t5.9%',
+            'Tổng\t230\t850\t100.0%\t—\t—\t—\t—\t50\t5.9%'
+        ].join('\n');
+
+        const results = {
+            summary: 'sample summary lk line 1\nsample summary lk line 2',
+            employeeThucByStore: {
+                '9560 - ĐMX HÙNG VƯƠNG': sampleStaffThuc
+            },
+            employeeQdByStore: {
+                '9560 - ĐMX HÙNG VƯƠNG': sampleStaffQd
+            }
+        };
+
+        const res = await applyBiSyncResults('luyke', results as any, 'HÙNG VƯƠNG');
+        expect(res.successCount).toBeGreaterThan(0);
+        expect(res.errors).toHaveLength(0);
+
+        const savedKeys = mockSet.mock.calls.map(call => call[0]);
+        // Lưu Thực vào danhsach và employee-luyke
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-danhsach');
+        expect(savedKeys).toContain('config-ĐMX HÙNG VƯƠNG-danhsach');
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-employee-luyke');
+
+        // Lưu Quy đổi vào danhsach-qd và employee-luyke-qd
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-danhsach-qd');
+        expect(savedKeys).toContain('config-ĐMX HÙNG VƯƠNG-danhsach-qd');
+        expect(savedKeys).toContain('config-HÙNG VƯƠNG-employee-luyke-qd');
+    });
 });

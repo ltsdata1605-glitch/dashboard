@@ -649,6 +649,15 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 } else if (payload.results.employee && targetSupermarket) {
                     addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-employee-realtime`, `Tự động cập nhật Doanh thu nhân viên - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
                 }
+                if (payload.results.employeeQdByStore) {
+                    Object.keys(payload.results.employeeQdByStore).forEach(stName => {
+                        if (/^\d+$/.test(stName)) return;
+                        const shortName = shortenSupermarketName(stName);
+                        addUpdate(`config-${shortName}-employee-realtime-qd`, `Tự động cập nhật Doanh thu nhân viên QĐ - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                    });
+                } else if (payload.results.employeeQd && targetSupermarket) {
+                    addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-employee-realtime-qd`, `Tự động cập nhật Doanh thu nhân viên QĐ - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                }
             } else {
                 if (payload.results.summary) {
                     setSummaryLuyKe(payload.results.summary);
@@ -682,6 +691,16 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     if (/^\d+$/.test(stName)) return;
                     addUpdate(`config-${shortenSupermarketName(stName)}-danhsach`, `Tự động cập nhật Doanh thu nhân viên Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
                 });
+                Object.keys(payload.results.employeeQdByStore || {}).forEach(stName => {
+                    if (/^\d+$/.test(stName)) return;
+                    addUpdate(`config-${shortenSupermarketName(stName)}-danhsach-qd`, `Tự động cập nhật Doanh thu nhân viên Luỹ kế QĐ - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                });
+                if (payload.results.employee && targetSupermarket && !payload.results.employeeByStore) {
+                    addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-danhsach`, `Tự động cập nhật Doanh thu nhân viên Luỹ kế - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                }
+                if (payload.results.employeeQd && targetSupermarket && !payload.results.employeeQdByStore) {
+                    addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-danhsach-qd`, `Tự động cập nhật Doanh thu nhân viên Luỹ kế QĐ - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                }
                 Object.keys(payload.results.competitionByStore || {}).forEach(stName => {
                     if (/^\d+$/.test(stName)) return;
                     addUpdate(`config-${shortenSupermarketName(stName)}-thidua`, `Tự động cập nhật Thi đua nhân viên Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');

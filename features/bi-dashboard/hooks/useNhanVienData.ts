@@ -103,7 +103,9 @@ export function useNhanVienData(isActive?: boolean) {
 
     const [aggregatedData, setAggregatedData] = useState({
         danhSach: '',
+        danhSachQd: '',
         employeeRealtime: '',
+        employeeRealtimeQd: '',
         thiDua: '',
         traGop: '',
         manualMapping: {} as ManualDeptMapping,
@@ -144,7 +146,9 @@ export function useNhanVienData(isActive?: boolean) {
                 }
                 setAggregatedData({
                     danhSach: '',
+                    danhSachQd: '',
                     employeeRealtime: '',
+                    employeeRealtimeQd: '',
                     thiDua: '',
                     traGop: '',
                     manualMapping: {},
@@ -193,22 +197,26 @@ export function useNhanVienData(isActive?: boolean) {
                     getWithFallback('targethero-', safeName, '-departmentweights'),
                     getWithFallback('hidden-employees-', safeName, ''),
                     getWithFallback('bonus-current-period-label-', safeName, ''),
-                    getWithFallback('config-', safeName, '-employee-realtime')
+                    getWithFallback('config-', safeName, '-employee-realtime'),
+                    getWithFallback('config-', safeName, '-danhsach-qd'),
+                    getWithFallback('config-', safeName, '-employee-realtime-qd')
                 ]);
             }));
 
             if (!isMounted) return;
 
-            let combinedDS = '', combinedRealtime = '', combinedTD = '', combinedTG = '';
+            let combinedDS = '', combinedDSQd = '', combinedRealtime = '', combinedRealtimeQd = '', combinedTD = '', combinedTG = '';
             let combinedMM: ManualDeptMapping = {};
             let combinedBonus: Record<string, BonusMetrics | null> = {};
             let combinedPeriodLabel: string | null = null;
             const allWeights: Record<string, number[]> = {};
 
             const combinedHidden: string[] = [];
-            results.forEach(([ds, td, tg, mm, bonus, weights, hidden, periodLabel, empRt]) => {
+            results.forEach(([ds, td, tg, mm, bonus, weights, hidden, periodLabel, empRt, dsQd, empRtQd]) => {
                 if (ds) combinedDS += (combinedDS ? '\n' : '') + ds;
+                if (dsQd) combinedDSQd += (combinedDSQd ? '\n' : '') + dsQd;
                 if (empRt) combinedRealtime += (combinedRealtime ? '\n' : '') + empRt;
+                if (empRtQd) combinedRealtimeQd += (combinedRealtimeQd ? '\n' : '') + empRtQd;
                 if (td) combinedTD += (combinedTD ? '\n' : '') + td;
                 if (tg) combinedTG += (combinedTG ? '\n' : '') + tg;
                 if (mm) Object.assign(combinedMM, mm);
@@ -297,7 +305,9 @@ export function useNhanVienData(isActive?: boolean) {
             setHiddenEmployees(combinedHidden);
             setAggregatedData({
                 danhSach: combinedDS,
+                danhSachQd: combinedDSQd,
                 employeeRealtime: combinedRealtime,
+                employeeRealtimeQd: combinedRealtimeQd,
                 thiDua: combinedTD,
                 traGop: combinedTG,
                 manualMapping: combinedMM,
@@ -313,8 +323,8 @@ export function useNhanVienData(isActive?: boolean) {
                     const safeName = shortenSupermarketName(rawName);
                     const idx = uniqueSafeNames.indexOf(safeName);
                     if (idx === -1) return;
-                    const [ds, , , mm, , , , , empRt] = results[idx];
-                    const rawStoreEmployees = (ds as string) || (empRt as string) || '';
+                    const [ds, , , mm, , , , , empRt, dsQd, empRtQd] = results[idx];
+                    const rawStoreEmployees = (ds as string) || (dsQd as string) || (empRt as string) || (empRtQd as string) || '';
                     if (rawStoreEmployees) {
                         try {
                             const parsedList = parseAllEmployees(rawStoreEmployees);
@@ -501,9 +511,12 @@ export function useNhanVienData(isActive?: boolean) {
 
     const [parsedRevenueBase, setParsedRevenueBase] = useState<RevenueRow[]>([]);
     useEffect(() => {
-        if (!aggregatedData.danhSach || isActive === false) return;
+        if ((!aggregatedData.danhSach && !aggregatedData.danhSachQd) || isActive === false) {
+            setParsedRevenueBase([]);
+            return;
+        }
         let isMounted = true;
-        runWorkerTask('PARSE_REVENUE', aggregatedData.danhSach).then((base: RevenueRow[]) => {
+        runWorkerTask('PARSE_REVENUE', { thucText: aggregatedData.danhSach, qdText: aggregatedData.danhSachQd }).then((base: RevenueRow[]) => {
             if (isMounted) {
                 setParsedRevenueBase(base.filter(r => {
                     if (r.type !== 'employee') return true;
@@ -516,16 +529,16 @@ export function useNhanVienData(isActive?: boolean) {
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu:', err));
         return () => { isMounted = false; };
-    }, [aggregatedData.danhSach, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
+    }, [aggregatedData.danhSach, aggregatedData.danhSachQd, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
 
     const [parsedRevenueRealtimeBase, setParsedRevenueRealtimeBase] = useState<RevenueRow[]>([]);
     useEffect(() => {
-        if (!aggregatedData.employeeRealtime || isActive === false) {
+        if ((!aggregatedData.employeeRealtime && !aggregatedData.employeeRealtimeQd) || isActive === false) {
             setParsedRevenueRealtimeBase([]);
             return;
         }
         let isMounted = true;
-        runWorkerTask('PARSE_REVENUE', aggregatedData.employeeRealtime).then((base: RevenueRow[]) => {
+        runWorkerTask('PARSE_REVENUE', { thucText: aggregatedData.employeeRealtime, qdText: aggregatedData.employeeRealtimeQd }).then((base: RevenueRow[]) => {
             if (isMounted) {
                 setParsedRevenueRealtimeBase(base.filter(r => {
                     if (r.type !== 'employee') return true;
@@ -538,7 +551,7 @@ export function useNhanVienData(isActive?: boolean) {
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu realtime:', err));
         return () => { isMounted = false; };
-    }, [aggregatedData.employeeRealtime, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
+    }, [aggregatedData.employeeRealtime, aggregatedData.employeeRealtimeQd, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
 
     const employeeDepartmentMap = useMemo(() => {
         if (isActive === false) return {} as Record<string, string>;
@@ -808,9 +821,9 @@ export function useNhanVienData(isActive?: boolean) {
     }, [buildRevenueRows, parsedRevenueBase]);
 
     const realtimeRevenueRows = useMemo(() => {
-        if (isActive === false || (!aggregatedData.employeeRealtime && parsedRevenueRealtimeBase.length === 0)) return [];
+        if (isActive === false || (!aggregatedData.employeeRealtime && !aggregatedData.employeeRealtimeQd && parsedRevenueRealtimeBase.length === 0)) return [];
         return buildRevenueRows(parsedRevenueRealtimeBase);
-    }, [buildRevenueRows, parsedRevenueRealtimeBase, aggregatedData.employeeRealtime, isActive]);
+    }, [buildRevenueRows, parsedRevenueRealtimeBase, aggregatedData.employeeRealtime, aggregatedData.employeeRealtimeQd, isActive]);
 
     // Toàn bộ tên phòng ban thật sự có nhân viên (không lọc bớt) — dùng để "Tất cả" luôn đúng
     // nghĩa là TẤT CẢ. Trước đây effectiveActiveDepartments khi chọn "Tất cả" lại resolve về

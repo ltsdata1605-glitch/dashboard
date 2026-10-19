@@ -262,3 +262,98 @@ test.describe('Bản 4.5 — DOM khác kiểu: label/checkbox "Trả chậm" + d
         await expect(toast).toContainText('DT quy đổi');
     });
 });
+
+test.describe('Bản 7.33 — Tự động check "Chi tiết doanh thu"', () => {
+    function buildStaffFixture(opts: { chiTietDtOn: boolean }): string {
+        const chiTietBtn = opts.chiTietDtOn
+            ? '<button type="button" id="chi-tiet-dt" class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300"><span class="flex h-3.5 w-3.5 items-center justify-center rounded border text-[9px] border-blue-600 bg-blue-600 text-white">✓</span>Chi tiết doanh thu</button>'
+            : '<button type="button" id="chi-tiet-dt" class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all border-slate-200 bg-white text-slate-600 hover:border-slate-300"><span class="flex h-3.5 w-3.5 items-center justify-center rounded border text-[9px] border-slate-300"></span>Chi tiết doanh thu</button>';
+        return `<!doctype html><html><head><meta charset="utf-8"><title>Doanh thu hợp nhất</title></head><body>
+<div id="filters">
+  <div id="segment">
+    <button type="button" id="dt-quy-doi" class="flex items-center justify-center gap-1.5 font-semibold transition-all px-2.5 py-1 text-xs bg-blue-600 text-white">DT quy đổi</button>
+  </div>
+  <div id="checks">
+    <button type="button" id="tra-gop" class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all border-blue-500 bg-blue-50 text-blue-700"><span class="flex h-3.5 w-3.5 items-center justify-center rounded border text-[9px] border-blue-500 bg-blue-500 text-white">✓</span>Trả góp</button>
+  </div>
+</div>
+<div>
+  <div>
+    <div>
+      <div>
+        <main>
+          <div><div><div>
+            <div id="tab-bar">
+              <button type="button" id="tab-nhan-vien" class="bg-blue-600 text-white">Nhân viên</button>
+            </div>
+            <div id="toggles">
+              <button type="button" id="ti-trong" class="border-blue-500 bg-blue-50 text-blue-700"><span>✓</span>Tỉ trọng</button>
+              <button type="button" id="tang-truong" class="border-blue-500 bg-blue-50 text-blue-700"><span>✓</span>Tăng trưởng</button>
+              ${chiTietBtn}
+            </div>
+          </div></div></div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<table class="ant-table"><tbody>
+  <tr><td><button type="button" class="ant-table-row-expand-icon ant-table-row-expand-icon-collapsed" aria-label="Mở rộng dòng" aria-expanded="false"></button></td><td>107617 - Phạm Anh Nhân</td><td>1,100</td></tr>
+</tbody></table>
+<script>
+  window.__clicks = [];
+  document.getElementById('chi-tiet-dt').addEventListener('click', function () {
+    window.__clicks.push('chi-tiet-dt');
+    var b = this, m = b.querySelector('span');
+    var on = m.textContent.trim() === '✓';
+    if (on) {
+      m.textContent = '';
+      b.className = b.className.replace('border-blue-300 bg-blue-50 text-blue-700', 'border-slate-200 bg-white text-slate-600');
+    } else {
+      m.textContent = '✓';
+      b.className = b.className.replace('border-slate-200 bg-white text-slate-600', 'border-blue-300 bg-blue-50 text-blue-700');
+    }
+  });
+  document.getElementById('tra-gop').addEventListener('click', function () { window.__clicks.push('tra-gop'); });
+  document.getElementById('dt-quy-doi').addEventListener('click', function () { window.__clicks.push('dt-quy-doi'); });
+  document.querySelector('.ant-table-row-expand-icon').addEventListener('click', function () {
+    window.__clicks.push('expand'); this.setAttribute('aria-expanded', 'true');
+    this.classList.remove('ant-table-row-expand-icon-collapsed'); this.classList.add('ant-table-row-expand-icon-expanded');
+  });
+</script>
+</body></html>`;
+    }
+
+    test('"Chi tiết doanh thu" đang tắt → tự động click bật (userscript)', async ({ page }) => {
+        await openHtml(page, buildStaffFixture({ chiTietDtOn: false }));
+        await loadUserscript(page);
+
+        await page.locator('#acp-float-btn').click();
+        await expect(page.locator('#acp-status-box')).toContainText('Đã tự bật: Chi tiết doanh thu');
+
+        expect(await clicks(page)).toEqual(['chi-tiet-dt', 'expand']);
+        await expect(page.locator('#chi-tiet-dt span')).toHaveText('✓');
+        await expect(page.locator('#chi-tiet-dt')).toHaveClass(/bg-blue-50/);
+    });
+
+    test('"Chi tiết doanh thu" đang bật sẵn → KHÔNG click lại (không bị tắt nhầm)', async ({ page }) => {
+        await openHtml(page, buildStaffFixture({ chiTietDtOn: true }));
+        await loadUserscript(page);
+
+        await page.locator('#acp-float-btn').click();
+        await expect(page.locator('#acp-status-box')).toContainText('Đã mở 1 mục');
+
+        expect(await clicks(page)).toEqual(['expand']);
+        await expect(page.locator('#chi-tiet-dt span')).toHaveText('✓');
+    });
+
+    test('"Chi tiết doanh thu" đang tắt → bookmarklet Auto Click+ cũng tự bật', async ({ page }) => {
+        await openHtml(page, buildStaffFixture({ chiTietDtOn: false }));
+        await page.evaluate(AUTO_CLICK_BOOKMARKLET_CODE.replace(/^javascript:/, ''));
+
+        await expect(page.locator('#__copy_wait_toast__')).toContainText('Đã tự bật: Chi tiết doanh thu');
+        expect(await clicks(page)).toEqual(['chi-tiet-dt', 'expand']);
+        await expect(page.locator('#chi-tiet-dt span')).toHaveText('✓');
+    });
+});
+

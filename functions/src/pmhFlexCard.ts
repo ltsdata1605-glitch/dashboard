@@ -22,7 +22,7 @@ export function createCouponFlexBubble(params: {
     const lowerCat = (params.categoryLabel || '').toLowerCase();
     let headerColor = '#0EA5E9'; // Sky blue
     if (lowerCat.includes('event')) headerColor = '#06C755';
-    else if (lowerCat.includes('giờ vàng') || lowerCat.includes('gvgs') || lowerCat.includes('gio vang')) headerColor = '#0D9488';
+    else if (lowerCat.includes('giờ vàng') || lowerCat.includes('gvgs') || lowerCat.includes('gio vang')) headerColor = '#BE123C';
     else if (lowerCat.includes('vivo')) headerColor = '#0EA5E9';
     else if (lowerCat.includes('honor')) headerColor = '#2563EB';
     else if (lowerCat.includes('samsung')) headerColor = '#4F46E5';

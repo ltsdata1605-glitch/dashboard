@@ -17,7 +17,9 @@ describe('tileLinkService', () => {
 
         // DOANH THU NHÂN VIÊN
         expect(DEFAULT_TILE_LINKS['nhanvien-realtime']).toBe('https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?timetype=1');
+        expect(DEFAULT_TILE_LINKS['nhanvien-realtime-qd']).toBe('https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?timetype=1');
         expect(DEFAULT_TILE_LINKS['nhanvien-doanhthu']).toBe('https://baocao.dienmayxanh.com/dashboard/revenue-consolidated');
+        expect(DEFAULT_TILE_LINKS['nhanvien-doanhthu-qd']).toBe('https://baocao.dienmayxanh.com/dashboard/revenue-consolidated');
 
         // THI ĐUA & TRẢ CHẬM - không hardcode 910 & st=9567
         expect(DEFAULT_TILE_LINKS['nhanvien-thidua']).toBe('https://baocao.dienmayxanh.com/dashboard/thi-dua');

@@ -219,21 +219,106 @@ export const isIgnoredDept = (name?: string): boolean => {
     );
 };
 
-export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
-    if (!danhSachData) return [];
-    const rawLines = String(danhSachData).split(/\r?\n/).map(l => l.trim()).filter(l => l);
-    if (rawLines.length === 0) return [];
+export type RevenueTableKind = 'thuc' | 'qd' | 'combined';
 
-    const empMap = new Map<string, RevenueRow>();
-    const deptMap = new Map<string, RevenueRow>();
-    const totalRow: RevenueRow = { type: 'total', name: 'Tổng', dtlk: 0, dtqd: 0, hieuQuaQD: 0, soLuong: 0, donGia: 0 };
-    let currentDeptDS = 'BP ALL IN ONE - DMX';
+interface SingleRevenueParsedMap {
+    kind: RevenueTableKind;
+    empMap: Map<string, {
+        rawName: string;
+        canonicalName: string;
+        empId: string;
+        department: string;
+        soLuong: number;
+        dtlk: number;
+        dtqd: number;
+    }>;
+    deptMap: Map<string, {
+        department: string;
+        soLuong: number;
+        dtlk: number;
+        dtqd: number;
+    }>;
+    total: {
+        soLuong: number;
+        dtlk: number;
+        dtqd: number;
+        hasExplicit: boolean;
+    };
+}
+
+/**
+ * Nhận diện loại bảng từ nội dung thô:
+ * - 'qd': Bảng Doanh thu quy đổi mới (có DOANH THU QĐ và không có cột Doanh thu thực riêng biệt)
+ * - 'thuc': Bảng Doanh thu thực mới (chỉ có DOANH THU, không có DOANH THU QĐ)
+ * - 'combined': Bảng gộp cũ (có cả DOANH THU QĐ và DOANH THU thực trên cùng một bảng)
+ */
+export const detectRevenueTableKind = (rawText: string, fallbackKind: 'thuc' | 'qd' = 'thuc'): RevenueTableKind => {
+    if (!rawText) return fallbackKind;
+    const lower = rawText.toLowerCase();
+
+    const hasQd = lower.includes('doanh thu qđ') || 
+                  lower.includes('doanh thu qd') || 
+                  lower.includes('dtqđ') || 
+                  lower.includes('dt quy đổi') || 
+                  lower.includes('dt qđ');
+
+    if (!hasQd) {
+        return 'thuc';
+    }
+
+    const lines = lower.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    // Kiểm tra dòng tab-separated có cả QĐ và Thực riêng biệt
+    for (const line of lines) {
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim());
+            const hasQdPart = parts.some(p => p.includes('doanh thu qđ') || p.includes('doanh thu qd') || p.includes('dtqđ'));
+            const hasThucPart = parts.some(p => p === 'doanh thu' || p === 'dt thực' || p === 'dt thuc' || p === 'dtlk');
+            if (hasQdPart && hasThucPart) {
+                return 'combined';
+            }
+        }
+    }
+
+    // Kiểm tra trong danh sách các dòng đơn lẻ xem có cả 2 header riêng biệt không
+    const qdIndex = lines.findIndex(l => l === 'doanh thu qđ' || l === 'doanh thu qd');
+    const thucIndex = lines.findIndex(l => l === 'doanh thu' || l === 'dt thực');
+    if (qdIndex > -1 && thucIndex > qdIndex) {
+        return 'combined';
+    }
+
+    return 'qd';
+};
+
+/**
+ * Phân tích một bảng dữ liệu doanh thu đơn lẻ (Thực, Quy đổi hoặc Gộp) thành Map có cấu trúc
+ */
+export const parseRevenueToInternalMap = (
+    data: string, 
+    defaultKind: 'thuc' | 'qd' = 'thuc'
+): SingleRevenueParsedMap => {
+    const result: SingleRevenueParsedMap = {
+        kind: defaultKind,
+        empMap: new Map(),
+        deptMap: new Map(),
+        total: { soLuong: 0, dtlk: 0, dtqd: 0, hasExplicit: false }
+    };
+
+    if (!data) return result;
+    const rawLines = String(data).split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (rawLines.length === 0) return result;
+
+    const kind = detectRevenueTableKind(data, defaultKind);
+    result.kind = kind;
 
     const isValidEmployeeName = (name: string) => {
         if (!name || typeof name !== 'string') return false;
         if (!name.includes(' - ')) return false;
         const parts = name.split(' - ').map(p => p.trim());
-        return (/^\d+$/.test(parts[0]) && parts[1].length > 0) || (/^\d+$/.test(parts[1]) && parts[0].length > 0) || name.toLowerCase().includes('online') || name.toLowerCase().includes('admin');
+        return (/^\d+$/.test(parts[0]) && parts[1].length > 0) || 
+               (/^\d+$/.test(parts[1]) && parts[0].length > 0) || 
+               name.toLowerCase().includes('online') || 
+               name.toLowerCase().includes('admin');
     };
 
     const entries: { name: string; numbers: number[] }[] = [];
@@ -241,21 +326,27 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     for (let i = 0; i < rawLines.length; i++) {
         const line = rawLines[i];
         
-        // Skip metadata / navigation
+        // Skip metadata / navigation / footer text
         if (line.includes('http') || line.includes('Dashboards') || line.includes('Tìm báo cáo') ||
             line.includes('Cập nhật lúc') || line.includes('webview') || line.includes('Xuất Excel') ||
             line.includes('Toàn công ty') || line.includes('triệu đồng') || line.includes('Target trọn kỳ') ||
             line.includes('TB3T cùng') || line.includes('TLPVTC') || line.includes('Tỉ trọng trả góp') ||
-            line.includes('Doanh thu theo cấp') || line.includes('✓') || line.includes('1-') || line.includes('/ trang') ||
-            line.includes('Đơn vị:') || line.includes('Đã copy')) {
+            line.includes('Tỷ trọng trả chậm') || line.includes('Doanh thu theo cấp') || line.includes('✓') || 
+            line.includes('1-') || line.includes('/ trang') || line.includes('Đơn vị:') || line.includes('Đã copy') ||
+            line.includes('HTTP 502') || line.includes('Copy All') || line.includes('Luôn suy từ') ||
+            line.includes('nhịp 18 ngày') || line.includes('Chưa có số khoản') || line.includes('Quỹ thời gian:') ||
+            line.includes('THỜI GIAN LÀM VIỆC:') || line.includes('Chi phí?') || line.includes('Doanh thuTổng hợp') ||
+            line.includes('Lũy kếRealtime') || line.includes('DT thựcDT quy đổi') || line.includes('Toggle theme') ||
+            line.includes('ChuỗiChọn') || line.includes('VùngChọn') || line.includes('Khu vựcChọn') ||
+            line.includes('Ngành hàngChọn') || line.includes('Nhóm hàngChọn') || line.includes('employee')) {
             continue;
         }
 
         if (line.includes('\t')) {
-            const parts = line.split('\t').map(p => p.trim()).filter(p => p !== '');
+            const parts = line.split('\t').map(p => p.trim()).filter(Boolean);
             if (parts.length === 0) continue;
             const firstLower = parts[0].toLowerCase();
-            if (firstLower === 'nhân viên' || firstLower === 'số lượng' || firstLower.includes('doanh thu qđ') || firstLower.includes('target')) {
+            if (firstLower === 'nhân viên' || firstLower === 'số lượng' || firstLower.includes('doanh thu') || firstLower.includes('target')) {
                 continue;
             }
 
@@ -270,7 +361,11 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
             }
         } else {
             const lower = line.toLowerCase();
-            if (lower === 'nhân viên' || lower === 'số lượng' || lower === 'doanh thu qđ' || lower === '% tỉ trọng' || lower === 'doanh thu' || lower === 'target' || lower === '% ht target' || lower === 'tb 3 tháng' || lower === '% tt') {
+            if (lower === 'nhân viên' || lower === 'số lượng' || lower === 'doanh thu qđ' || lower === 'doanh thu qd' || 
+                lower === '% tỉ trọng' || lower === 'doanh thu' || lower === 'dt thực' || lower === 'target' || 
+                lower === '% ht target' || lower === 'tb 3 tháng' || lower === '% tt' || lower === 'dt trả thẳng' || 
+                lower === 'dt trả góp' || lower === 'dt nhập trả' || lower === 'dt trả thẳng qđ' || 
+                lower === 'dt trả góp qđ' || lower === 'dt nhập trả qđ') {
                 continue;
             }
 
@@ -284,62 +379,82 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
         }
     }
 
-    let hasExplicitTotal = false;
+    let currentDept = 'BP ALL IN ONE - DMX';
 
     entries.forEach(entry => {
         const { name: rawName, numbers } = entry;
-        if (numbers.length < 2) return;
+        if (numbers.length === 0) return;
 
         const isTotal = rawName.toLowerCase().startsWith('tổng');
         const isDept = rawName.startsWith('BP ');
 
+        let soLuongValue = 0;
         let dtlkValue = 0;
         let dtqdValue = 0;
-        let soLuongValue = 0;
 
-        // Check if new format (DOANH THU QĐ at idx 1, DOANH THU THỰC at idx 3) vs legacy (DTLK at idx 0, DTQD at idx 1)
-        if (numbers.length >= 4) {
-            soLuongValue = numbers[0];
-            dtqdValue = numbers[1];
-            dtlkValue = numbers[3];
-        } else if (numbers.length >= 2) {
-            dtlkValue = numbers[0];
-            dtqdValue = numbers[1];
+        if (kind === 'combined') {
+            if (numbers.length >= 4) {
+                soLuongValue = numbers[0];
+                dtqdValue = numbers[1];
+                dtlkValue = numbers[3];
+            } else if (numbers.length >= 2) {
+                soLuongValue = numbers[0];
+                dtlkValue = numbers[0];
+                dtqdValue = numbers[1];
+            }
+        } else if (kind === 'qd') {
+            // Bảng Doanh thu quy đổi mới: numbers[0] = SỐ LƯỢNG, numbers[1] = DOANH THU QĐ
+            if (numbers.length >= 2) {
+                soLuongValue = numbers[0];
+                dtqdValue = numbers[1];
+            } else if (numbers.length === 1) {
+                dtqdValue = numbers[0];
+            }
+        } else {
+            // Bảng Doanh thu thực mới: numbers[0] = SỐ LƯỢNG, numbers[1] = DOANH THU THỰC
+            if (numbers.length >= 2) {
+                soLuongValue = numbers[0];
+                dtlkValue = numbers[1];
+            } else if (numbers.length === 1) {
+                dtlkValue = numbers[0];
+            }
         }
 
         if (isTotal) {
-            hasExplicitTotal = true;
-            totalRow.dtlk += dtlkValue;
-            totalRow.dtqd += dtqdValue;
-            totalRow.soLuong = Number(totalRow.soLuong) + soLuongValue; // strict: undefined → NaN như `+=` cũ
+            result.total.hasExplicit = true;
+            result.total.dtlk += dtlkValue;
+            result.total.dtqd += dtqdValue;
+            result.total.soLuong += soLuongValue;
         } else if (isDept) {
-            currentDeptDS = rawName;
-            if (!isIgnoredDept(currentDeptDS)) {
-                if (!deptMap.has(rawName)) {
-                    deptMap.set(rawName, { type: 'department', name: rawName, dtlk: 0, dtqd: 0, hieuQuaQD: 0, soLuong: 0 });
+            currentDept = rawName;
+            if (!isIgnoredDept(currentDept)) {
+                if (!result.deptMap.has(rawName)) {
+                    result.deptMap.set(rawName, { department: rawName, dtlk: 0, dtqd: 0, soLuong: 0 });
                 }
-                const dept = deptMap.get(rawName)!;
+                const dept = result.deptMap.get(rawName)!;
                 dept.dtlk += dtlkValue;
                 dept.dtqd += dtqdValue;
-                dept.soLuong = Number(dept.soLuong) + soLuongValue;
+                dept.soLuong += soLuongValue;
             }
         } else if (isValidEmployeeName(rawName)) {
-            if (!isIgnoredDept(currentDeptDS)) {
+            if (!isIgnoredDept(currentDept)) {
                 const canonicalName = standardizeEmployeeName(rawName);
-                if (empMap.has(canonicalName)) {
-                    const existing = empMap.get(canonicalName)!;
+                const empId = extractEmployeeId(rawName);
+                const key = empId || canonicalName;
+
+                if (result.empMap.has(key)) {
+                    const existing = result.empMap.get(key)!;
                     existing.dtlk += dtlkValue;
                     existing.dtqd += dtqdValue;
-                    existing.soLuong = Number(existing.soLuong) + soLuongValue;
+                    existing.soLuong += soLuongValue;
                 } else {
-                    empMap.set(canonicalName, {
-                        type: 'employee',
-                        name: formatEmployeeName(canonicalName),
-                        originalName: canonicalName,
-                        department: currentDeptDS,
+                    result.empMap.set(key, {
+                        rawName,
+                        canonicalName,
+                        empId,
+                        department: currentDept,
                         dtlk: dtlkValue,
                         dtqd: dtqdValue,
-                        hieuQuaQD: 0,
                         soLuong: soLuongValue
                     });
                 }
@@ -347,10 +462,28 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
         }
     });
 
-    if (!hasExplicitTotal && empMap.size > 0) {
-        totalRow.dtlk = Array.from(empMap.values()).reduce((sum, e) => sum + e.dtlk, 0);
-        totalRow.dtqd = Array.from(empMap.values()).reduce((sum, e) => sum + e.dtqd, 0);
-        totalRow.soLuong = Array.from(empMap.values()).reduce((sum, e) => sum + (e.soLuong || 0), 0);
+    return result;
+};
+
+/**
+ * Xây dựng RevenueRow[] từ một bảng đơn lẻ
+ */
+const buildRevenueRowsFromMap = (dataMap: SingleRevenueParsedMap): RevenueRow[] => {
+    const { empMap, deptMap, total } = dataMap;
+    const rows: RevenueRow[] = [];
+
+    const totalRow: RevenueRow = {
+        type: 'total',
+        name: 'Tổng',
+        dtlk: total.hasExplicit ? total.dtlk : Array.from(empMap.values()).reduce((sum, e) => sum + e.dtlk, 0),
+        dtqd: total.hasExplicit ? total.dtqd : Array.from(empMap.values()).reduce((sum, e) => sum + e.dtqd, 0),
+        hieuQuaQD: 0,
+        soLuong: total.hasExplicit ? total.soLuong : Array.from(empMap.values()).reduce((sum, e) => sum + (e.soLuong || 0), 0),
+        donGia: 0
+    };
+    totalRow.hieuQuaQD = calculateHieuQuaQDFraction(totalRow.dtqd, totalRow.dtlk);
+    if (totalRow.dtlk > 0 || totalRow.dtqd > 0 || totalRow.soLuong > 0) {
+        rows.push(totalRow);
     }
 
     if (deptMap.size === 0 && empMap.size > 0) {
@@ -358,30 +491,190 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
         const sumDtlk = deptEmployees.reduce((sum, e) => sum + e.dtlk, 0);
         const sumDtqd = deptEmployees.reduce((sum, e) => sum + e.dtqd, 0);
         const sumSoLuong = deptEmployees.reduce((sum, e) => sum + (e.soLuong || 0), 0);
-        deptMap.set(currentDeptDS, {
-            type: 'department',
-            name: currentDeptDS,
+        deptMap.set('BP ALL IN ONE - DMX', {
+            department: 'BP ALL IN ONE - DMX',
             dtlk: sumDtlk,
             dtqd: sumDtqd,
-            hieuQuaQD: 0,
             soLuong: sumSoLuong
         });
     }
 
+    for (const dept of deptMap.values()) {
+        rows.push({
+            type: 'department',
+            name: dept.department,
+            dtlk: dept.dtlk,
+            dtqd: dept.dtqd,
+            hieuQuaQD: calculateHieuQuaQDFraction(dept.dtqd, dept.dtlk),
+            soLuong: dept.soLuong
+        });
+    }
+
+    for (const emp of empMap.values()) {
+        rows.push({
+            type: 'employee',
+            name: formatEmployeeName(emp.canonicalName),
+            originalName: emp.canonicalName,
+            department: emp.department,
+            dtlk: emp.dtlk,
+            dtqd: emp.dtqd,
+            hieuQuaQD: calculateHieuQuaQDFraction(emp.dtqd, emp.dtlk),
+            soLuong: emp.soLuong
+        });
+    }
+
+    return rows;
+};
+
+/**
+ * Ghép (merge) dữ liệu từ 2 nguồn Doanh thu Thực và Doanh thu Quy đổi thành danh sách RevenueRow chuẩn
+ */
+export const mergeRevenueData = (thucRaw?: string, qdRaw?: string): RevenueRow[] => {
+    const rawThuc = (thucRaw || '').trim();
+    const rawQd = (qdRaw || '').trim();
+
+    if (!rawThuc && !rawQd) return [];
+
+    const thucMap = rawThuc ? parseRevenueToInternalMap(rawThuc, 'thuc') : null;
+    const qdMap = rawQd ? parseRevenueToInternalMap(rawQd, 'qd') : null;
+
+    // Nếu chỉ có 1 bảng:
+    if (thucMap && !qdMap) {
+        return buildRevenueRowsFromMap(thucMap);
+    }
+    if (!thucMap && qdMap) {
+        return buildRevenueRowsFromMap(qdMap);
+    }
+
+    // Nếu cả 2 bảng đều tồn tại, tiến hành merge thông minh
+    const tMap = thucMap!;
+    const qMap = qdMap!;
+
+    // Tạo chỉ mục phụ cho bảng Quy đổi theo empId và canonicalName
+    const qdById = new Map<string, typeof qMap.empMap extends Map<any, infer V> ? V : never>();
+    const qdByCanonical = new Map<string, typeof qMap.empMap extends Map<any, infer V> ? V : never>();
+    for (const [key, item] of qMap.empMap.entries()) {
+        if (item.empId) qdById.set(item.empId, item);
+        qdByCanonical.set(item.canonicalName.toLowerCase(), item);
+        qdByCanonical.set(key.toLowerCase(), item);
+    }
+
+    const mergedEmployees = new Map<string, RevenueRow>();
+    const matchedQdKeys = new Set<string>();
+
+    // 1. Duyệt tất cả nhân viên trong bảng Thực
+    for (const [tKey, tItem] of tMap.empMap.entries()) {
+        let qItem: typeof qMap.empMap extends Map<any, infer V> ? V : undefined;
+
+        if (tItem.empId && qdById.has(tItem.empId)) {
+            qItem = qdById.get(tItem.empId);
+        } else if (qdByCanonical.has(tItem.canonicalName.toLowerCase())) {
+            qItem = qdByCanonical.get(tItem.canonicalName.toLowerCase());
+        } else if (qMap.empMap.has(tKey)) {
+            qItem = qMap.empMap.get(tKey);
+        }
+
+        if (qItem) {
+            matchedQdKeys.add(qItem.empId || qItem.canonicalName);
+        }
+
+        const canonicalName = tItem.canonicalName || qItem?.canonicalName || tKey;
+        const dtlk = tItem.dtlk;
+        const dtqd = qItem ? qItem.dtqd : (tMap.kind === 'combined' ? tItem.dtqd : 0);
+        const soLuong = tItem.soLuong > 0 ? tItem.soLuong : (qItem?.soLuong ?? 0);
+        const dept = !isIgnoredDept(tItem.department) ? tItem.department : (qItem?.department || 'BP ALL IN ONE - DMX');
+
+        mergedEmployees.set(canonicalName, {
+            type: 'employee',
+            name: formatEmployeeName(canonicalName),
+            originalName: canonicalName,
+            department: dept,
+            dtlk,
+            dtqd,
+            hieuQuaQD: calculateHieuQuaQDFraction(dtqd, dtlk),
+            soLuong
+        });
+    }
+
+    // 2. Bổ sung các nhân viên chỉ có trong bảng Quy đổi (nếu có)
+    for (const [qKey, qItem] of qMap.empMap.entries()) {
+        const identityKey = qItem.empId || qItem.canonicalName;
+        if (matchedQdKeys.has(identityKey) || matchedQdKeys.has(qKey)) {
+            continue;
+        }
+
+        const canonicalName = qItem.canonicalName || qKey;
+        const dtlk = qMap.kind === 'combined' ? qItem.dtlk : 0;
+        const dtqd = qItem.dtqd;
+        const soLuong = qItem.soLuong;
+        const dept = !isIgnoredDept(qItem.department) ? qItem.department : 'BP ALL IN ONE - DMX';
+
+        mergedEmployees.set(canonicalName, {
+            type: 'employee',
+            name: formatEmployeeName(canonicalName),
+            originalName: canonicalName,
+            department: dept,
+            dtlk,
+            dtqd,
+            hieuQuaQD: calculateHieuQuaQDFraction(dtqd, dtlk),
+            soLuong
+        });
+    }
+
+    // 3. Xây dựng dòng tổng hợp
+    const totalRow: RevenueRow = {
+        type: 'total',
+        name: 'Tổng',
+        dtlk: tMap.total.hasExplicit ? tMap.total.dtlk : Array.from(mergedEmployees.values()).reduce((sum, e) => sum + e.dtlk, 0),
+        dtqd: qMap.total.hasExplicit ? qMap.total.dtqd : (tMap.kind === 'combined' && tMap.total.hasExplicit ? tMap.total.dtqd : Array.from(mergedEmployees.values()).reduce((sum, e) => sum + e.dtqd, 0)),
+        hieuQuaQD: 0,
+        soLuong: tMap.total.hasExplicit ? tMap.total.soLuong : (qMap.total.hasExplicit ? qMap.total.soLuong : Array.from(mergedEmployees.values()).reduce((sum, e) => sum + (e.soLuong || 0), 0)),
+        donGia: 0
+    };
     totalRow.hieuQuaQD = calculateHieuQuaQDFraction(totalRow.dtqd, totalRow.dtlk);
+
+    // 4. Xây dựng các bộ phận
+    const deptMap = new Map<string, RevenueRow>();
+    for (const emp of mergedEmployees.values()) {
+        const deptName = emp.department || 'BP ALL IN ONE - DMX';
+        if (!deptMap.has(deptName)) {
+            deptMap.set(deptName, {
+                type: 'department',
+                name: deptName,
+                dtlk: 0,
+                dtqd: 0,
+                hieuQuaQD: 0,
+                soLuong: 0
+            });
+        }
+        const dept = deptMap.get(deptName)!;
+        dept.dtlk += emp.dtlk;
+        dept.dtqd += emp.dtqd;
+        dept.soLuong = Number(dept.soLuong || 0) + (emp.soLuong || 0);
+    }
     for (const dept of deptMap.values()) {
         dept.hieuQuaQD = calculateHieuQuaQDFraction(dept.dtqd, dept.dtlk);
     }
-    for (const emp of empMap.values()) {
-        emp.hieuQuaQD = calculateHieuQuaQDFraction(emp.dtqd, emp.dtlk);
-    }
 
     const rows: RevenueRow[] = [];
-    if (totalRow.dtlk > 0 || totalRow.dtqd > 0) rows.push(totalRow);
-    for (const dept of deptMap.values()) rows.push(dept);
-    for (const emp of empMap.values()) rows.push(emp);
+    if (totalRow.dtlk > 0 || totalRow.dtqd > 0 || totalRow.soLuong > 0) {
+        rows.push(totalRow);
+    }
+    for (const dept of deptMap.values()) {
+        rows.push(dept);
+    }
+    for (const emp of mergedEmployees.values()) {
+        rows.push(emp);
+    }
 
     return rows;
+};
+
+/**
+ * Tương thích ngược: Phân tích chuỗi doanh thu và tự động phân loại/gộp
+ */
+export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
+    return mergeRevenueData(danhSachData, '');
 };
 
 export const parseCrossSellingData = (data: string, employeeDepartmentMap: Record<string, string>): CrossSellingRow[] => {

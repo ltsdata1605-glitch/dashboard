@@ -459,8 +459,8 @@ const StatusTile: React.FC<{
                     ${isPasting 
                         ? `p-2.5 bg-white dark:bg-slate-800 flex flex-col ${currentTheme.ring}`
                         : hasData 
-                            ? `${currentTheme.wrapper} p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2`
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2'}
+                            ? `${currentTheme.wrapper} p-2 sm:px-2.5 sm:py-2 min-h-[52px] flex items-center justify-between gap-1.5 sm:gap-2`
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl p-2 sm:px-2.5 sm:py-2 min-h-[52px] flex items-center justify-between gap-1.5 sm:gap-2'}
                 `}
             >
                 {isPasting ? (
@@ -488,25 +488,25 @@ const StatusTile: React.FC<{
                     </div>
                 ) : (
                     <>
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
-                                {icon || <AppIcon name="upload" size="md" />}
+                                {icon || <AppIcon name="upload" size="sm" />}
                             </div>
-                            <div className="min-w-0 flex-1 flex flex-col justify-center">
-                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 leading-tight ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
+                            <div className="min-w-0 flex-1 flex flex-col justify-center overflow-hidden">
+                                <h4 className={`text-[11px] sm:text-xs font-bold uppercase tracking-tight truncate transition-colors duration-200 leading-tight ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 ${currentTheme.text}`}>
+                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 whitespace-nowrap ${currentTheme.text}`}>
                                             <AppIcon name="clock" size="xs" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5">Bấm để dán</span>
+                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5 whitespace-nowrap">Bấm để dán</span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-1 shrink-0 ml-2">
+                        <div className="flex items-center justify-end gap-1 shrink-0 ml-1.5">
                             {onOpenLinkModal && (
                                 <Button
                                     type="button"
@@ -516,11 +516,11 @@ const StatusTile: React.FC<{
                                         e.stopPropagation();
                                         onOpenLinkModal();
                                     }}
-                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
                                     title="Chỉnh sửa liên kết"
                                     aria-label="Chỉnh sửa liên kết"
                                 >
-                                    <AppIcon name="edit" size="md" />
+                                    <AppIcon name="edit" size="sm" />
                                 </Button>
                             )}
 
@@ -536,11 +536,11 @@ const StatusTile: React.FC<{
                                             onOpenLinkModal?.();
                                         }
                                     }}
-                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
                                     title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                                     aria-label="Mở liên kết báo cáo"
                                 >
-                                    <AppIcon name="link" size="md" />
+                                    <AppIcon name="link" size="sm" />
                                 </a>
                             )}
 
@@ -552,11 +552,11 @@ const StatusTile: React.FC<{
                                         e.stopPropagation();
                                         onClear(title);
                                     }}
-                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
                                     title="Xoá"
                                     aria-label="Xoá dữ liệu"
                                 >
-                                    <AppIcon name="delete" size="md" />
+                                    <AppIcon name="delete" size="sm" />
                                 </Button>
                             )}
                         </div>
@@ -1032,14 +1032,16 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const safeName = useMemo(() => supermarketName ? shortenSupermarketName(supermarketName) : '', [supermarketName]);
 
     const ids = useMemo(() => {
-        if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, empRt: null };
+        if (!supermarketName) return { ds: null, dsQd: null, td: null, rt: null, lk: null, tg: null, empRt: null, empRtQd: null };
         return {
             ds: `config-${safeName}-danhsach`,
+            dsQd: `config-${safeName}-danhsach-qd`,
             td: `config-${safeName}-thidua`,
             rt: `config-${safeName}-industry-realtime`,
             lk: `config-${safeName}-industry-luyke`,
             tg: `config-${safeName}-tragop`,
             empRt: `config-${safeName}-employee-realtime`,
+            empRtQd: `config-${safeName}-employee-realtime-qd`,
         };
     }, [supermarketName, safeName]);
 
@@ -1047,14 +1049,18 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [hiddenEmployees] = useIndexedDBState<string[]>(safeName ? `hidden-employees-${safeName}` : null, []);
 
     const [employeeRealtimeData, setEmployeeRealtimeData] = useIndexedDBState(ids.empRt, '');
+    const [employeeRealtimeQdData, setEmployeeRealtimeQdData] = useIndexedDBState(ids.empRtQd, '');
     const [danhSachData, setDanhSachData] = useIndexedDBState(ids.ds, '');
+    const [danhSachQdData, setDanhSachQdData] = useIndexedDBState(ids.dsQd, '');
     const [thiDuaData, setThiDuaData] = useIndexedDBState(ids.td, '');
     const [industryRealtimeData, setIndustryRealtimeData] = useIndexedDBState(ids.rt, '');
     const [industryLuyKeData, setIndustryLuyKeData] = useIndexedDBState(ids.lk, '');
     const [traGopData, setTraGopData] = useIndexedDBState(ids.tg, '');
 
     const [employeeRealtimeTs, setEmployeeRealtimeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.empRt}-ts` : null, null);
+    const [employeeRealtimeQdTs, setEmployeeRealtimeQdTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.empRtQd}-ts` : null, null);
     const [danhSachTs, setDanhSachTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.ds}-ts` : null, null);
+    const [danhSachQdTs, setDanhSachQdTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.dsQd}-ts` : null, null);
     const [thiDuaTs, setThiDuaTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.td}-ts` : null, null);
     const [industryRealtimeTs, setIndustryRealtimeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.rt}-ts` : null, null);
     const [industryLuyKeTs, setIndustryLuyKeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.lk}-ts` : null, null);
@@ -1243,7 +1249,135 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             
             <div className="animate-in fade-in duration-200">
                 {activeTab === 'data' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="space-y-6">
+                        {/* NHÓM 2: DOANH THU NHÂN VIÊN */}
+                        <div>
+                            <div className="flex items-center justify-between px-1 pb-2">
+                                <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-sm"></div>
+                                    DOANH THU NHÂN VIÊN
+                                </h3>
+                            </div>
+                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
+                                {/* DÒNG 1: REALTIME (THỰC & QUY ĐỔI) - GRID 2 CỘT */}
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                    <StatusTile title="REALTIME" lastUpdated={employeeRealtimeTs} value={employeeRealtimeData} placeholder="Dán RT Thực..." error={errors.employeeRealtime}
+                                        icon={<AppIcon name="clock" size="md" />} colorTheme="amber"
+                                        linkUrl={getTileLink('nhanvien-realtime', customLinks, supermarketName)}
+                                        onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-realtime', 'REALTIME', 'DOANH THU NHÂN VIÊN')}
+                                        onChange={(v) => { 
+                                            return handleUpdate(
+                                                'employeeRealtime',
+                                                v,
+                                                s => {
+                                                    const lower = s.toLowerCase();
+                                                    return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                           (lower.includes('doanh thu') || lower.includes('dt') || lower.includes('số lượng') || lower.includes('dtlk') || lower.includes('realtime'));
+                                                },
+                                                setEmployeeRealtimeData,
+                                                setEmployeeRealtimeTs,
+                                                `Nhân viên Realtime (Thực) - ${supermarketName}`,
+                                                ids.empRt!,
+                                                'Nhân viên Realtime'
+                                            ); 
+                                        }}
+                                        onClear={(title) => { 
+                                            setEmployeeRealtimeData(''); 
+                                            setEmployeeRealtimeTs(null); 
+                                            removeUpdate(ids.empRt!); 
+                                            toast.success(`Đã xoá dữ liệu ${title}`);
+                                        }} />
+
+                                    <StatusTile title="REALTIME QĐ" lastUpdated={employeeRealtimeQdTs} value={employeeRealtimeQdData} placeholder="Dán RT Quy đổi..." error={errors.employeeRealtimeQd}
+                                        icon={<AppIcon name="sparkles" size="md" />} colorTheme="amber"
+                                        linkUrl={getTileLink('nhanvien-realtime-qd', customLinks, supermarketName)}
+                                        onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-realtime-qd', 'REALTIME QĐ', 'DOANH THU NHÂN VIÊN')}
+                                        onChange={(v) => { 
+                                            return handleUpdate(
+                                                'employeeRealtimeQd',
+                                                v,
+                                                s => {
+                                                    const lower = s.toLowerCase();
+                                                    return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                           (lower.includes('doanh thu') || lower.includes('dt') || lower.includes('số lượng') || lower.includes('quy đổi') || lower.includes('qđ'));
+                                                },
+                                                setEmployeeRealtimeQdData,
+                                                setEmployeeRealtimeQdTs,
+                                                `Nhân viên Realtime (QĐ) - ${supermarketName}`,
+                                                ids.empRtQd!,
+                                                'Nhân viên Realtime QĐ'
+                                            ); 
+                                        }}
+                                        onClear={(title) => { 
+                                            setEmployeeRealtimeQdData(''); 
+                                            setEmployeeRealtimeQdTs(null); 
+                                            removeUpdate(ids.empRtQd!); 
+                                            toast.success(`Đã xoá dữ liệu ${title}`);
+                                        }} />
+                                </div>
+
+                                {/* DÒNG 2: LUỸ KẾ (THỰC & QUY ĐỔI) - GRID 2 CỘT */}
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                    <StatusTile title="LUỸ KẾ" lastUpdated={danhSachTs} value={danhSachData} placeholder="Dán LK Thực..." error={errors.danhSach}
+                                        icon={<AppIcon name="users" size="md" />} colorTheme="emerald"
+                                        linkUrl={getTileLink('nhanvien-doanhthu', customLinks, supermarketName)}
+                                        onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'LUỸ KẾ', 'DOANH THU NHÂN VIÊN')}
+                                        onChange={(v) => { 
+                                            return handleUpdate(
+                                                'danhSach',
+                                                v,
+                                                s => {
+                                                    const lower = s.toLowerCase();
+                                                    return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                           (lower.includes('doanh thu') || lower.includes('dtlk') || lower.includes('số lượng'));
+                                                },
+                                                setDanhSachData,
+                                                setDanhSachTs,
+                                                `Nhân viên (DS Thực) - ${supermarketName}`,
+                                                ids.ds!,
+                                                'Nhân viên Luỹ kế'
+                                            ); 
+                                        }}
+                                        onClear={(title) => { 
+                                            setDanhSachData(''); 
+                                            setDanhSachTs(null); 
+                                            removeUpdate(ids.ds!); 
+                                            toast.success(`Đã xoá dữ liệu ${title}`);
+                                        }} />
+
+                                    <StatusTile title="LUỸ KẾ QĐ" lastUpdated={danhSachQdTs} value={danhSachQdData} placeholder="Dán LK Quy đổi..." error={errors.danhSachQd}
+                                        icon={<AppIcon name="sparkles" size="md" />} colorTheme="emerald"
+                                        linkUrl={getTileLink('nhanvien-doanhthu-qd', customLinks, supermarketName)}
+                                        onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu-qd', 'LUỸ KẾ QĐ', 'DOANH THU NHÂN VIÊN')}
+                                        onChange={(v) => { 
+                                            return handleUpdate(
+                                                'danhSachQd',
+                                                v,
+                                                s => {
+                                                    const lower = s.toLowerCase();
+                                                    return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
+                                                           (lower.includes('doanh thu') || lower.includes('dt') || lower.includes('số lượng') || lower.includes('quy đổi') || lower.includes('qđ'));
+                                                },
+                                                setDanhSachQdData,
+                                                setDanhSachQdTs,
+                                                `Nhân viên (DS QĐ) - ${supermarketName}`,
+                                                ids.dsQd!,
+                                                'Nhân viên Luỹ kế QĐ'
+                                            ); 
+                                        }}
+                                        onClear={(title) => { 
+                                            setDanhSachQdData(''); 
+                                            setDanhSachQdTs(null); 
+                                            removeUpdate(ids.dsQd!); 
+                                            toast.success(`Đã xoá dữ liệu ${title}`);
+                                        }} />
+                                </div>
+                            </div>
+                        </div>
+
+
+                        {/* HÀNG 2: SIÊU THỊ NGÀNH HÀNG & THI ĐUA TRẢ CHẬM (2 CỘT CÂN XỨNG) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
                         {/* NHÓM 1: BC D.THU NGÀNH HÀNG (DÀNH CHO SIÊU THỊ) */}
                         <div>
                             <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider px-1 pb-2 flex items-center gap-1.5">
@@ -1293,70 +1427,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setIndustryLuyKeData(''); 
                                         setIndustryLuyKeTs(null); 
                                         removeUpdate(ids.lk!); 
-                                        toast.success(`Đã xoá dữ liệu ${title}`);
-                                    }} />
-                            </div>
-                        </div>
-                        {/* NHÓM 2: DOANH THU NHÂN VIÊN */}
-                        <div>
-                            <div className="flex items-center justify-between px-1 pb-2">
-                                <h3 className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                                    <div className="w-2 h-2 bg-emerald-500 rounded-sm"></div>
-                                    DOANH THU NHÂN VIÊN
-                                </h3>
-                            </div>
-                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
-                                <StatusTile title="REALTIME" lastUpdated={employeeRealtimeTs} value={employeeRealtimeData} placeholder="Dán dữ liệu Realtime..." error={errors.employeeRealtime}
-                                    icon={<AppIcon name="clock" size="md" />} colorTheme="amber"
-                                    linkUrl={getTileLink('nhanvien-realtime', customLinks, supermarketName)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-realtime', 'REALTIME', 'DOANH THU NHÂN VIÊN')}
-                                    onChange={(v) => { 
-                                        return handleUpdate(
-                                            'employeeRealtime',
-                                            v,
-                                            s => {
-                                                const lower = s.toLowerCase();
-                                                return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
-                                                       (lower.includes('doanh thu') || lower.includes('dt') || lower.includes('số lượng') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('realtime'));
-                                            },
-                                            setEmployeeRealtimeData,
-                                            setEmployeeRealtimeTs,
-                                            `Nhân viên Realtime - ${supermarketName}`,
-                                            ids.empRt!,
-                                            'Nhân viên Realtime'
-                                        ); 
-                                    }}
-                                    onClear={(title) => { 
-                                        setEmployeeRealtimeData(''); 
-                                        setEmployeeRealtimeTs(null); 
-                                        removeUpdate(ids.empRt!); 
-                                        toast.success(`Đã xoá dữ liệu ${title}`);
-                                    }} />
-
-                                <StatusTile title="LUỸ KẾ" lastUpdated={danhSachTs} value={danhSachData}
-                                    icon={<AppIcon name="users" size="md" />} colorTheme="emerald"
-                                    linkUrl={getTileLink('nhanvien-doanhthu', customLinks, supermarketName)}
-                                    onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'LUỸ KẾ', 'DOANH THU NHÂN VIÊN')}
-                                    onChange={(v) => { 
-                                        return handleUpdate(
-                                            'danhSach',
-                                            v,
-                                            s => {
-                                                const lower = s.toLowerCase();
-                                                return (lower.includes('nhân viên') || lower.includes('nhan vien')) && 
-                                                       (lower.includes('doanh thu') || lower.includes('dtlk') || lower.includes('dtqđ') || lower.includes('số lượng'));
-                                            },
-                                            setDanhSachData,
-                                            setDanhSachTs,
-                                            `Nhân viên (DS) - ${supermarketName}`,
-                                            ids.ds!,
-                                            'Nhân viên Luỹ kế'
-                                        ); 
-                                    }}
-                                    onClear={(title) => { 
-                                        setDanhSachData(''); 
-                                        setDanhSachTs(null); 
-                                        removeUpdate(ids.ds!); 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} />
                             </div>
@@ -1424,6 +1494,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} />
                             </div>
+                        </div>
+
                         </div>
                     </div>
                 )}

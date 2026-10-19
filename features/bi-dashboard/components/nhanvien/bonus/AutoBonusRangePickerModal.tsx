@@ -69,8 +69,9 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
     isOpen, onClose, employeeCount, onRunSingle, onRunYear, onRunCompare,
     canResume, resumeInfo, onResume,
 }) => {
+    const [now, setNow] = useState(() => new Date());
     const [activeTab, setActiveTab] = useState<PickerTab>('current');
-    const recentMonths = useMemo(() => listRecentMonths(12), []);
+    const recentMonths = useMemo(() => listRecentMonths(12, now), [now]);
     const [selectedMonth, setSelectedMonth] = useState(recentMonths[0]?.yyyymm || '');
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [fromMonth, setFromMonth] = useState(0);
@@ -79,7 +80,6 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
     const [customTo, setCustomTo] = useState('');
     const [showYearConfirm, setShowYearConfirm] = useState(false);
 
-    const now = useMemo(() => new Date(), []);
     const maxMonthIndex = useMemo(() => {
         if (!selectedYear) return 11;
         return selectedYear === now.getFullYear() ? now.getMonth() : 11;
@@ -87,16 +87,19 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
 
     useEffect(() => {
         if (!isOpen) return;
+        const currentNow = new Date();
+        setNow(currentNow);
         setActiveTab('current');
-        setSelectedMonth(recentMonths[0]?.yyyymm || '');
+        const months = listRecentMonths(12, currentNow);
+        setSelectedMonth(months[0]?.yyyymm || '');
         setSelectedYear(null);
         setFromMonth(0);
         setToMonth(null);
-        const def = getCurrentRangeDefault();
+        const def = getCurrentRangeDefault(currentNow);
         setCustomFrom(def.fromDate);
         setCustomTo(def.toDate);
         setShowYearConfirm(false);
-    }, [isOpen, recentMonths]);
+    }, [isOpen]);
 
     useEffect(() => {
         if (selectedYear) {
@@ -105,13 +108,13 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
         }
     }, [selectedYear, now]);
 
-    const currentRange = useMemo(() => getCurrentRangeDefault(), []);
-    const comparePeriods = useMemo(() => getComparePeriodDefault(), []);
+    const currentRange = useMemo(() => getCurrentRangeDefault(now), [now]);
+    const comparePeriods = useMemo(() => getComparePeriodDefault(now), [now]);
     // Nhãn tiêu đề sau khi so sánh xong = đúng nhãn "Hiện tại": dữ liệu kỳ này cũng được mirror
     // sang bonus-data-* nên bảng Tổng hợp hiển thị đúng "ĐẾN NGÀY hôm qua"; riêng chế độ xem
     // So sánh tự đặt tiêu đề "SO SÁNH ... VS ..." từ kho compare (xem BonusTab).
     const compareLabel = `ĐẾN NGÀY ${toShortDDMM(comparePeriods.current.toDate)}`;
-    const monthRange = useMemo(() => selectedMonth ? getMonthRange(selectedMonth) : null, [selectedMonth]);
+    const monthRange = useMemo(() => selectedMonth ? getMonthRange(selectedMonth, now) : null, [selectedMonth, now]);
     const actualToMonth = toMonth != null ? toMonth : maxMonthIndex;
     const yearPlan = useMemo(
         () => (selectedYear ? getYearMonthPlan(selectedYear, now, fromMonth, actualToMonth) : null),
@@ -127,7 +130,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
         const toDate = parseDDMMYYYY(customTo);
         if (!fromDate || !toDate) return { valid: false, error: 'Chọn đủ ngày bắt đầu và ngày kết thúc.' };
         if (toDate < fromDate) return { valid: false, error: 'Ngày kết thúc phải sau ngày bắt đầu.' };
-        const yesterday = new Date();
+        const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
         yesterday.setHours(0, 0, 0, 0);
         if (toDate > yesterday) return { valid: false, error: 'Ngày kết thúc không được vượt quá hôm qua.' };
@@ -135,7 +138,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
             return { valid: false, error: '2 ngày phải cùng tháng. Muốn lấy nhiều tháng, dùng lựa chọn Tháng hoặc Năm.' };
         }
         return { valid: true as const };
-    }, [customFrom, customTo]);
+    }, [customFrom, customTo, now]);
 
     if (!isOpen) return null;
 

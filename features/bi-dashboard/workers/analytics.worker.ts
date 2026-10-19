@@ -6,6 +6,7 @@ import {
 } from '../utils/dashboardHelpers';
 import { 
     parseRevenueData, 
+    mergeRevenueData,
     parseInstallmentData, 
     parseCrossSellingData,
     parseCompetitionData
@@ -31,7 +32,13 @@ self.onmessage = async (e: MessageEvent) => {
                 result = parseIndustryLuyKeData(payload.text, payload.industryBiMap);
                 break;
             case 'PARSE_REVENUE':
-                result = parseRevenueData(payload);
+                if (typeof payload === 'string') {
+                    result = parseRevenueData(payload);
+                } else if (payload && typeof payload === 'object') {
+                    result = mergeRevenueData(payload.thucText || payload.text || '', payload.qdText || '');
+                } else {
+                    result = [];
+                }
                 break;
             case 'PARSE_INSTALLMENT':
                 result = parseInstallmentData(payload.text, payload.employeeDepartmentMap);

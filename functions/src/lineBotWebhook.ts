@@ -517,7 +517,7 @@ function getCategoryMeta(type?: string): CategoryMeta {
             name: 'Giờ Vàng',
             title: 'PMH GIỜ VÀNG GIÁ SỐC',
             prefix: 'gv',
-            headerColor: '#D97706'
+            headerColor: '#BE123C'
         };
     }
     if (t.includes('honor')) {

@@ -196,7 +196,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         } else if (meta.id === 'EVENT') {
             badgeColor = 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700';
         } else if (meta.id === 'GVGS') {
-            badgeColor = 'bg-emerald-200 text-emerald-800 border border-emerald-400';
+            badgeColor = 'bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700';
         } else if (meta.id === 'HONOR') {
             badgeColor = 'bg-sky-200 text-sky-800 border border-sky-400';
         } else if (meta.id === 'SAMSUNG') {

@@ -608,7 +608,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                         onClick={() => onIssueModeChange('gvgs')}
                                         className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
                                             issueMode === 'gvgs'
-                                                ? 'bg-sky-600 text-white shadow-xs'
+                                                ? 'bg-[#BE123C] text-white shadow-xs'
                                                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                         }`}
                                     >
@@ -617,9 +617,9 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <div className="bg-[#06C755] text-white px-3 py-1.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-mono text-xs font-bold">
+                                    <div className={`text-white px-3 py-1.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-mono text-xs font-bold ${issueMode === 'event' ? 'bg-[#06C755]' : 'bg-[#BE123C]'}`}>
                                         {issueMode === 'event' ? 'e4 12345678' : 'gv2 87654321'}
-                                        <div className="text-[8px] text-emerald-100 text-right mt-0.5">13:48 ✓✓</div>
+                                        <div className="text-[8px] text-white/80 text-right mt-0.5">13:48 ✓✓</div>
                                     </div>
                                 </div>
 
@@ -631,7 +631,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                     {/* LINE Flex Message Card (Bubble) */}
                                     <div className="w-full max-w-[92%] rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
                                         {/* Flex Header */}
-                                        <div className={`px-3 py-2 ${issueMode === 'event' ? 'bg-[#06C755]' : 'bg-[#0284C7]'} text-white flex items-center justify-between shadow-2xs`}>
+                                        <div className={`px-3 py-2 ${issueMode === 'event' ? 'bg-[#06C755]' : 'bg-[#BE123C]'} text-white flex items-center justify-between shadow-2xs`}>
                                             <div className="flex items-center gap-1.5">
                                                 <span className="text-xs">🎁</span>
                                                 <span className="font-bold text-[11px] tracking-wide uppercase">
