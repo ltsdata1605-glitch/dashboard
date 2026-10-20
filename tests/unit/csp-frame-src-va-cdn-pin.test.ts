@@ -40,6 +40,13 @@ describe('CSP frame-src trong index.html', () => {
         expect(connectSrc.split(/\s+/)).toContain('https://www.googletagmanager.com');
     });
 
+    // gapi (script-src https://apis.google.com, Firebase Auth nạp) tự gửi ping /js/gen_204 về chính host đó — WebKit báo
+    // "Refused to connect" khi thiếu ở connect-src (CI WebKit đỏ bài in tem PDF, 2026-10-20).
+    it('connect-src cho phép apis.google.com — gapi gửi ping /js/gen_204 về đó', () => {
+        const connectSrc = /\bconnect-src\b([^;]*)/.exec(cspMeta)?.[1] ?? '';
+        expect(connectSrc.split(/\s+/)).toContain('https://apis.google.com');
+    });
+
     it('tìm được thẻ meta CSP', () => {
         expect(cspMeta.trim(), 'không tìm thấy thẻ meta Content-Security-Policy').not.toBe('');
     });

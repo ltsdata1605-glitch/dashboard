@@ -565,7 +565,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     
     if (isBatchExporting) {
         return (
-            <div className="modal-content bg-slate-50 dark:bg-slate-900 w-[640px] flex flex-col border border-slate-200 dark:border-slate-700">
+            <div data-batch-employee={employeeName} className="modal-content bg-slate-50 dark:bg-slate-900 w-[640px] flex flex-col border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Phân Tích Hiệu Quả Cá Nhân</p>
