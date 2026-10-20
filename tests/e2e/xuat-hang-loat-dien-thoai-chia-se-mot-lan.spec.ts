@@ -93,57 +93,10 @@ test('xuất hàng loạt NV trên iPhone: một nút, một lượt chia sẻ �
     await expect(nut).toHaveCount(0);
 });
 
-/**
- * 2026-10-20: CI WebKit đỏ 2/27 lượt ở bài trên — "Đã xuất 2/3 ảnh. Chưa xuất được: Nhân Viên 2". Vòng hàng loạt vẽ thẻ nhân
- * viên ngoài màn hình rồi CHỜ CỨNG 800 ms; máy đang bận (lượt tự xuất Bot LINE chụp ảnh ngầm ngay sau khi tải tệp) thì React
- * chưa kịp vẽ → mục đó bị đánh "Không dựng được nội dung". Tái hiện chắc chắn bằng cách làm bộ lập lịch của React (gửi việc
- * qua MessageChannel) đến trễ 1,2 s: code cũ 0/3 ảnh, nay chờ đúng thẻ của đúng người (hooks/useExportLogic.ts) → 3/3.
- */
-test('React vẽ trễ (máy bận): xuất hàng loạt vẫn đủ 3/3 ảnh, không đánh hỏng oan', async ({ page }) => {
-    test.setTimeout(180_000);
-    await page.addInitScript(() => {
-        Object.defineProperty(navigator, 'canShare', { configurable: true, value: (d: ShareData) => !!d?.files?.length });
-        Object.defineProperty(navigator, 'share', { configurable: true, value: async () => {} });
-        const W = window as unknown as { __veTre?: boolean; MessageChannel: unknown };
-        const Goc = window.MessageChannel;
-        W.MessageChannel = class {
-            port1: MessagePort; port2: MessagePort;
-            constructor() {
-                const kenh = new Goc();
-                const p2 = kenh.port2;
-                const gui = p2.postMessage.bind(p2);
-                this.port1 = kenh.port1;
-                this.port2 = new Proxy(p2, {
-                    get(t, k) {
-                        if (k === 'postMessage') return (m: unknown) => { if (W.__veTre) setTimeout(() => gui(m), 1200); else gui(m); };
-                        const v = Reflect.get(t, k);
-                        return typeof v === 'function' ? v.bind(t) : v;
-                    },
-                });
-            }
-        };
-    });
-    const cauHinh = taoCauHinh();
-    await page.route('**://docs.google.com/**', r => r.fulfill({
-        status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
-    }));
-    await page.goto('/?tab=analysis');
-    await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
-    await page.locator('input[type="file"]').first().setInputFiles(taoFileBanHang());
-    await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
-    await expect(page.locator('#business-overview')).toContainText('66 Tr', { timeout: 60_000 });
-
-    await page.evaluate(() => { (window as unknown as { __veTre?: boolean }).__veTre = true; });
-    await page.locator('#employee-analysis-section').getByTitle('Xuất hàng loạt báo cáo chi tiết').first().click();
-    // Đọc câu tổng kết ngay khi nó hiện (bảng thành công tự tắt sau 2,5 s)
-    const tongKet = await page.waitForFunction(() => {
-        const t = document.getElementById('export-overlay')?.textContent || '';
-        return /Đã xuất đủ|Đã xuất \d|Không xuất được/.test(t) ? t.replace(/\s+/g, ' ') : false;
-    }, undefined, { timeout: 150_000, polling: 100 });
-    const chu = String(await tongKet.jsonValue());
-    expect(chu, chu.slice(0, 300)).toContain('Đã xuất đủ 3/3 ảnh');
-    expect(chu).not.toContain('Không dựng được nội dung');
-});
+// 2026-10-20: bài trên từng đỏ 2/27 lượt CI WebKit ("Đã xuất 2/3 ảnh") — vòng hàng loạt chờ cứng 800 ms cho thẻ vẽ ngoài màn
+// hình, máy bận (lượt tự xuất Bot LINE chạy ngầm) thì React vẽ chưa xong. Nay chờ đúng thẻ của đúng người (hooks/choTheNhanVien.ts);
+// đo bằng test đơn vị đồng hồ giả tests/unit/cho-the-nhan-vien.test.ts. (Bản e2e làm trễ bộ lập lịch React cả app bị loại: trên CI
+// WebKit tổng thời gian dao động 43 s → hơn 150 s tuỳ tốc độ máy — không ổn định.)
 
 test('lớp phủ xuất ảnh: hiện lại ngay sau khi ẩn thì KHÔNG bị gỡ theo hẹn cũ', async ({ page }) => {
     await page.goto('/');
