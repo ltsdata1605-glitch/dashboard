@@ -1,4 +1,5 @@
 import React, { ComponentType, lazy } from 'react';
+import { dangRoiTrang, taiLaiKhiLoiChunk } from '../components/shared/ui/taiLaiKhiLoiChunk';
 
 /**
  * Lazy loads a component with automatic retry on chunk load / preload failures.
@@ -47,13 +48,17 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         } catch (err: any) {
             console.warn(`[lazyWithRetry] Error loading lazy module "${name || 'unknown'}":`, err);
             if (!hasRetried && typeof window !== 'undefined') {
-                try {
-                    sessionStorage.setItem(reloadKey, 'true');
-                } catch {
-                    // Ignore quota or private mode issues
-                }
-                // Auto reload page to pick up latest index.html and chunk hashes
-                window.location.reload();
+                // Trang ĐANG RỜI ĐI: WebKit huỷ import dở dang khi bắt đầu điều hướng — lỗi do bị huỷ, không phải bản mới.
+                // Tải lại lúc này sẽ giành mất lượt điều hướng của người dùng → cứ để Suspense chờ tới khi trang rời đi.
+                if (dangRoiTrang()) return new Promise<{ default: T }>(() => {});
+                // Auto reload page to pick up latest index.html and chunk hashes (chờ một nhịp — taiLaiKhiLoiChunk.ts)
+                taiLaiKhiLoiChunk(() => {
+                    try {
+                        sessionStorage.setItem(reloadKey, 'true');
+                    } catch {
+                        // Ignore quota or private mode issues
+                    }
+                });
                 // Return an unresolved promise to keep Suspense in loading state while browser reloads
                 return new Promise<{ default: T }>(() => {});
             }

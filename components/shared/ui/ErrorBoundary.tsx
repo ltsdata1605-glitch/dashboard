@@ -2,6 +2,7 @@
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AppIcon } from './icon/AppIcon';
 import { Button } from './Button';
+import { taiLaiKhiLoiChunk } from './taiLaiKhiLoiChunk';
 
 interface Props {
   children: ReactNode;
@@ -44,8 +45,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
       const now = Date.now();
       const lastReload = sessionStorage.getItem('last_module_import_reload');
       if (!lastReload || now - Number(lastReload) > 10000) {
-        sessionStorage.setItem('last_module_import_reload', String(now));
-        window.location.reload();
+        // Chờ một nhịp và BỎ QUA khi trang đang rời đi — WebKit huỷ import dở dang lúc điều hướng (taiLaiKhiLoiChunk.ts)
+        taiLaiKhiLoiChunk(() => sessionStorage.setItem('last_module_import_reload', String(Date.now())));
       }
     }
   }
