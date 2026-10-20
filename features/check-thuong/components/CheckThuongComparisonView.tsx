@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 import {
     CHECK_THUONG_COLS,
     parseNumber,
@@ -92,14 +93,17 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
                 </div>
 
                 {onExportComparison && (
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         type="button"
                         onClick={onExportComparison}
                         title="Xuất ảnh so sánh"
-                        className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer no-print"
+                        aria-label="Xuất ảnh so sánh"
+                        className="no-print lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700"
                     >
-                        <AppIcon name="image" size="xs" />
-                    </button>
+                        <AppIcon name="exportImage" size="md" />
+                    </Button>
                 )}
             </div>
 
@@ -176,13 +180,15 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
                     <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200">
                         Top 3 Nhóm Thưởng Cao Nhất
                     </h4>
-                    <button
+                    <Button
+                        variant="inline-link"
                         type="button"
+                        aria-expanded={showAllAwarded}
                         onClick={() => setShowAllAwarded(!showAllAwarded)}
-                        className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer no-print"
+                        className="ycx-hit text-[11px] font-bold no-print"
                     >
                         {showAllAwarded ? 'Thu gọn' : 'Xem tất cả'}
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">

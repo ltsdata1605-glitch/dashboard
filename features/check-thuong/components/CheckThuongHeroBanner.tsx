@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 import { formatCurrencyFull } from '../services/checkThuongCalc';
 
 interface CheckThuongHeroBannerProps {
@@ -41,14 +42,17 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
                 </p>
 
                 {onExportBanner && (
-                    <button
+                    <Button
+                        variant="unstyled"
+                        size="none"
                         type="button"
                         onClick={onExportBanner}
                         title="Xuất ảnh báo cáo tổng hợp"
-                        className="p-1 sm:p-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white transition-all cursor-pointer no-print hide-on-export backdrop-blur-sm"
+                        aria-label="Xuất ảnh báo cáo tổng hợp"
+                        className="ycx-hit p-1 sm:p-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white transition-all cursor-pointer no-print hide-on-export backdrop-blur-sm"
                     >
                         <AppIcon name="image" size="xs" />
-                    </button>
+                    </Button>
                 )}
             </div>
 

@@ -1,5 +1,7 @@
 import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 import { CheckThuongGroupDef, CheckThuongViewMode } from '../types';
 
 interface CheckThuongStatusSummaryProps {
@@ -43,9 +45,12 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                     const isSelected = activeFilter === group.key;
 
                     return (
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             key={group.key}
                             type="button"
+                            aria-pressed={isSelected}
                             onClick={() => onSelectFilter(activeFilter === group.key ? 'all' : group.key)}
                             style={{
                                 borderLeftColor: styling.border,
@@ -66,7 +71,7 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                                     {group.data.length > 0 && totalCount > 0 ? `${Math.round((group.data.length / totalCount) * 100)}%` : ''}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                     );
                 })}
             </div>
@@ -76,74 +81,60 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
 
             {/* Filter Pills + Actions Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 hide-on-export no-print">
-                {/* Pill filters */}
-                <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar text-xs">
-                    <button
-                        type="button"
-                        onClick={() => onSelectFilter('all')}
-                        className={`px-3 py-1 rounded-full font-bold transition-all cursor-pointer whitespace-nowrap ${
-                            activeFilter === 'all'
-                                ? 'bg-sky-600 text-white shadow-sm'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                        }`}
-                    >
-                        Tất cả ({totalCount})
-                    </button>
-
-                    {groups.map(group => {
-                        const isSelected = activeFilter === group.key;
-                        return (
-                            <button
-                                key={group.key}
-                                type="button"
-                                onClick={() => onSelectFilter(isSelected ? 'all' : group.key)}
-                                className={`px-2.5 py-1 rounded-full font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
-                                    isSelected
-                                        ? 'bg-sky-600 text-white shadow-sm'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                }`}
-                            >
-                                <span>{group.shortTitle}</span>
-                                <span className={`px-1.5 py-0.2 rounded-full text-[11px] ${isSelected ? 'bg-white/20' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                                    {group.data.length}
-                                </span>
-                            </button>
-                        );
-                    })}
-                </div>
+                {/* Lọc theo nhóm — chip dùng chung (GĐ10); bấm lại nhóm đang chọn là bỏ lọc như trước */}
+                <Tabs
+                    variant="chips"
+                    size="sm"
+                    className="py-1"
+                    activeId={activeFilter}
+                    onChange={(id) => onSelectFilter(id !== 'all' && id === activeFilter ? 'all' : id)}
+                    items={[
+                        { id: 'all', label: `Tất cả (${totalCount})` },
+                        ...groups.map(group => ({ id: group.key, label: group.shortTitle, badge: group.data.length })),
+                    ]}
+                />
 
                 {/* View Mode & Export Tools */}
                 <div className="flex items-center gap-1.5 shrink-0 no-print hide-on-export">
-                    <button
+                    <Button
+                        variant="tinted"
+                        size="none"
                         type="button"
                         onClick={onToggleViewMode}
                         title={viewMode === 'list' ? 'Chuyển sang dạng Lưới thẻ' : 'Chuyển sang dạng Danh sách bảng'}
-                        className="h-8 px-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50 border border-sky-200 dark:border-sky-800 transition-all font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                        className="ycx-hit h-8 px-2.5 rounded-control text-xs gap-1.5"
                     >
                         <AppIcon name={viewMode === 'list' ? 'table' : 'filter'} size="xs" />
                         <span className="hidden sm:inline">{viewMode === 'list' ? 'Dạng bảng' : 'Dạng thẻ'}</span>
-                    </button>
+                    </Button>
 
+                    {/* Nút công cụ chuẩn 4.1b (DESIGN_SYSTEM): nhìn thấy 32/36px, icon 18px, xám khi nghỉ, vùng chạm 44 (ycx-hit) */}
                     {onExportFiltered && (
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             type="button"
                             onClick={onExportFiltered}
                             title="Xuất ảnh danh sách đang lọc"
-                            className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800 transition-all flex items-center justify-center cursor-pointer"
+                            aria-label="Xuất ảnh danh sách đang lọc"
+                            className="lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700"
                         >
-                            <AppIcon name="image" size="xs" />
-                        </button>
+                            <AppIcon name="exportImage" size="md" />
+                        </Button>
                     )}
 
                     {onExportAll && (
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             type="button"
                             onClick={onExportAll}
                             title="Xuất ảnh toàn bộ danh sách"
-                            className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 transition-all flex items-center justify-center cursor-pointer"
+                            aria-label="Xuất ảnh toàn bộ danh sách"
+                            className="lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700"
                         >
-                            <AppIcon name="download" size="xs" />
-                        </button>
+                            <AppIcon name="download" size="md" />
+                        </Button>
                     )}
                 </div>
             </div>

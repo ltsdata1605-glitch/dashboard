@@ -170,6 +170,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                     aria-label="Tìm theo tên nhân viên"
                     leftIcon="search"
                     rightIcon={searchKeyword ? 'close' : undefined}
+                    rightIconLabel="Xoá từ khoá"
                     onRightIconClick={searchKeyword ? () => setSearchKeyword('') : undefined}
                     className="h-8 text-xs"
                 />

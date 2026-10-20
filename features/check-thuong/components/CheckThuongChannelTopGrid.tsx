@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 import { CheckThuongStoreSummary } from '../types';
 
 interface CheckThuongChannelTopGridProps {
@@ -172,7 +173,9 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                 </span>
                             </div>
                             {/* NÚT XUẤT ẢNH (CHỈ ICON, MÀU PASTEL ĐỒNG BỘ) */}
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -180,10 +183,11 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                 }}
                                 disabled={isExporting}
                                 title={`Xuất ảnh Top 10 siêu thị thưởng cao kênh ${channel}`}
-                                className={`p-1.5 ${theme.button} border rounded-none transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
+                                aria-label={`Xuất ảnh Top 10 kênh ${channel}`}
+                                className={`ycx-hit p-1.5 ${theme.button} border rounded-none transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
                             >
                                 <AppIcon name="exportImage" size="md" className={theme.icon} />
-                            </button>
+                            </Button>
                         </div>
 
                         {/* BẢNG TOP 10 */}
@@ -250,13 +254,14 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                         {/* FOOTER CARD */}
                         <div className="px-3 py-1.5 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
                             <span>{channelStores.length} siêu thị</span>
-                            <button
+                            <Button
+                                variant="inline-link"
                                 type="button"
                                 onClick={() => top10[0] && onSelectStore(top10[0].storeCode)}
-                                className="text-sky-600 hover:text-sky-700 dark:text-sky-400 font-bold inline-flex items-center gap-0.5 cursor-pointer"
+                                className="ycx-hit text-[11px] font-bold gap-0.5"
                             >
                                 Top 1 <AppIcon name="chevronRight" size="xs" />
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 );

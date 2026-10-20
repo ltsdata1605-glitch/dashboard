@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Modal } from '../../../components/shared/ui/Modal';
+import { Button } from '../../../components/shared/ui/Button';
 import { CHECK_THUONG_COLS, parseNumber, formatCurrency, formatPercent, formatNumber } from '../services/checkThuongCalc';
 
 interface CheckThuongRankingModalProps {
@@ -105,13 +106,9 @@ export const CheckThuongRankingModal: React.FC<CheckThuongRankingModalProps> = (
             titleColorClass="text-sky-600 dark:text-sky-400 uppercase tracking-tight"
             footer={
                 <div className="flex justify-end w-full">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 font-bold text-xs cursor-pointer text-slate-700 dark:text-slate-200"
-                    >
+                    <Button variant="secondary" size="sm" type="button" onClick={onClose}>
                         Đóng
-                    </button>
+                    </Button>
                 </div>
             }
         >

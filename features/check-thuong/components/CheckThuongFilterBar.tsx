@@ -2,6 +2,9 @@ import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { LeaderboardFilterState } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 
 interface CheckThuongFilterBarProps {
     filters: LeaderboardFilterState;
@@ -32,16 +35,14 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-none border border-slate-200/80 dark:border-slate-800 shadow-sm mb-4">
             {/* NHÓM 1: BỘ LỌC KÊNH & TÌM KIẾM */}
             <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                {/* LỌC KÊNH */}
-                <div className="relative shrink-0 flex items-center">
-                    <div className="absolute left-3 pointer-events-none text-slate-400">
-                        <AppIcon name="filter" size="sm" />
-                    </div>
-                    <select
+                {/* LỌC KÊNH — Select dùng chung (GĐ10); khối Top thưởng giữ góc vuông của thiết kế gốc */}
+                <div className="shrink-0">
+                    <Select
+                        leftIcon="filter"
                         value={filters.channel}
                         onChange={(e) => onFilterChange({ channel: e.target.value })}
                         aria-label="Chọn kênh siêu thị"
-                        className="w-full sm:w-auto pl-8 pr-8 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all cursor-pointer"
+                        className="sm:w-auto rounded-none bg-slate-50 border-slate-200 text-xs font-bold text-slate-800"
                     >
                         <option value="ALL">Tất cả kênh ({channels.length})</option>
                         {channels.map((ch) => (
@@ -49,32 +50,22 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                                 Kênh {ch}
                             </option>
                         ))}
-                    </select>
+                    </Select>
                 </div>
 
                 {/* Ô NHẬP TÌM TÊN HOẶC MÃ KHO */}
-                <div className="relative flex-1 min-w-[200px]">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                        <AppIcon name="search" size="md" />
-                    </div>
-                    <input
+                <div className="flex-1 min-w-[200px]">
+                    <Input
                         type="text"
+                        leftIcon="search"
+                        rightIcon={filters.searchQuery ? 'close' : undefined}
+                        onRightIconClick={() => onFilterChange({ searchQuery: '' })}
+                        rightIconLabel="Xoá từ khoá tìm kiếm"
                         placeholder="Tìm theo mã kho hoặc tên siêu thị..."
                         value={filters.searchQuery}
                         onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-                        className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 text-xs font-semibold rounded-none border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
+                        className="rounded-none bg-slate-50 border-slate-200 text-xs font-semibold text-slate-800"
                     />
-                    {filters.searchQuery && (
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={() => onFilterChange({ searchQuery: '' })}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-none"
-                            title="Xoá từ khoá tìm kiếm"
-                        >
-                            <AppIcon name="close" size="sm" />
-                        </Button>
-                    )}
                 </div>
             </div>
 
@@ -98,32 +89,15 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                         </Button>
                     )}
 
-                    {/* BỘ CHỌN SỐ LƯỢNG XUẤT TOP 25 / TOP 50 */}
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-none border border-slate-200/80 dark:border-slate-700 text-[11px] font-bold">
-                        <button
-                            type="button"
-                            onClick={() => onExportLimitChange(25)}
-                            className={`px-2 py-1 rounded-none transition-colors cursor-pointer ${
-                                exportLimit === 25
-                                    ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs'
-                                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                            }`}
-                            title="Chọn xuất Top 25 siêu thị"
-                        >
-                            25
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onExportLimitChange(50)}
-                            className={`px-2 py-1 rounded-none transition-colors cursor-pointer ${
-                                exportLimit === 50
-                                    ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs'
-                                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                            }`}
-                            title="Chọn xuất Top 50 siêu thị"
-                        >
-                            50
-                        </button>
+                    {/* SỐ SIÊU THỊ ĐƯA VÀO ẢNH XUẤT — segmented dùng chung (vùng chạm 44 trên điện thoại) */}
+                    <div title="Số siêu thị đưa vào ảnh xuất (Top 25 / Top 50)">
+                        <Tabs
+                            variant="segment"
+                            size="sm"
+                            activeId={String(exportLimit)}
+                            onChange={(id) => onExportLimitChange(Number(id))}
+                            items={[{ id: '25', label: '25' }, { id: '50', label: '50' }]}
+                        />
                     </div>
 
                     {/* NÚT XUẤT ẢNH */}

@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { CheckThuongStoreSummary, LeaderboardSortField, SortDirection } from '../types';
 import { CHECK_THUONG_COLS, parseNumber } from '../services/checkThuongCalc';
 import { Button } from '../../../components/shared/ui/Button';
+import { Select } from '../../../components/shared/ui/Select';
 
 interface CheckThuongTopTableProps {
     stores: CheckThuongStoreSummary[];
@@ -241,21 +242,26 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
 
                                             {/* CỘT 3: MÃ KHO */}
                                             <td className="py-1 px-2 sm:px-3 text-center border-r border-slate-200/90 dark:border-slate-700/70">
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     type="button"
                                                     onClick={() => onSelectStore(store.storeCode)}
                                                     className="font-bold text-sky-600 dark:text-sky-400 hover:underline text-center cursor-pointer text-xs"
                                                     title={`Tra cứu siêu thị mã ${store.storeCode}`}
                                                 >
                                                     {store.storeCode}
-                                                </button>
+                                                </Button>
                                             </td>
 
                                             {/* CỘT 4: TÊN SIÊU THỊ (BẤM VÀO SẼ XỔ NGÀNH HÀNG ĐẠT THƯỞNG) */}
                                             <td className="py-1 px-2.5 sm:px-3 border-r border-slate-200/90 dark:border-slate-700/70">
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     type="button"
                                                     onClick={() => toggleExpand(store.rawStore)}
+                                                    aria-expanded={isExpanded}
                                                     className="flex items-center gap-1.5 text-left group/btn focus:outline-hidden cursor-pointer"
                                                     title="Bấm để xem danh sách ngành hàng đạt thưởng bên dưới"
                                                 >
@@ -269,7 +275,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                     >
                                                         <AppIcon name="chevronDown" size="xs" />
                                                     </span>
-                                                </button>
+                                                </Button>
                                             </td>
 
                                             {/* CỘT 5: SỐ NGÀNH HÀNG ĐẠT 100% */}
@@ -399,17 +405,19 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 bg-slate-50/70 dark:bg-slate-800/40 border-t border-slate-200/80 dark:border-slate-700/80 text-xs text-slate-500">
                     <div className="flex items-center gap-2">
                         <span>Số dòng mỗi trang:</span>
-                        <select
+                        <Select
+                            dense
+                            fullWidth={false}
                             value={pageSize}
                             onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                             aria-label="Chọn số dòng mỗi trang"
-                            className="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+                            className="rounded-none border-slate-200 font-bold text-slate-700"
                         >
                             <option value={25}>25</option>
                             <option value={50}>50</option>
                             <option value={100}>100</option>
                             <option value={1000}>Tất cả</option>
-                        </select>
+                        </Select>
                     </div>
 
                     <div className="flex items-center gap-1.5">

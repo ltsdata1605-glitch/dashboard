@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 import { CheckThuongAnalysisResult } from '../types';
 import { toast } from '../../../components/shared/ui/toast';
 
@@ -72,32 +73,42 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                 </h3>
 
                 <div className="flex items-center gap-2 no-print hide-on-export">
-                    <button
+                    {/* Nút công cụ đầu thẻ chuẩn 4.1b; nút xuất ảnh màu hổ phách giữ làm điểm nhấn như thiết kế cũ */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         type="button"
                         onClick={handleCopy}
                         title="Sao chép nội dung phân tích"
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer"
+                        aria-label="Sao chép nội dung phân tích"
+                        className="lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700"
                     >
-                        <AppIcon name="copy" size="sm" />
-                    </button>
+                        <AppIcon name="copy" size="md" />
+                    </Button>
                     {onExportAnalysis && (
                         <>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 type="button"
                                 onClick={onExportAnalysis}
                                 title="Chụp ảnh phân tích"
-                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer"
+                                aria-label="Chụp ảnh phân tích"
+                                className="lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700"
                             >
-                                <AppIcon name="exportImage" size="sm" />
-                            </button>
-                            <button
+                                <AppIcon name="exportImage" size="md" />
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="icon"
                                 type="button"
                                 onClick={onExportAnalysis}
                                 title="Xuất ảnh phân tích"
-                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center shadow-xs transition-all cursor-pointer"
+                                aria-label="Xuất ảnh phân tích"
+                                className="lg:w-9 lg:h-9 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors"
                             >
-                                <AppIcon name="image" size="sm" />
-                            </button>
+                                <AppIcon name="image" size="md" />
+                            </Button>
                         </>
                     )}
                 </div>
@@ -136,7 +147,9 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                             {warningList.map((item, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
                                     <span className="text-slate-400 select-none">•</span>
-                                    <button
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onSelectCategory?.(item.nganhHang, item.kenh)}
                                         className="hover:text-amber-600 dark:hover:text-amber-400 hover:underline cursor-pointer text-left"
@@ -150,7 +163,7 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                                             <span className="text-slate-500 dark:text-slate-400"> (mốc Top {item.cutoffRank})</span>
                                         )}
                                         .
-                                    </button>
+                                    </Button>
                                 </li>
                             ))}
                         </ul>
@@ -176,7 +189,9 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                             {opportunityList.map((item, idx) => (
                                 <li key={idx} className="flex items-start gap-1.5">
                                     <span className="text-slate-400 select-none">•</span>
-                                    <button
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onSelectCategory?.(item.name, item.kenh)}
                                         className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline cursor-pointer text-left"
@@ -186,7 +201,7 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                                         <span className="font-bold text-emerald-800 dark:text-emerald-400">
                                             {item.ranksNeeded} hạng.
                                         </span>
-                                    </button>
+                                    </Button>
                                 </li>
                             ))}
                         </ul>

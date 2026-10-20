@@ -8479,3 +8479,37 @@ chưa có `Textarea` dùng chung), ESLint 0 cảnh báo nút thô ở `features/
     đỏ 3/3 lần). Sửa TEST: trả trang giả cho đúng host HRM — vẫn kiểm bấm tiêu đề mở tab mới đúng URL; nay xanh 3/3.
   - `mobile-iphone-6-module` "13 màn": In Sticker còn 4 nút phân trang xem trước 24px không có vùng chạm 44 (`StickerPrintPreview.tsx`,
     có từ trước 0338e43). Để lại tới lượt In Sticker của bước 2: thêm `ycx-hit` + nới khoảng cách (gap-1 làm vùng chạm chồng nhau).
+
+### WebKit chập chờn #3 — app tự tải lại trang khi trang ĐANG rời đi (2026-10-20)
+
+`main` fb377a5: job WebKit đỏ bài "Realtime: Worker ghi IndexedDB… tải lại trang vẫn đúng số" — `page.reload: Frame load interrupted`
+(trên nhánh cùng code: xanh). Bản ghi của lượt đỏ: 37 ms sau lệnh tải lại, React báo `TypeError: Importing a module script failed`
+ở `ErrorBoundary [MainContent]` → `componentDidCatch` coi là "lỗi chunk do bản mới" → gọi `window.location.reload()` → lượt điều
+hướng thứ 2 cắt ngang lượt của bài test. Gốc: WebKit HUỶ mọi `import()` dở dang ngay khi bắt đầu điều hướng; lượt tự xuất Bot LINE
+(chạy ngầm 1,5 s sau khi tải tệp, nạp thêm mảnh code) làm có import dở dang đúng lúc tải lại. Trên iPhone thật cùng cơ chế có thể
+GIÀNH MẤT lượt chuyển trang của người dùng (vd sang trang đăng nhập) nếu đúng lúc đó có mảnh code đang tải.
+
+Sửa: `components/shared/ui/taiLaiKhiLoiChunk.ts` — `beforeunload`/`pagehide` đánh dấu "đang rời trang" (bfcache `pageshow` / hộp
+"rời trang?" bị huỷ sau 3 s thì bỏ dấu); tự tải lại khi lỗi chunk CHỜ 800 ms và bỏ qua nếu đang rời trang (iOS không chắc bắn
+`beforeunload` — trang đã rời đi thì hẹn giờ không bao giờ chạy). `ErrorBoundary` và `utils/lazyWithRetry.ts` đều đi qua hàm này.
+Test: `taiLaiKhiLoiChunk.test.ts` (4 tình huống) + `lazy-with-retry.test.ts` (chờ một nhịp; đang rời trang thì không tải lại, không
+đánh dấu đã thử). Gói tải đầu 329,9/330 KB (+0,1 KB) — SÁT TRẦN.
+
+## GĐ10 bước 2 — Check thưởng (2026-10-20)
+
+`features/check-thuong`: `<button>`/`<input>`/`<select>` tự vẽ **28 → 0** (còn ô chọn tệp ẩn của ô kéo-thả — có chủ đích).
+- Thẻ KPI bấm được → `Button unstyled` (giữ nguyên hình) + `aria-pressed`; lọc nhóm → `Tabs variant="chips"` (bấm lại nhóm đang chọn
+  vẫn bỏ lọc như cũ); nút công cụ đầu thẻ (Phân tích & đề xuất, so sánh, thanh lọc) → chuẩn 4.1b của chủ dự án (`ghost` + `size="icon"`
+  + `lg:w-9 lg:h-9`, icon 18px, xám khi nghỉ, `ycx-hit`); nút "Xuất ảnh" hổ phách giữ làm điểm nhấn; "Dạng bảng" → `tinted` 32px + `ycx-hit`.
+- Khu Top thưởng GIỮ GÓC VUÔNG của thiết kế gốc (trang HTML của chủ dự án): kênh → `Select leftIcon` + `rounded-none`, tìm → `Input`
+  (`leftIcon`, nút xoá `rightIcon` + `rightIconLabel`) + `rounded-none`, Top 25/50 → `Tabs variant="segment"` (vùng chạm 44 trên điện
+  thoại), số dòng/trang → `Select dense`; ô mã kho/tên siêu thị trong bảng → `Button unstyled` (giữ mật độ bảng) + `aria-expanded`.
+- Nút trên nền màu (băng tiêu đề nhóm, banner xanh đậm, thẻ kênh pastel) giữ hình, thêm `ycx-hit` + tên (`aria-label`).
+- KHÔNG đổi (chủ dự án chốt "thanh capsule: giữ"): 2 ô "Kho 1 / Kho 2" trong viên capsule 34px ở thanh trên (`CheckThuongView.tsx`) —
+  `Input` dùng chung cao 44px trên iPhone sẽ làm vỡ capsule.
+- `Input` dùng chung thêm `rightIconLabel` (nút icon phải trước đây KHÔNG có tên cho trình đọc màn hình — kể cả ô tìm lịch sử Tính
+  thuế) + `Input.test.ts`.
+- Ảnh trước/sau (dùng thử + tệp TSV giả, 440×956 và 1440×900): bố cục giữ nguyên; khác: chip đang chọn màu đậm, nút đầu thẻ xám
+  không nền (4.1b), ô chọn kênh / tìm cao 44px trên iPhone, 25/50 thành segmented.
+- Kiểm: `npm run check` xanh; 8 spec Check thưởng + gd7 + icon-audit-man-goc + chuan-thiet-ke-b + apple-tuong-thich + tax-qr: 39 xanh,
+  2 bỏ qua có chủ đích.

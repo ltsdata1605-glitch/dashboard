@@ -11,12 +11,14 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   leftIcon?: IconName | string;
   rightIcon?: IconName | string;
   onRightIconClick?: () => void;
+  /** Tên cho nút icon phải (vd "Xoá từ khoá") — nút không chữ phải có tên cho trình đọc màn hình (GĐ10 2026-10-20). */
+  rightIconLabel?: string;
   onLeftIconClick?: () => void;
   fullWidth?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, leftIcon, rightIcon, onRightIconClick, onLeftIconClick, fullWidth = true, ...props }, ref) => {
+  ({ className, error, leftIcon, rightIcon, onRightIconClick, rightIconLabel, onLeftIconClick, fullWidth = true, ...props }, ref) => {
     // Audit A17 (2026-09-30): dòng lỗi trước đây chỉ là <p> đứng cạnh — trình đọc màn hình không biết
     // ô nào đang lỗi. Nay nối lỗi vào ô qua aria-invalid + aria-describedby (giữ describedby sẵn có).
     const errorId = `${useId()}-error`;
@@ -68,6 +70,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type="button"
             variant="unstyled" size="none"
             onClick={onRightIconClick}
+            aria-label={rightIconLabel}
+            title={rightIconLabel}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden"
           >
             <AppIcon name={right} size="md" />

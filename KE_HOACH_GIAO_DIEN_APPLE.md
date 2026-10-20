@@ -460,6 +460,7 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
 2. Nút và ô nhập tự vẽ → `Button`/`Input`/`Select`, từng phân hệ một (nặng nhất trước: Bot LINE → Tính thuế → Report BI → Check thưởng →
    Cấu hình SP → khung app), mỗi phân hệ 1 commit + ảnh trước/sau; xong thì `<button>` thô từ cảnh báo thành chặn.
    - **Tính thuế — XONG 20/10** (64 → 0; `Select dense`). Làm trước Bot LINE vì Bot LINE/Report BI đang được sửa ở phiên khác.
+   - **Check thưởng — XONG 20/10** (28 → 0; nút đầu thẻ theo 4.1b; khu Top thưởng giữ góc vuông; capsule Kho 1/Kho 2 giữ nguyên).
    - Ghi nhận cho lượt In Sticker: 4 nút phân trang xem trước 24px chưa có vùng chạm 44 (`mobile-iphone-6-module` đỏ sẵn).
 3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.

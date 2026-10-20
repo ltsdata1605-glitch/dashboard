@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 import { toast } from '../../../components/shared/ui/toast';
 import { LeaderboardFilterState, LeaderboardSortField } from '../types';
 import {
@@ -182,12 +183,9 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4">
                     Vui lòng tải file Excel báo cáo thi đua tại tab Tra Cứu để xem Bảng xếp hạng Top thưởng.
                 </p>
-                <button
-                    onClick={onSwitchToSearch}
-                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
-                >
+                <Button variant="primary" size="sm" type="button" onClick={onSwitchToSearch} className="px-4">
                     Chuyển sang Tra Cứu để Tải File
-                </button>
+                </Button>
             </div>
         );
     }

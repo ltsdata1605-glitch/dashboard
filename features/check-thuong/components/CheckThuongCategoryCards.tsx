@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 import { CHECK_THUONG_COLS, parseNumber, formatCurrency, formatPercent, formatNumber } from '../services/checkThuongCalc';
 import { getPotentialBonus, CheckThuongPreprocessed } from '../services/checkThuongSearch';
 import { CheckThuongGroupDef } from '../types';
@@ -58,14 +59,17 @@ export const CheckThuongCategoryCards: React.FC<CheckThuongCategoryCardsProps> =
                                 {group.title} ({group.data.length})
                             </span>
                             {onExportGroup && (
-                                <button
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     type="button"
                                     onClick={() => onExportGroup(group.key)}
                                     title="Xuất ảnh nhóm này"
-                                    className="p-1 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 shadow-xs cursor-pointer no-print hide-on-export"
+                                    aria-label="Xuất ảnh nhóm này"
+                                    className="ycx-hit p-1 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 shadow-xs cursor-pointer no-print hide-on-export"
                                 >
                                     <AppIcon name="image" size="xs" />
-                                </button>
+                                </Button>
                             )}
                         </div>
 
