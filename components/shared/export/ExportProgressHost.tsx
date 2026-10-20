@@ -49,15 +49,17 @@ function Panel({ s }: { s: ExportJobState }) {
         >
             <div className="relative w-full max-w-[340px] sm:max-w-[360px] rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.14),0_6px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-4.5 animate-in fade-in zoom-in-95 duration-200">
                 {/* Nút đóng nhanh (Quick Close ✕) */}
-                <button
+                <Button
                     type="button"
+                    variant="unstyled"
+                    size="none"
                     onClick={closeExportPanel}
-                    className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="ycx-hit absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     aria-label="Tắt"
                     title="Tắt"
                 >
                     <AppIcon name="close" size="sm" />
-                </button>
+                </Button>
 
                 {/* Header: Icon + Tiêu đề + Trạng thái */}
                 <div className="flex items-center gap-3 pr-6">

@@ -127,28 +127,34 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                 <span className="text-[11px] text-slate-500 dark:text-slate-400">{resolvedAreaId}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="unstyled"
+                                    size="none"
                                     onClick={() => handleToggleBot('realtime')}
-                                    className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                                    aria-pressed={!!botSetting.realtime}
+                                    className={`ycx-hit flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
                                         botSetting.realtime
                                             ? 'bg-sky-600 border-sky-600 text-white shadow-xs'
                                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                                     }`}
                                 >
                                     Realtime ({botSetting.realtimeCommand || 'bcrt'}): {botSetting.realtime ? 'Bật' : 'Tắt'}
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="button"
+                                    variant="unstyled"
+                                    size="none"
                                     onClick={() => handleToggleBot('luyke')}
-                                    className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                                    aria-pressed={!!botSetting.luyke}
+                                    className={`ycx-hit flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
                                         botSetting.luyke
                                             ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
                                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                                     }`}
                                 >
                                     Luỹ kế ({botSetting.luykeCommand || 'bclk'}): {botSetting.luyke ? 'Bật' : 'Tắt'}
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}

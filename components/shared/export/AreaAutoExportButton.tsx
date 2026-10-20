@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppIcon } from '../ui/icon/AppIcon';
 import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { toast } from '../ui/toast';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -228,18 +229,20 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-bold text-slate-800 dark:text-slate-100">Báo cáo Realtime</span>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={() => {
                                             setIsEditingRt(prev => !prev);
                                             setRtError(null);
                                         }}
-                                        className="group inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-700 hover:bg-sky-200 dark:hover:bg-sky-800/80 transition-colors cursor-pointer"
+                                        className="ycx-hit group inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-700 hover:bg-sky-200 dark:hover:bg-sky-800/80 transition-colors cursor-pointer"
                                         title="Nhấn để cấu hình lệnh gọi LINE"
                                     >
                                         <span>Lệnh: {setting.realtimeCommand || 'bcrt'}</span>
                                         <AppIcon name="edit" size="xs" className="opacity-60 group-hover:opacity-100 transition-opacity" />
-                                    </button>
+                                    </Button>
                                 </div>
                                 <p className="text-[12px] text-slate-500 dark:text-slate-400">
                                     Tự động chụp & lưu sau mỗi lượt chạy Auto Sync Realtime.
@@ -266,17 +269,22 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                     <label className="text-[11px] font-semibold text-sky-800 dark:text-sky-300">
                                         Cấu hình lệnh gọi trên LINE:
                                     </label>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={handleResetRtCmd}
-                                        className="text-[11px] text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 underline transition-colors"
+                                        className="ycx-hit text-[11px] text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 underline transition-colors inline-flex items-center gap-1"
                                     >
-                                        ↺ Mặc định (bcrt)
-                                    </button>
+                                        <AppIcon name="reset" size="xs" />
+                                        Mặc định (bcrt)
+                                    </Button>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                    <input
+                                <div className="flex items-center gap-1.5 [&>div:first-child]:flex-1 [&>div:first-child]:min-w-0">
+                                    <Input
+                                        dense
                                         type="text"
+                                        aria-label="Lệnh gọi trên LINE (Realtime)"
                                         value={rtCmdInput}
                                         onChange={(e) => {
                                             setRtCmdInput(e.target.value);
@@ -288,22 +296,26 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                         }}
                                         placeholder="Ví dụ: bcrt hoặc bcrt, rt, cttk"
                                         autoFocus
-                                        className="flex-1 px-2.5 py-1 text-[12px] font-mono rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                        className="px-2.5 text-[12px] font-mono rounded-md focus-visible:border-sky-500 focus-visible:ring-sky-500"
                                     />
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={handleSaveRtCmd}
-                                        className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-2xs transition-colors shrink-0"
+                                        className="ycx-hit px-2.5 py-1 rounded-md text-[11px] font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-2xs transition-colors shrink-0"
                                     >
                                         Lưu
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={() => setIsEditingRt(false)}
-                                        className="px-2 py-1 rounded-md text-[11px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
+                                        className="ycx-hit px-2 py-1 rounded-md text-[11px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
                                     >
                                         Đóng
-                                    </button>
+                                    </Button>
                                 </div>
                                 {rtError ? (
                                     <p className="text-[11px] text-rose-500 dark:text-rose-400">{rtError}</p>
@@ -323,18 +335,20 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-bold text-slate-800 dark:text-slate-100">Báo cáo Lũy kế</span>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={() => {
                                             setIsEditingLk(prev => !prev);
                                             setLkError(null);
                                         }}
-                                        className="group inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-200 dark:hover:bg-emerald-800/80 transition-colors cursor-pointer"
+                                        className="ycx-hit group inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-200 dark:hover:bg-emerald-800/80 transition-colors cursor-pointer"
                                         title="Nhấn để cấu hình lệnh gọi LINE"
                                     >
                                         <span>Lệnh: {setting.luykeCommand || 'bclk'}</span>
                                         <AppIcon name="edit" size="xs" className="opacity-60 group-hover:opacity-100 transition-opacity" />
-                                    </button>
+                                    </Button>
                                 </div>
                                 <p className="text-[12px] text-slate-500 dark:text-slate-400">
                                     Tự động chụp & lưu sau mỗi lượt chạy Auto Sync Luỹ kế.
@@ -361,17 +375,22 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                     <label className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
                                         Cấu hình lệnh gọi trên LINE:
                                     </label>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={handleResetLkCmd}
-                                        className="text-[11px] text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 underline transition-colors"
+                                        className="ycx-hit text-[11px] text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 underline transition-colors inline-flex items-center gap-1"
                                     >
-                                        ↺ Mặc định (bclk)
-                                    </button>
+                                        <AppIcon name="reset" size="xs" />
+                                        Mặc định (bclk)
+                                    </Button>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                    <input
+                                <div className="flex items-center gap-1.5 [&>div:first-child]:flex-1 [&>div:first-child]:min-w-0">
+                                    <Input
+                                        dense
                                         type="text"
+                                        aria-label="Lệnh gọi trên LINE (Luỹ kế)"
                                         value={lkCmdInput}
                                         onChange={(e) => {
                                             setLkCmdInput(e.target.value);
@@ -383,22 +402,26 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                         }}
                                         placeholder="Ví dụ: bclk hoặc bclk, lk, kho910"
                                         autoFocus
-                                        className="flex-1 px-2.5 py-1 text-[12px] font-mono rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                        className="px-2.5 text-[12px] font-mono rounded-md focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                                     />
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={handleSaveLkCmd}
-                                        className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition-colors shrink-0"
+                                        className="ycx-hit px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition-colors shrink-0"
                                     >
                                         Lưu
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="button"
+                                        variant="unstyled"
+                                        size="none"
                                         onClick={() => setIsEditingLk(false)}
-                                        className="px-2 py-1 rounded-md text-[11px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
+                                        className="ycx-hit px-2 py-1 rounded-md text-[11px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
                                     >
                                         Đóng
-                                    </button>
+                                    </Button>
                                 </div>
                                 {lkError ? (
                                     <p className="text-[11px] text-rose-500 dark:text-rose-400">{lkError}</p>

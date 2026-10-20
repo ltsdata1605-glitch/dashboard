@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
+import { Input } from '../shared/ui/Input';
 import { AppIcon } from '../shared/ui/icon';
 import { toast } from '../shared/ui/toast';
 import { useAuth } from '../../contexts/AuthContext';
@@ -97,8 +98,8 @@ export const TnbDataConfigModal: React.FC<TnbDataConfigModalProps> = ({
                     <label htmlFor="tnb-mbm-code-input" className="block text-xs font-bold uppercase tracking-wider text-slate-600">
                         Mã bảo mật truy cập (Code)
                     </label>
-                    <div className="relative">
-                        <input
+                    <div>
+                        <Input
                             id="tnb-mbm-code-input"
                             name="tnb-security-token"
                             type="text"
@@ -119,18 +120,11 @@ export const TnbDataConfigModal: React.FC<TnbDataConfigModalProps> = ({
                             data-1p-ignore="true"
                             data-form-type="other"
                             autoFocus
-                            className="w-full h-11 px-3.5 font-mono text-base font-bold tracking-widest text-slate-800 bg-white border-2 border-sky-300 rounded-xl focus:outline-hidden focus:border-sky-600 focus:ring-3 focus:ring-sky-500/20 transition-all uppercase placeholder:font-sans placeholder:normal-case placeholder:font-medium placeholder:tracking-normal placeholder:text-slate-400"
+                            rightIcon={code ? 'close' : undefined}
+                            onRightIconClick={() => setCode('')}
+                            rightIconLabel="Xóa mã"
+                            className="h-11 pl-3.5 font-mono text-base font-bold tracking-widest text-slate-800 border-2 border-sky-300 rounded-xl focus-visible:border-sky-600 focus-visible:ring-3 focus-visible:ring-sky-500/20 transition-all uppercase placeholder:font-sans placeholder:normal-case placeholder:font-medium placeholder:tracking-normal placeholder:text-slate-400"
                         />
-                        {code && (
-                            <button
-                                type="button"
-                                onClick={() => setCode('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
-                                title="Xóa mã"
-                            >
-                                <AppIcon name="close" size="xs" />
-                            </button>
-                        )}
                     </div>
                     <p className="text-xs text-slate-500">
                         Nhập chính xác mã được cấp quyền xem dữ liệu siêu thị trên hệ thống admintnb.com.

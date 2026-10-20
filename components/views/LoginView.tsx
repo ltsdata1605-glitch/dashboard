@@ -245,15 +245,17 @@ const LoginView: React.FC = () => {
                             <div className="flex-1 whitespace-pre-line">{error}</div>
                         </div>
                         <div className="mt-2.5 pt-2 border-t border-rose-200/60 dark:border-rose-800/50 flex items-center justify-end">
-                            <button
+                            <Button
                                 type="button"
+                                variant="unstyled"
+                                size="none"
                                 onClick={useHandoff ? handlePwaLogin : handleRedirectLogin}
                                 disabled={isLoggingIn}
-                                className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                className="ycx-hit text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
                             >
                                 <AppIcon name="refresh" size="sm" />
                                 {useHandoff ? 'Thử đăng nhập lại →' : 'Đăng nhập chuyển hướng →'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )}
@@ -307,15 +309,17 @@ const LoginView: React.FC = () => {
                             </div>
                         ) : (
                         <div className="text-center pt-2">
-                            <button
+                            <Button
                                 type="button"
+                                variant="unstyled"
+                                size="none"
                                 onClick={handleRedirectLogin}
                                 disabled={isLoggingIn}
-                                className="text-[11px] font-medium text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-300 hover:underline inline-flex items-center gap-1 cursor-pointer disabled:opacity-50 transition-colors"
+                                className="ycx-hit text-[11px] font-medium text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-300 hover:underline inline-flex items-center gap-1 cursor-pointer disabled:opacity-50 transition-colors"
                             >
                                 <AppIcon name="refresh" size="xs" />
                                 {isStandalone ? 'Đang kích hoạt đăng nhập chuyển hướng' : 'Gặp lỗi xoay? Đăng nhập chuyển hướng →'}
-                            </button>
+                            </Button>
                         </div>
                         )}
                     </div>
