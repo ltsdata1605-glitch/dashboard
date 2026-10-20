@@ -62,7 +62,9 @@ export const ListRow: React.FC<ListRowProps> = ({
   const noiDung = (
     <>
       {icon && (
-        <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-control text-white', destructive ? 'bg-rose-500' : ICON_TONE[iconTone])}>
+        // data-list-row-icon: ô icon màu kiểu Cài đặt iOS — icon `sm` trong ô 28px (chủ dự án chốt c9bfa6d 2026-10-17); bài đo icon
+        // (tests/e2e/helpers/iconAudit.ts) nhận ra ô này để không đòi icon `md` như nút có chữ thường.
+        <span data-list-row-icon="" className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-control text-white', destructive ? 'bg-rose-500' : ICON_TONE[iconTone])}>
           <AppIcon name={icon} size="sm" />
         </span>
       )}

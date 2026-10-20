@@ -815,7 +815,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                             </div>
 
                                                             <div
-                                                                className="font-sans normal-case tracking-normal text-xs sm:text-[12.5px] font-medium text-slate-600 dark:text-slate-300 ml-auto flex items-center gap-1.5"
+                                                                className="font-sans normal-case tracking-normal text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 ml-auto flex items-center gap-1.5"
                                                             >
                                                                 <span className="text-slate-400 dark:text-slate-500">·</span>
                                                                 <span>đạt</span>
@@ -850,7 +850,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                                 {(index + 1).toString().padStart(2, '0')}
                                                             </td>
                                                             <td 
-                                                                className="px-1.5 sm:px-2 py-[3px] text-[11.5px] sm:text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 uppercase tracking-tight text-left min-w-0 overflow-hidden"
+                                                                className="px-1.5 sm:px-2 py-[3px] text-[12px] sm:text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 uppercase tracking-tight text-left min-w-0 overflow-hidden"
                                                                 title={item.originalTitle || item.name}
                                                             >
                                                                 <span className="block truncate" title={item.originalTitle || item.name}>

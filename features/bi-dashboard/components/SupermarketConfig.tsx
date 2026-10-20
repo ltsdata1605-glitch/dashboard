@@ -496,12 +496,12 @@ const StatusTile: React.FC<{
                                 <h4 className={`text-[11px] sm:text-xs font-bold uppercase tracking-tight truncate transition-colors duration-200 leading-tight ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 whitespace-nowrap ${currentTheme.text}`}>
+                                        <span className={`text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 whitespace-nowrap ${currentTheme.text}`}>
                                             <AppIcon name="clock" size="xs" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5 whitespace-nowrap">Bấm để dán</span>
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5 whitespace-nowrap">Bấm để dán</span>
                                 )}
                             </div>
                         </div>

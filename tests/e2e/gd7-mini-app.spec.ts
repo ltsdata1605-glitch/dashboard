@@ -28,10 +28,21 @@ const taoFileThuong = () => {
  *              bộ lọc trạng thái là segmented chung; "Xoá tất cả mã" vào menu "⋯" chữ đỏ cuối (trước: thùng rác sát nút Xuất Excel).
  *  Loạt 3:    Giới thiệu bỏ lời hứa sai ("Bảo mật tuyệt đối… không đẩy lên máy chủ"); Tính thuế: nút lên thanh trên iPhone; Rút gọn
  *              coupon: khung Kết quả trên iPhone không xẹp thành vạch; Check thưởng: icon tải lên không nhảy liên tục; tiêu đề trang.
- *  Check thưởng có dữ liệu: thanh công cụ GIỮ trên thanh trên (chủ dự án chốt "1 thanh bar duy nhất", a4168bd) nhưng dưới 540px chữ
- *              tiêu đề nhường chỗ — trước bị cắt còn "C" + dòng phụ vài chữ.
+ *  Check thưởng có dữ liệu: thanh công cụ GIỮ trên thanh trên (chủ dự án chốt "1 thanh bar duy nhất", a4168bd); tiêu đề 13px cắt
+ *              bằng "…" vẫn hiện cạnh thanh công cụ (chủ dự án đổi 299d03e) — trước bị cắt trơ còn "C" + dòng phụ vài chữ.
  *  (Phân quyền #11 — "Xoá tất cả dữ liệu" xuống "Vùng nguy hiểm" cuối trang: tests/e2e/mobile-settings-compact.spec.ts)
  */
+
+/**
+ * Vùng chạm THẬT (cạnh ngắn) = hộp nút + vùng nới vô hình `::after` (`ycx-hit`, khe nút thanh trên `.ycx-navbar`). Chuẩn chủ dự án
+ * 2026-10-17 (DESIGN_SYSTEM.md 4.1b): nút NHÌN THẤY 32px gọn, vùng chạm 44 — nên đo vùng chạm, không đo hộp nhìn thấy.
+ */
+const vungCham = (nut: ReturnType<Page['locator']>) => nut.evaluate((el) => {
+    const r = el.getBoundingClientRect(); const a = getComputedStyle(el, '::after');
+    const px = (v: string) => parseFloat(v) || 0;
+    const mo = a.content !== 'none' && a.position === 'absolute';
+    return Math.min(mo ? r.width - px(a.left) - px(a.right) : r.width, mo ? r.height - px(a.top) - px(a.bottom) : r.height);
+});
 
 async function moDungThu(page: Page, url: string) {
     await page.goto('/?tab=analysis');
@@ -101,7 +112,7 @@ test.describe('iPhone 16 Pro Max (cảm ứng)', () => {
         const thanhTren = page.locator('[data-app-chrome="topbar"]');
         const nhap = thanhTren.getByRole('button', { name: 'Nhập nhân viên' });
         await expect(nhap).toBeVisible({ timeout: 20_000 });
-        expect((await nhap.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+        expect(await vungCham(nhap), 'vùng chạm "Nhập nhân viên"').toBeGreaterThanOrEqual(43.5);
         // Dải cũ (Ca Xoay / Từng NV… trong nội dung) đã bỏ
         await expect(page.locator('main').getByRole('button', { name: /Ca Xoay|Từng NV/ })).toHaveCount(0);
 
@@ -126,13 +137,13 @@ test.describe('iPhone 16 Pro Max (cảm ứng)', () => {
         const thanhTren = page.locator('[data-app-chrome="topbar"]');
         const huongDan = thanhTren.getByRole('button', { name: 'Hướng dẫn tạo Bot' });
         await expect(huongDan).toBeVisible({ timeout: 20_000 });
-        expect((await huongDan.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+        expect(await vungCham(huongDan), 'vùng chạm "Hướng dẫn tạo Bot"').toBeGreaterThanOrEqual(43.5);
         await expect(page.getByTestId('line-bot-dang-nhap')).toBeVisible();
         await expect(page.getByRole('button', { name: 'Đăng nhập để thừa kế Bot' })).toBeHidden();
 
         const phanHe = page.locator('[data-segmented]').first();
         for (const ten of ['Coupon Event', 'Coupon lọc', 'Gửi Notify']) {
-            expect((await phanHe.getByRole('button', { name: ten }).boundingBox())!.height, ten).toBeGreaterThanOrEqual(43.5);
+            expect(await vungCham(phanHe.getByRole('button', { name: ten })), ten).toBeGreaterThanOrEqual(43.5);
         }
         await expect(page.getByRole('button', { name: /^Tất cả/ }).first()).toHaveAttribute('aria-pressed', 'true');
 
@@ -192,7 +203,10 @@ test.describe('iPhone 16 Pro Max (cảm ứng)', () => {
         await page.locator('input[type="file"][accept*=".xlsx"]').first().setInputFiles(taoFileThuong());
         const kho1 = page.locator('#mobile-topbar-actions input[placeholder="Kho 1"]');
         await expect(kho1).toBeVisible({ timeout: 20_000 });
-        await expect(tieuDe, 'có thanh công cụ: chữ tiêu đề nhường chỗ').toBeHidden();
+        // Chủ dự án đổi (styles.css "tiêu đề và thời gian cập nhật hiển thị như tab Phân tích", 299d03e 2026-10-16): tiêu đề GIỮ
+        // trên thanh (13px, cắt bằng "…") thay vì nhường chỗ — kiểm nó vẫn đọc được: không bị cắt trơ còn "C" như lỗi cũ.
+        await expect(tieuDe, 'có thanh công cụ: tiêu đề vẫn hiện').toBeVisible();
+        expect((await tieuDe.getByRole('heading', { level: 1 }).boundingBox())!.width, 'tiêu đề không bị cắt còn 1 chữ').toBeGreaterThanOrEqual(36);
         // Cả thanh công cụ + chuông nằm gọn trong màn, không chồng nhau
         const hop = await page.locator('[data-app-chrome="topbar"]').evaluate((bar) => {
             const els = Array.from(bar.querySelectorAll('button, input')).filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; });

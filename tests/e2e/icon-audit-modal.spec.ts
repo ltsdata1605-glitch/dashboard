@@ -25,6 +25,23 @@ function chanTacDungPhu(page: Page) {
     page.on('dialog', (d) => { void d.dismiss(); });
 }
 
+/**
+ * Chờ màn vẽ xong: số nút nhìn thấy thôi đổi qua 2 lượt đo liền (mỗi lượt 300 ms, tối đa ~6 s). Chờ CỐ ĐỊNH 1,8 s thì trên CI chậm
+ * tab nạp lười (vd Tính thuế) có lúc chưa kịp vẽ nút → bộ khám phá thấy thiếu lớp nổi: CI đêm 16–19/10 đỏ "quá ít" (5/6, thiếu cả
+ * nhóm Tính thuế) trong khi máy dev và CI 15/10 mở được 8.
+ */
+async function choManOnDinh(page: Page) {
+    let truoc = -1;
+    let onDinh = 0;
+    for (let i = 0; i < 20 && onDinh < 2; i++) {
+        await page.waitForTimeout(300);
+        const n = await page.evaluate(() => Array.from(document.querySelectorAll('button'))
+            .filter((b) => { const r = b.getBoundingClientRect(); return r.width > 0 && r.height > 0; }).length);
+        onDinh = n === truoc && n > 0 ? onDinh + 1 : 0;
+        truoc = n;
+    }
+}
+
 function kiemKetQua(ten: string, ketQua: KetQuaModal, toiThieu: number) {
     console.log(`AUDIT MODAL ${ten} — ${Object.keys(ketQua).length} lớp nổi\n` + JSON.stringify(ketQua, null, 1));
     expect(Object.keys(ketQua).length, 'số lớp nổi mở được quá ít — spec hỏng hoặc giao diện đổi').toBeGreaterThanOrEqual(toiThieu);
@@ -50,7 +67,7 @@ for (const [label, width] of MAN) {
         for (const tab of TABS) {
             await khamPhaModal(page, {
                 ten: tab, mobile, ketQua,
-                veMan: async () => { await page.goto(`/?tab=${tab}`); await page.waitForTimeout(1800); },
+                veMan: async () => { await page.goto(`/?tab=${tab}`); await page.waitForTimeout(1800); await choManOnDinh(page); },
             });
         }
         kiemKetQua(`dùng thử ${label}`, ketQua, 6);
@@ -88,7 +105,7 @@ for (const [label, width] of MAN) {
         for (const tab of ['reports', 'check-thuong']) {
             await khamPhaModal(page, {
                 ten: `${tab} (có dữ liệu)`, mobile, ketQua,
-                veMan: async () => { await page.goto(`/?tab=${tab}`); await page.waitForTimeout(2500); },
+                veMan: async () => { await page.goto(`/?tab=${tab}`); await page.waitForTimeout(2500); await choManOnDinh(page); },
             });
         }
         kiemKetQua(`Phân Tích ${label}`, ketQua, 3);

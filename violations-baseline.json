@@ -661,7 +661,7 @@
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "offScaleText": 5
+    "offScaleText": 4
   },
   "features/bi-dashboard/components/nhanvien/revenue/RevenueDesktopRow.tsx": {
     "nonSemanticColor": 0,

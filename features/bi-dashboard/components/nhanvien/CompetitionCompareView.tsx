@@ -191,7 +191,7 @@ const formatEmpHeaderName = (fullName: string) => {
     if (dotMatch) {
         return (
             <span className="inline-flex flex-col items-center justify-center leading-tight">
-                <span className="block text-[10px] sm:text-[11px] font-bold opacity-80">{dotMatch[1].replace(/\s+/g, '')}</span>
+                <span className="block text-[11px] font-bold opacity-80">{dotMatch[1].replace(/\s+/g, '')}</span>
                 <span className="block text-[11px] sm:text-[12px] font-black">{dotMatch[2]}</span>
             </span>
         );
@@ -534,7 +534,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="overflow-x-auto hide-scrollbar touch-auto">
                         <table className="w-full table-fixed text-left border-collapse compact-export-table">
                             <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800 text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider">
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
                                     <th className="px-1 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 w-7 sm:w-8 text-center align-middle">#</th>
                                     <th className="px-2 sm:px-3 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 min-w-0 align-middle leading-tight">
                                         <span className="block sm:inline">CHƯƠNG TRÌNH </span>

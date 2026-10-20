@@ -221,7 +221,8 @@ size/màu ngữ nghĩa. Icon toast react-hot-toast cũng là AppIcon (`icon: <Ap
 Không đè nét bằng lớp `stroke-[…]` (unit test chặn). Tên `nav*` chỉ cho thanh điều hướng; nơi khác dùng tên chức năng
 (`bot`, `coupon`…). Icon cạnh chữ trong một dòng: bọc `inline-flex items-center gap-1`, đừng đặt icon `inline` giữa
 chữ (canh theo chân chữ → lệch ~2px). Tên icon kiểu cũ còn trong DỮ LIỆU đã lưu → `resolveIconName()`.
-**Ngoại lệ chủ dự án chốt:** thanh capsule (`CapsuleBar`, cỡ `compact` 32×32) dùng icon `sm` (16px trên điện thoại) — "Icon thanh capsule:
+**Ngoại lệ chủ dự án chốt:** dòng danh sách `ListRow` (kiểu Cài đặt iOS) dùng icon `sm` trong ô màu 28px (c9bfa6d, 2026-10-17 — ô
+có `data-list-row-icon`, bài đo icon không đòi `md`). Thanh capsule (`CapsuleBar`, cỡ `compact` 32×32) dùng icon `sm` (16px trên điện thoại) — "Icon thanh capsule:
 giữ" (2026-10-15); nhãn nút chỉ cho trình đọc màn hình nên bài đo coi đó là nút icon: miễn luật `md`, VẪN phải đủ vùng chạm 44
 (`ycx-hit`). Bộ lọc Siêu thị/Bộ phận ở Report BI và dải chế độ In Sticker dùng `sm` (f0a5558). Bài đo icon (`tests/e2e/helpers/iconAudit.ts`)
 chạy trên CI: `icon-audit-man-goc`, `icon-audit-bi` ở mỗi lần push (job e2e), `icon-audit-modal` hằng đêm (`design-audit.yml`).

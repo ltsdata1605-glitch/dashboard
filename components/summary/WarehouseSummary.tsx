@@ -859,7 +859,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 tabular-nums">
                             {isLuyKe ? `${daysPassed}/${daysInMonth} ngày` : `${storeHours.open} – ${storeHours.close}`}
                         </span>
-                        <span className="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                        <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
                             <AppIcon name="edit" size="xs" />
                         </span>
                     </div>
@@ -867,7 +867,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     {/* Thanh tiến độ ở giữa */}
                     <div className="flex-1 min-w-[60px] bg-slate-200/70 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                         <div 
-                            className="bg-gradient-to-r from-sky-500 via-sky-500 to-blue-600 h-full rounded-full transition-all duration-500 shadow-2xs" 
+                            className="bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600 h-full rounded-full transition-all duration-500 shadow-2xs" 
                             style={{ width: `${Math.min(100, Math.max(0, timeUsedPct))}%` }}
                         />
                     </div>

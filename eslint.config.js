@@ -7,13 +7,17 @@ import importPlugin from 'eslint-plugin-import';
 // ruleset (sẽ tạo hàng nghìn lỗi mới trên code vibecode cũ, không phải mục tiêu ở đây).
 const FEATURES = ['bi-dashboard', 'phan-ca', 'sticker-event', 'khai-thac', 'line-bot'];
 
-const featureBoundaryRules = FEATURES.map((feature) => {
+/**
+ * Vùng cấm import của một feature. `ngoaiLe` mở THÊM đúng vài đường dẫn trong hooks/ hoặc services/ gốc — chỉ dùng cho khối
+ * ngoại lệ khai theo TỪNG FILE ở cuối file này (để mọi file khác của feature vẫn bị chặn).
+ */
+const vungCam = (feature, ngoaiLe = {}) => {
   const others = FEATURES.filter((f) => f !== feature);
-  return {
-    files: [`features/${feature}/**/*.{ts,tsx}`],
-    rules: {
-      'import/no-restricted-paths': ['error', {
-        zones: [
+  const servicesExcept = [
+    ...(feature === 'bi-dashboard' || feature === 'line-bot' ? ['./firebase.ts', './firebase'] : []),
+    ...(ngoaiLe.services || []),
+  ];
+  return [
           ...others.map((other) => ({
             target: `./features/${feature}`,
             from: `./features/${other}`,
@@ -22,6 +26,7 @@ const featureBoundaryRules = FEATURES.map((feature) => {
           {
             target: `./features/${feature}`,
             from: './hooks',
+            ...(ngoaiLe.hooks ? { except: ngoaiLe.hooks } : {}),
             message: 'features/* không được import hooks/ gốc — hooks gốc chỉ dành cho Dashboard/check-thuong (RULES.md §2.0).',
           },
           // GĐ8 (2026-10-13): lỗ hổng cũ — features/* import thẳng components/common (ErrorBoundary, ExportOptionsModal) và
@@ -52,14 +57,18 @@ const featureBoundaryRules = FEATURES.map((feature) => {
             // vụ) — cần cho tính năng phân quyền theo siêu thị (biData/{maKho}, xem
             // implementation_plan.md mục "Đợt 4"). phan-ca/sticker-event KHÔNG có ngoại lệ này.
             // line-bot (khu vực thứ 5, thêm vào luật 2026-10-02) cũng chỉ dùng instance db của services/firebase.ts.
-            ...(feature === 'bi-dashboard' || feature === 'line-bot' ? { except: ['./firebase.ts', './firebase'] } : {}),
+            ...(servicesExcept.length ? { except: servicesExcept } : {}),
             message: 'features/* không được import services/ gốc — dùng services riêng của feature (RULES.md §2.0).',
           },
-        ],
-      }],
-    },
-  };
-});
+  ];
+};
+
+const featureBoundaryRules = FEATURES.map((feature) => ({
+  files: [`features/${feature}/**/*.{ts,tsx}`],
+  rules: {
+    'import/no-restricted-paths': ['error', { zones: vungCam(feature) }],
+  },
+}));
 
 export default tseslint.config(
   {
@@ -166,6 +175,30 @@ export default tseslint.config(
             message: 'features/* không được import services/ gốc — dùng services riêng của feature (RULES.md §2.0).',
           },
         ],
+      }],
+    },
+  },
+
+  // ── Ngoại lệ cách ly thứ 5 (2026-10-20) — PHẠM VI ĐÚNG 3 FILE + ĐÚNG ĐƯỜNG DẪN ĐƯỢC IMPORT ──
+  // Tính năng chủ dự án (fbb7779 "tự động xuất báo cáo theo khu vực", 440f9e0 "tự xuất Bot LINE cho mọi khu vực Report BI"):
+  // services/autoReportExportService.ts là CẦU NỐI có chủ đích giữa YCX (gốc), Report BI và Bot LINE — lưu ảnh báo cáo lên
+  // Firebase để Bot gửi. Report BI gọi nó ở đúng 2 file; BiWrapper hiện "lượt truy cập · đang online" bằng hook gốc
+  // useSystemTraffic (như Phân tích / Check thưởng). Các import này làm ESLint đỏ trên main từ 16/10 (CI đỏ 4 ngày).
+  // Khai hẹp như ngoại lệ thứ 4: file khác của Report BI import hooks/services gốc VẪN bị chặn
+  // (tests/unit/eslint-ngoai-le-cach-ly.test.ts). Hướng sạch hơn về sau: cầu nối qua components/shared thay vì import gốc.
+  {
+    files: ['features/bi-dashboard/components/Dashboard.tsx', 'features/bi-dashboard/hooks/useBiAutoSync.tsx'],
+    rules: {
+      'import/no-restricted-paths': ['error', {
+        zones: vungCam('bi-dashboard', { services: ['./autoReportExportService.ts', './autoReportExportService'] }),
+      }],
+    },
+  },
+  {
+    files: ['features/bi-dashboard/components/BiWrapper.tsx'],
+    rules: {
+      'import/no-restricted-paths': ['error', {
+        zones: vungCam('bi-dashboard', { hooks: ['./useSystemTraffic.ts', './useSystemTraffic'] }),
       }],
     },
   },

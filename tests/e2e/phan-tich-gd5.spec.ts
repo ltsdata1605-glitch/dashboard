@@ -13,7 +13,7 @@ async function napDuLieuMau(page: Page) {
     await page.goto('/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first().click({ timeout: 30_000 });
     await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());
-    await page.getByText('Tệp Realtime (Xem nhanh)').last().click();
+    await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
     await expect(page.getByText(/chi tiết theo kho/i).first()).toBeVisible({ timeout: 90_000 });
 }
 

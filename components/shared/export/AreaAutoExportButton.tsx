@@ -269,7 +269,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleResetRtCmd}
-                                        className="text-[10px] text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 underline transition-colors"
+                                        className="text-[11px] text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 underline transition-colors"
                                     >
                                         ↺ Mặc định (bcrt)
                                     </button>
@@ -308,8 +308,9 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                 {rtError ? (
                                     <p className="text-[11px] text-rose-500 dark:text-rose-400">{rtError}</p>
                                 ) : (
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                                        💡 Nhập 1 hoặc nhiều lệnh cách nhau bằng dấu phẩy (vd: <code>bcrt, rt, cttk</code>).
+                                    <p className="flex items-start gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                        <AppIcon name="idea" size="xs" className="mt-px shrink-0 text-amber-500" />
+                                        <span>Nhập 1 hoặc nhiều lệnh cách nhau bằng dấu phẩy (vd: <code>bcrt, rt, cttk</code>).</span>
                                     </p>
                                 )}
                             </div>
@@ -363,7 +364,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleResetLkCmd}
-                                        className="text-[10px] text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 underline transition-colors"
+                                        className="text-[11px] text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 underline transition-colors"
                                     >
                                         ↺ Mặc định (bclk)
                                     </button>
@@ -402,8 +403,9 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                 {lkError ? (
                                     <p className="text-[11px] text-rose-500 dark:text-rose-400">{lkError}</p>
                                 ) : (
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                                        💡 Nhập 1 hoặc nhiều lệnh cách nhau bằng dấu phẩy (vd: <code>bclk, lk, kho910</code>).
+                                    <p className="flex items-start gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                        <AppIcon name="idea" size="xs" className="mt-px shrink-0 text-amber-500" />
+                                        <span>Nhập 1 hoặc nhiều lệnh cách nhau bằng dấu phẩy (vd: <code>bclk, lk, kho910</code>).</span>
                                     </p>
                                 )}
                             </div>

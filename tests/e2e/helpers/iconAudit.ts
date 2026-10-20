@@ -18,10 +18,11 @@ export type IconAuditResult = { legacy: string[]; lech: string[]; nutChuNhoHon: 
  * đổi lại `size="md"` ở 3 file rồi xoá dòng tương ứng.
  */
 const CHU_DU_AN_CHON_ICON_NHO: RegExp[] = [
-    // Report BI: bộ lọc Siêu thị / Bộ phận (features/bi-dashboard/components/NhanVien.tsx, dashboard/DashboardHeader.tsx)
-    / \[(store|restore)\] \d+px$/,
+    // Report BI: bộ lọc Siêu thị / Bộ phận (features/bi-dashboard/components/NhanVien.tsx, dashboard/DashboardHeader.tsx). Cỡ có thể
+    // là số lẻ (vd 14.4px — chế độ mật độ gọn của Report BI thu cả nút) → `[\d.]+px`.
+    / \[(store|restore)\] [\d.]+px$/,
     // In Sticker laptop: dải chế độ Giá sốc / Giờ vàng / Phiếu / Sticker (features/sticker-event/stickerprinter/StickerModeToolbar.tsx)
-    /^(Giá Sốc|Giờ Vàng|Phiếu|Sticker)+ \[(success|product)\] \d+px$/,
+    /^(Giá Sốc|Giờ Vàng|Phiếu|Sticker)+ \[(success|product)\] [\d.]+px$/,
 ];
 
 export async function auditIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<IconAuditResult> {
@@ -63,6 +64,8 @@ function doIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<Ic
             // thanh capsule: giữ"). Nút trông như nút ICON (nhãn chỉ để trình đọc màn hình đọc) → miễn luật icon md của nút có chữ, nhưng
             // VẪN đo vùng chạm 44 như nút icon (cuối vòng lặp).
             const thanhCapsule = !!btn.closest('[data-capsule-bar]');
+            // Dòng danh sách kiểu Cài đặt iOS (ListRow): icon `sm` trong ô màu 28px — chủ dự án chốt (c9bfa6d, 2026-10-17), không
+            // phải icon của nút có chữ thường. Nhận ra bằng `data-list-row-icon` (components/shared/ui/ListGroup.tsx).
             for (const ic of icons) {
                 const r = ic.getBoundingClientRect();
                 // chỉ xét icon là "con trực tiếp về bố cục" của nút: cùng hàng với nút (nút 1 hàng, cao < 60px)
@@ -91,7 +94,8 @@ function doIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<Ic
                 // Check thưởng) là dòng CHÚ THÍCH 12px: icon đi theo cỡ chữ của dòng như liên kết trong câu, không phải nút thanh công
                 // cụ. Vùng chạm của nó do styles.css (.ycx-navbar #mobile-topbar-subtitle) nới đủ 44 — mục `vungCham` vẫn đo.
                 const dongPhuThanhTren = !!btn.closest('#mobile-topbar-subtitle, #desktop-header-subtitle');
-                if (chu && !vaiTroPhu && !lienKetTrongCau && !dongPhuThanhTren && !thanhCapsule && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
+                const oIconDongDanhSach = !!ic.closest('[data-list-row-icon]');
+                if (chu && !vaiTroPhu && !lienKetTrongCau && !dongPhuThanhTren && !thanhCapsule && !oIconDongDanhSach && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
             }
             // Vùng chạm thật = hộp nút + vùng mở rộng vô hình `after:-inset-*` (mẫu dùng ở dòng dữ liệu dày)
             const af = getComputedStyle(btn, '::after');

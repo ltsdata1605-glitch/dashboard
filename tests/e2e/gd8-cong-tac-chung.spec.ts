@@ -12,12 +12,14 @@ test('công tắc dùng chung trong 2 popover Phân tích', async ({ page }) => 
   await page.goto('/?tab=analysis');
   await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first().click({ timeout: 30_000 });
   await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());
-  await page.getByText('Tệp Realtime (Xem nhanh)').last().click();
+  await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
   await expect(page.getByText(/chi tiết theo kho/i).first()).toBeVisible({ timeout: 90_000 });
 
   // 1) Phân tích nhân viên › bánh răng → "Hiển thị màn hình thi đua": công tắc nằm trong <label>
   const tieuDeNV = page.getByRole('heading', { name: /Phân tích nhân viên/i }).first();
-  await tieuDeNV.scrollIntoViewIfNeeded();
+  // Khối này nạp lười (Suspense) và có thể bị vẽ lại đúng lúc cuộn tới — CI 5c03f41 đỏ "Element is not attached to the DOM".
+  // Thử lại tới khi phần tử ổn định (locator tự tìm lại phần tử mới mỗi lượt).
+  await expect(async () => { await tieuDeNV.scrollIntoViewIfNeeded({ timeout: 5_000 }); }).toPass({ timeout: 30_000 });
   await tieuDeNV.locator('xpath=ancestor::*[.//button[@title="Tùy chọn hiển thị"]][1]').getByTitle('Tùy chọn hiển thị').first().click();
   const pop = page.getByText('Hiển thị màn hình thi đua').locator('..');
   const sw = pop.getByRole('switch').first();

@@ -8426,3 +8426,23 @@ Bước 1 — thiết kế:
   còn trong dữ liệu cũ, đánh dấu deprecated.
 - `public/liff-copy.html`: KHÔNG gửi tin nào (bỏ `liff.sendMessages`) — chỉ copy mã + `mark-used`. Bot vẫn không push (`BOT_TRICH_DAN_COUPON = false`).
 - `functions/src/lineQuota.ts`: bỏ `choPhepGuiTuDong` (chỉ phục vụ 2 báo cáo). Test: `liff-dung-coupon-khong-gui-tin.spec.ts`.
+
+## Đưa CI `main` về xanh — đỏ 15→20/10 (2026-10-20)
+
+Đo: CI `main` đỏ ở MỌI commit từ 15/10 (14 commit), `design-audit` hằng đêm đỏ từ 16/10. Không ai thấy vì không ai xem CI. Nguyên nhân + xử lý
+(thiết kế mới của chủ dự án THẮNG — test/chuẩn theo; chỉ sửa code khi lệch luật cứng của chính dự án):
+
+| Đỏ | Nguyên nhân | Xử lý |
+|---|---|---|
+| ESLint 3 lỗi | Report BI import thẳng `services/autoReportExportService` (tự xuất báo cáo, fbb7779/440f9e0) + `hooks/useSystemTraffic` | Ngoại lệ cách ly thứ 5 khai HẸP theo file + đường dẫn (`vungCam()` trong eslint.config.js), test `eslint-ngoai-le-cach-ly` |
+| lint-ratchet 16 vi phạm mới (bị ESLint đỏ che) | chữ 10px, emoji 💡 làm icon, gradient cam/ngọc/chàm/xanh dương, cỡ chữ 13,5/12,5/11,5 ở code mới 15–20/10 | 10→11px; 💡→AppIcon `idea`; gradient về cùng họ sky/emerald/amber; cỡ về thang — giao diện gần như không đổi |
+| gd7-mini-app ×3, khung-app-gd4 ×2 | Chuẩn mới của chủ dự án (DESIGN_SYSTEM 4.1b, 17/10): nút NHÌN THẤY 32–38px + `ycx-hit` vùng chạm 44; tiêu đề Check thưởng giữ 13px "…" | Test đo VÙNG CHẠM (hộp + `::after`) thay hộp nhìn thấy; Check thưởng kiểm tiêu đề đọc được (≥ 36px, không bị đè) |
+| khung-app-gd4 iPhone SE | `getByText('Tệp Realtime…').last()` bấm nhầm dòng chữ cùng nội dung ở màn tải lên DƯỚI modal | Bấm trong `[data-modal-overlay]` (5 spec cùng kiểu) |
+| icon-audit-man-goc/-bi, design-audit | `ListRow` đổi icon md→sm (c9bfa6d, kiểu Cài đặt iOS); bộ lọc Report BI icon cỡ lẻ 14,4px | Ô icon `ListRow` có `data-list-row-icon` → miễn luật md; regex bộ lọc nhận cỡ lẻ |
+| design-audit "quá ít lớp nổi" (CI 5/6) | Chờ CỐ ĐỊNH 1,8 s — CI chậm, tab Tính thuế chưa vẽ nút | Chờ tới khi số nút thôi đổi (`choManOnDinh`) |
+| gd8-cong-tac-chung (1 lần, 5c03f41) | Phần tử bị vẽ lại đúng lúc cuộn tới | `toPass` thử lại |
+
+Bài học: 2 lỗi "Execution context was destroyed" khi chạy thử là do SỬA FILE (kể cả `.md` — Tailwind v4 quét lớp CSS trong đó) đúng lúc
+test đang chạy → máy chủ dev tải lại trang. Đo lại không đụng file: xanh. Lượt dò 88 lần chuyển tab cảm ứng: không tải lại trang lần nào.
+Kết quả: `npm run check` xanh (gói tải đầu 329,8/330 KB — SÁT TRẦN, code khung app mới 15–20/10 thêm ~3 KB); toàn bộ danh sách e2e của
+job CI chạy ở máy dev: 138 xanh, 5 bỏ qua có chủ đích, 0 đỏ.

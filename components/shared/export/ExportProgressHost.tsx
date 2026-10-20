@@ -33,8 +33,8 @@ function Panel({ s }: { s: ExportJobState }) {
 
     const isAlert = Boolean(failed.length || s.cancelRequested);
     const mauThanh = xong 
-        ? (isAlert ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500') 
-        : 'bg-gradient-to-r from-sky-500 to-indigo-500';
+        ? (isAlert ? 'bg-gradient-to-r from-amber-400 to-amber-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500') 
+        : 'bg-gradient-to-r from-sky-400 to-sky-600';
 
     return (
         <Overlay
@@ -78,8 +78,8 @@ function Panel({ s }: { s: ExportJobState }) {
                         </span>
                     )}
                     <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] font-bold text-slate-800 dark:text-slate-100 tracking-tight truncate leading-snug">{s.title}</p>
-                        <p className="text-[11.5px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5" data-testid="export-progress-stage">{s.stage}</p>
+                        <p className="text-[13px] font-bold text-slate-800 dark:text-slate-100 tracking-tight truncate leading-snug">{s.title}</p>
+                        <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5" data-testid="export-progress-stage">{s.stage}</p>
                     </div>
                 </div>
 
@@ -89,7 +89,7 @@ function Panel({ s }: { s: ExportJobState }) {
                         {batch || xong ? (
                             <div className={`h-full rounded-full ${mauThanh} transition-all duration-300 ease-out`} style={{ width: `${pct}%` }} />
                         ) : (
-                            <div className="h-full w-2/5 rounded-full bg-gradient-to-r from-sky-400 via-sky-500 to-indigo-500 animate-[ycxExportIndet_1.2s_ease-in-out_infinite]" />
+                            <div className="h-full w-2/5 rounded-full bg-gradient-to-r from-sky-300 via-sky-500 to-sky-600 animate-[ycxExportIndet_1.2s_ease-in-out_infinite]" />
                         )}
                     </div>
                     {batch && (

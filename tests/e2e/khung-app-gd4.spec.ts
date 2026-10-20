@@ -20,7 +20,9 @@ async function vaoDungThu(page: Page, tab = 'analysis') {
 async function napDuLieuMau(page: Page) {
     await vaoDungThu(page);
     await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());
-    await page.getByText('Tệp Realtime (Xem nhanh)').last().click();
+    // Bấm ĐÚNG trong hộp chọn loại tệp: màn tải lên phía sau cũng có dòng chữ này (UploadSection) nên `.last()` từng bấm nhầm
+    // phần tử nằm DƯỚI modal (2026-10-20).
+    await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
     await expect(page.getByText(/chi tiết theo kho/i).first()).toBeVisible({ timeout: 90_000 });
 }
 
@@ -95,7 +97,16 @@ test.describe('iPhone 16 Pro Max 440×956 (cảm ứng)', () => {
         const nav = page.locator('nav[data-app-chrome="tabbar"]');
         await expect(nav.getByRole('button', { name: /^Phân tích/ })).toHaveAttribute('aria-current', 'page');
         expect(await nav.evaluate(el => getComputedStyle(el).backdropFilter || getComputedStyle(el).getPropertyValue('-webkit-backdrop-filter'))).toContain('blur');
-        for (const b of await nav.getByRole('button').all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        // Chủ dự án c9bfa6d (2026-10-17): mục tab NHÌN THẤY 38px + `ycx-hit` (vùng chạm vô hình 44) — đo VÙNG CHẠM, không đo hộp.
+        for (const b of await nav.getByRole('button').all()) {
+            const vung = await b.evaluate((el) => {
+                const r = el.getBoundingClientRect(); const a = getComputedStyle(el, '::after');
+                const px = (v: string) => parseFloat(v) || 0;
+                const mo = a.content !== 'none' && a.position === 'absolute';
+                return mo ? r.height - px(a.top) - px(a.bottom) : r.height;
+            });
+            expect(vung, `vùng chạm "${await b.getAttribute('aria-label')}"`).toBeGreaterThanOrEqual(43.5);
+        }
 
         await nav.getByRole('button', { name: 'Khác', exact: true }).click();
         const sheet = page.getByRole('dialog', { name: 'Thêm' });
