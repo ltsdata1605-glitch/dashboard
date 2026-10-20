@@ -85,7 +85,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                             id="tax-qr-bank"
                             value={bankCode}
                             onChange={e => setBankCode(e.target.value)}
-                            className="font-semibold"
+                            className="font-semibold lg:text-xs"
                         >
                             <option value="">-- Chọn ngân hàng --</option>
                             {BANK_OPTIONS.map(opt => (
@@ -119,7 +119,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                             value={bankAccount}
                             onChange={e => setBankAccount(e.target.value)}
                             placeholder="Nhập số tài khoản..."
-                            className="font-mono font-bold"
+                            className="font-mono font-bold lg:text-xs"
                         />
                     </div>
 
@@ -145,6 +145,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                             value={qrDescription}
                             onChange={e => setQrDescription(e.target.value)}
                             placeholder={`Hoan thue TNCN cho ${name || 'dong nghiep'}`}
+                            className="lg:text-xs"
                         />
                     </div>
 

@@ -8446,3 +8446,36 @@ Bài học: 2 lỗi "Execution context was destroyed" khi chạy thử là do S�
 test đang chạy → máy chủ dev tải lại trang. Đo lại không đụng file: xanh. Lượt dò 88 lần chuyển tab cảm ứng: không tải lại trang lần nào.
 Kết quả: `npm run check` xanh (gói tải đầu 329,8/330 KB — SÁT TRẦN, code khung app mới 15–20/10 thêm ~3 KB); toàn bộ danh sách e2e của
 job CI chạy ở máy dev: 138 xanh, 5 bỏ qua có chủ đích, 0 đỏ.
+
+### WebKit chập chờn sau khi `main` xanh lại — 2 nguyên nhân thật (2026-10-20)
+
+Job `e2e-webkit` đỏ ở 37e0ec5 hai lượt liền, mỗi lượt một bài. Đọc bản ghi (trace) của chính lượt đỏ chứ không chạy lại cầu may:
+
+| Bài đỏ | Nguyên nhân (đo) | Xử lý |
+|---|---|---|
+| xuất hàng loạt NV trên iPhone (đỏ 2/27 lượt CI từ 13/10) | Bảng tiến trình kẹt ở "Đã xuất 2/3 ảnh. Chưa xuất được: Nhân Viên 2". Vòng hàng loạt (`hooks/useExportLogic.ts`) vẽ thẻ ngoài màn hình rồi CHỜ CỨNG 800 ms; đúng lúc đó lượt **tự xuất Bot LINE** (mặc định bật cho "Chi tiết theo kho", chạy ngầm 1,5 s sau khi tải tệp) đang chụp ảnh → máy bận → React chưa vẽ xong → mục bị đánh "Không dựng được nội dung" (bản ghi: 3 lượt chụp = 1 tự xuất + 2 hàng loạt, mục 2 không tới bước chụp) | Chờ đúng thẻ của đúng người (`data-batch-employee`, tối đa 15 s; vẽ trễ thì thêm 400 ms cho biểu đồ). Tái hiện chắc chắn: bộ lập lịch React (MessageChannel) đến trễ 1,2 s → code cũ **0/3** ảnh, code mới **3/3** — thành test hồi quy trong `xuat-hang-loat-dien-thoai-chia-se-mot-lan.spec.ts` (job WebKit chạy cả file) |
+| in tem PDF trên điện thoại | CSP chặn `https://apis.google.com/js/gen_204` — gapi (đã có ở `script-src`, Firebase Auth nạp) tự gửi ping về chính host đó; WebKit báo "Refused to connect" | `connect-src` thêm `https://apis.google.com` (chỉ quyền gửi request) + test tĩnh `csp-frame-src-va-cdn-pin` |
+
+Ghi chú cho người dùng thật: lỗi 1 không chỉ có trên CI — iPhone đời cũ bấm "Xuất hàng loạt" ngay sau khi tải tệp cũng gặp. Bóp CPU đều tay
+(CDP ×12) KHÔNG tái hiện được: Chromium luôn cho việc của React chạy trước bộ hẹn giờ; WebKit thì không — nên phải làm React vẽ trễ có kiểm soát.
+CI chạy tay trên nhánh (f38cff8): cả 4 job xanh, bài hồi quy mới xanh trên WebKit.
+
+## GĐ10 bước 2 — Tính thuế: nút/ô nhập tự vẽ → thành phần dùng chung (2026-10-20)
+
+Thứ tự kế hoạch là Bot LINE trước, nhưng Bot LINE và Report BI đang được sửa liên tục ở phiên/máy khác (63a9a9e, f4584af…) → làm Tính thuế
+trước để không giẫm chân. Kết quả: `<button>`/`<input>`/`<select>` tự vẽ **64 → 0** (còn 4 ô chọn tệp ẩn `sr-only` — có chủ đích; 2 textarea
+chưa có `Textarea` dùng chung), ESLint 0 cảnh báo nút thô ở `features/tax-calculator`.
+
+- `Select` thêm `dense` (28px, chữ 12px, mũi tên nhỏ, KHÔNG ép 44px) cho ô chọn tháng nằm trong dòng dữ liệu dày ở lịch sử + test.
+- Thanh công cụ (API Key/Biểu thuế = `secondary`, Lịch sử = `primary` khi mở, `aria-pressed`), Đặt lại, Hết/Bỏ (`secondary`), Thêm (`tinted`),
+  Lưu kết quả (`primary`/`success` khi đã lưu), Bảo mật/Xuất ảnh, chép STK/nội dung (`inline-link` + `ycx-hit`), nút icon lịch sử (`ghost`).
+- Ô nhập → `Input` (`leftIcon` người/lịch/tìm, nút xoá ở `rightIcon`), ngân hàng → `Select`; lọc thưởng và lọc tháng → `Tabs variant="chips"`.
+- Thẻ QR trên laptop 3 cột: ô chữ `lg:text-xs` (cột hẹp — chữ 14px cắt tên ngân hàng); iPhone giữ 14px, cao 44px.
+- Ảnh trước/sau (chế độ dùng thử + OCR giả, 440×956 và 1440×900, không dữ liệu thật): bố cục giữ nguyên; khác biệt nhìn thấy: nút xám tinted
+  thay viền màu, chip đang chọn màu đậm (kiểu chung) thay hồng, ô nhập iPhone cao 44px (trang dài thêm ~100px).
+- Kiểm: `npm run check` xanh; 19 spec liên quan (Tính thuế, xuất ảnh, CSP, chuẩn thiết kế, apple-tuong-thich): 68/70 xanh, 2 đỏ CÓ SẴN —
+  đo lại trên code cũ 37e0ec5 (worktree, cổng 5174) cũng đỏ y hệt:
+  - `tax-paste-hrm` "tiêu đề mở HRM": trang HRM thật không vào được từ máy cloud (ngắt sau ~13 s) → tab mới không kịp mở trong 15 s (code cũ
+    đỏ 3/3 lần). Sửa TEST: trả trang giả cho đúng host HRM — vẫn kiểm bấm tiêu đề mở tab mới đúng URL; nay xanh 3/3.
+  - `mobile-iphone-6-module` "13 màn": In Sticker còn 4 nút phân trang xem trước 24px không có vùng chạm 44 (`StickerPrintPreview.tsx`,
+    có từ trước 0338e43). Để lại tới lượt In Sticker của bước 2: thêm `ycx-hit` + nới khoảng cách (gap-1 làm vùng chạm chồng nhau).

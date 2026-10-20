@@ -163,6 +163,10 @@ test('phiếu có khối "Tổng tiền giảm trừ" đang thu gọn: vẫn ra 
 });
 
 test('tiêu đề thẻ mở được trang HRM và có hướng dẫn cách copy', async ({ page }) => {
+    // Trang HRM thật không vào được từ máy chạy test trên cloud (kết nối bị ngắt sau ~13 s) → tab mới chưa kịp mở trong 15 s, bài
+    // đỏ dù code đúng (2026-10-20: đỏ cả trên code cũ). Trả trang giả cho đúng host đó: thứ cần kiểm là bấm tiêu đề MỞ TAB MỚI.
+    await page.context().route('https://newinsite.thegioididong.com/**', (route) =>
+        route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>HRM</title>' }));
     await openTax(page);
 
     // Bấm ngay vào TIÊU ĐỀ thẻ là mở trang HRM (không phải chỉ mỗi icon nhỏ)
