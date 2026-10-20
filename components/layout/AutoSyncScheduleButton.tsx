@@ -127,8 +127,10 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                         <p className="text-rose-600 dark:text-rose-400 font-bold">
                             Để tab không bị ngủ: Chrome → Cài đặt → <u>Hiệu suất</u> → &quot;Luôn giữ các trang web này hoạt động&quot; → thêm <u>dashboard.pro.vn</u>;
                             {' '}Truy cập nhanh:{' '}
-                            <button
+                            <Button
                                 type="button"
+                                variant="unstyled"
+                                size="none"
                                 onClick={() => {
                                     navigator.clipboard?.writeText('chrome://settings/performance');
                                     toast.success('Đã sao chép: chrome://settings/performance (Dán vào thanh địa chỉ Chrome để mở)');
@@ -139,7 +141,7 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                             >
                                 <span>chrome://settings/performance</span>
                                 <AppIcon name="copy" size="xs" />
-                            </button>
+                            </Button>
                         </p>
                         <p>
                             Mac → tắt ngủ máy khi cắm sạc. Nên đặt các nút lệch nhau ít nhất 5 phút.

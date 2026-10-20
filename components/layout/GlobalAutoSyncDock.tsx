@@ -380,33 +380,41 @@ export default function GlobalAutoSyncDock() {
             >
                 {isDockCollapsed ? (
                     <div className="preserve-rounded flex flex-col items-center gap-2">
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={moDock}
                             title="Mở rộng bảng Auto Sync"
                             aria-label="Mở rộng khung Auto Sync YCX"
                             className="preserve-rounded p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
                             <AppIcon name="chevronLeft" size="md" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => handleStartBiSync('realtime')}
                             title="Tự động Realtime (Report BI)"
                             className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
                             <AppIcon name="quick" size="md" className="fill-amber-200" />{lich['bi-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => handleStartBiSync('luyke')}
                             title="Tự động Luỹ kế (Report BI)"
                             className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
                             <AppIcon name="trendUp" size="md" />{lich['bi-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={handleTriggerAutoBonus}
                             title={bonusStatus.isBusy ? `Tự động Đổ Thưởng (${bonusStatus.label || 'Đang chạy'})` : 'Tự động Đổ Thưởng'}
                             className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-600 via-sky-600 to-sky-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
@@ -414,9 +422,11 @@ export default function GlobalAutoSyncDock() {
                             }`}
                         >
                             <AppIcon name="gift" size="md" className="text-sky-100" />{lich['bonus']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title={ycxDangChay && ycxMode === 'realtime' ? 'Tự động YCX Realtime (Đang chạy...)' : 'Tự động YCX Realtime (Phân Tích)'}
                             aria-label="Tự động YCX Realtime"
@@ -425,9 +435,11 @@ export default function GlobalAutoSyncDock() {
                             }`}
                         >
                             <AppIcon name="spreadsheet" size="md" className="text-sky-100" />{lich['ycx-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setYcxLuyKePickerOpen(true)}
                             title={ycxDangChay && ycxMode === 'luyke' ? 'Tự động YCX Luỹ kế (Đang chạy...)' : 'Tự động YCX Luỹ kế (Phân Tích, 01 → hôm qua / chọn tháng)'}
                             aria-label="Tự động YCX Luỹ kế"
@@ -436,16 +448,18 @@ export default function GlobalAutoSyncDock() {
                             }`}
                         >
                             <AppIcon name="dateRange" size="md" className="text-emerald-100" />{lich['ycx-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={handleOpenTnbData}
                             title={tnbCode ? `Tự động TNB Data (Mã: ${tnbCode})` : 'Tự động TNB Data (Sức Khỏe Siêu Thị)'}
                             aria-label="Tự động TNB Data"
                             className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-800 to-slate-900 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
                             <AppIcon name="database" size="md" className="text-sky-100" />
-                        </button>
+                        </Button>
                     </div>
                 ) : (
                     <>
@@ -460,21 +474,25 @@ export default function GlobalAutoSyncDock() {
                                     Auto Sync Pro
                                 </span>
                             </div>
-                            <button
+                            <Button
                                 type="button"
+                                variant="unstyled"
+                                size="none"
                                 onClick={thuGonDock}
                                 title="Thu gọn bảng"
                                 aria-label="Thu gọn khung Auto Sync YCX"
                                 className="preserve-rounded p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             >
                                 <AppIcon name="chevronRight" size="sm" />
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="relative">
                         {/* Nút 1: Tự động Realtime (BI) */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => handleStartBiSync('realtime')}
                             aria-label="Tự động Realtime (Report BI)"
                             title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
@@ -492,7 +510,7 @@ export default function GlobalAutoSyncDock() {
                                     {nhanHen('bi-realtime') || 'Hôm nay'}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2">
                                 <AutoSyncScheduleButton scheduleKey="bi-realtime" tone="dark" compact />
                             </div>
@@ -500,8 +518,10 @@ export default function GlobalAutoSyncDock() {
 
                         <div className="relative">
                         {/* Nút 2: Tự động Luỹ kế (BI) */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => handleStartBiSync('luyke')}
                             aria-label="Tự động Luỹ kế (Report BI)"
                             title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
@@ -519,7 +539,7 @@ export default function GlobalAutoSyncDock() {
                                     {nhanHen('bi-luyke') || 'Tháng đến nay'}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2">
                                 <AutoSyncScheduleButton scheduleKey="bi-luyke" tone="dark" compact />
                             </div>
@@ -527,8 +547,10 @@ export default function GlobalAutoSyncDock() {
 
                         <div className="relative">
                         {/* Nút 3: Tự động Đổ Thưởng (HRM) */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={handleTriggerAutoBonus}
                             aria-label="Tự động Đổ Thưởng"
                             title="Tự động thu thập điểm và đổ thưởng nhân viên từ HRM qua Tampermonkey"
@@ -548,7 +570,7 @@ export default function GlobalAutoSyncDock() {
                                     {bonusStatus.isBusy ? (bonusStatus.label || 'Đang xử lý...') : (nhanHen('bonus') || 'Nhân viên')}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2">
                                 <AutoSyncScheduleButton scheduleKey="bonus" tone="dark" compact />
                             </div>
@@ -556,8 +578,10 @@ export default function GlobalAutoSyncDock() {
 
                         <div className="relative">
                         {/* Nút 4: YCX Realtime (Phân Tích) */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title="Tự động xuất & nạp file YCX Realtime từ report.mwgroup.vn (báo cáo 77)"
                             aria-label="Tự động YCX Realtime"
@@ -577,7 +601,7 @@ export default function GlobalAutoSyncDock() {
                                     {ycxDangChay && ycxMode === 'realtime' ? 'Đang chạy…' : (nhanHen('ycx-realtime') || 'Đổ & cập nhật')}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2">
                                 <AutoSyncScheduleButton scheduleKey="ycx-realtime" tone="dark" compact />
                             </div>
@@ -586,8 +610,10 @@ export default function GlobalAutoSyncDock() {
 
                         <div className="relative">
                         {/* Nút 5: YCX Luỹ kế (Phân Tích) — Từ 01 đầu tháng → Đến HÔM QUA; ngày 01 chạy Realtime */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setYcxLuyKePickerOpen(true)}
                             title="Tự động xuất & nạp file YCX Luỹ kế (01 → hôm qua hoặc chọn tháng) từ report.mwgroup.vn (báo cáo 77). Ngày 01 sẽ chạy Realtime."
                             aria-label="Tự động YCX Luỹ kế"
@@ -607,7 +633,7 @@ export default function GlobalAutoSyncDock() {
                                     {ycxDangChay && ycxMode === 'luyke' ? 'Đang chạy…' : (nhanHen('ycx-luyke') || '01 → hôm qua')}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2">
                                 <AutoSyncScheduleButton scheduleKey="ycx-luyke" tone="dark" compact />
                             </div>
@@ -615,8 +641,10 @@ export default function GlobalAutoSyncDock() {
 
                         <div className="relative">
                         {/* Nút 6: TNB Data (Sức Khỏe Siêu Thị) — Tự động nhập mã & bấm XÁC NHẬN trên admintnb.com/data */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={handleOpenTnbData}
                             title="Tự động tra cứu dữ liệu Sức Khỏe Siêu Thị trên admintnb.com/data bằng mã bảo mật"
                             aria-label="Tự động TNB Data"
@@ -634,10 +662,12 @@ export default function GlobalAutoSyncDock() {
                                     {tnbCode ? `Mã: ${tnbCode}` : 'Sức khỏe ST'}
                                 </span>
                             </div>
-                        </button>
+                        </Button>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="unstyled"
+                                    size="none"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setIsTnbModalOpen(true);
@@ -647,20 +677,22 @@ export default function GlobalAutoSyncDock() {
                                     className="p-1 rounded-md text-sky-200 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
                                 >
                                     <AppIcon name="settings" size="xs" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
                         {/* Footer micro-tag: bấm để xem hướng dẫn cài đặt & kiểm tra kết nối */}
-                        <button
+                        <Button
                             type="button"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setShowGuideModal(true)}
                             title="Bấm để xem hướng dẫn cài đặt hoặc kiểm tra kết nối"
                             className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
                         >
                             <AppIcon name="sparkles" size="xs" className="text-amber-500/80" />
                             <span>HƯỚNG DẪN CÀI ĐẶT</span>
-                        </button>
+                        </Button>
                     </>
                 )}
             </aside>
