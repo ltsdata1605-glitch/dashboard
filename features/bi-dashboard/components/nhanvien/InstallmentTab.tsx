@@ -15,7 +15,6 @@ import { onActivateKey } from '../../../../components/shared/ui';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
-import TimeProgressBar from './shared/TimeProgressBar';
 import { getMetricColorByTarget } from './revenue/ColorSettingsModal';
 import { shortenSupermarketName } from '../../utils/dashboardHelpers';
 import * as db from '../../utils/db';
@@ -479,10 +478,6 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                 </div>
             </div>
 
-            {/* 3. Tiến độ thời gian */}
-            <div className="px-4 pt-3 pb-1">
-                <TimeProgressBar />
-            </div>
 
             {/* 4. Bảng dữ liệu: Wrapper bo góc concentric radii chuẩn Apple & Taste */}
             <div className="w-full px-3.5 sm:px-4 pb-4">

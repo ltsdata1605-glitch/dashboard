@@ -479,25 +479,21 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     setGroupingMode: propSetGroupingMode
 }, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
-    const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining'; direction: 'asc' | 'desc' }>({ key: 'dkht', direction: 'desc' });
+    const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining'; direction: 'asc' | 'desc' } | null>({ key: 'dkht', direction: 'desc' });
 
     const handleSort = (key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => {
         setSortConfig(current => {
             if (current && current.key === key) {
-                return { key, direction: current.direction === 'desc' ? 'asc' : 'desc' };
+                if (current.direction === 'desc') {
+                    return { key, direction: 'asc' };
+                }
+                return null;
             }
-            return { key, direction: 'desc' };
+            return { key, direction: key === 'name' ? 'asc' : 'desc' };
         });
     };
 
-    const renderSortIcon = (key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => {
-        if (sortConfig?.key !== key) return null;
-        return (
-            <span className="inline-block ml-0.5 text-sky-600 dark:text-sky-400 font-bold text-[11px]">
-                {sortConfig.direction === 'desc' ? '▼' : '▲'}
-            </span>
-        );
-    };
+    const renderSortIcon = (_key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => null;
 
     const [isBatchExporting, setIsBatchExporting] = useState(false);
     const [exportProgress, setExportProgress] = useState<{current: number; total: number} | null>(null);
@@ -756,58 +752,37 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                     <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
                                         <th className="w-7 sm:w-8 text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[11px]">#</th>
                                         <th
-                                            className={`min-w-0 text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle transition-colors ${
-                                                sortConfig?.key === 'name'
-                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
-                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                                            }`}
+                                            className="min-w-0 text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle transition-colors bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                                             onClick={() => handleSort('name')}
                                         >
                                             <div className="flex items-center gap-0.5 sm:gap-1 min-w-0">
                                                 <span className="truncate">NHÓM THI ĐUA</span>
-                                                {renderSortIcon('name')}
                                             </div>
                                         </th>
                                         <th
-                                            className={`w-[46px] sm:w-[54px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
-                                                sortConfig?.key === 'actual'
-                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
-                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                                            }`}
+                                            className="w-[46px] sm:w-[54px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                                             onClick={() => handleSort('actual')}
                                         >
-                                            LUỸ<br/>KẾ {renderSortIcon('actual')}
+                                            LUỸ<br/>KẾ
                                         </th>
                                         <th
-                                            className={`w-[42px] sm:w-[50px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
-                                                sortConfig?.key === 'target'
-                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
-                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                                            }`}
+                                            className="w-[42px] sm:w-[50px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                                             onClick={() => handleSort('target')}
                                         >
-                                            TAR {renderSortIcon('target')}
+                                            TAR
                                         </th>
                                         <th
-                                            className={`w-[48px] sm:w-[56px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
-                                                sortConfig?.key === 'dkht'
-                                                    ? 'bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 font-black'
-                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                                            }`}
+                                            className="w-[48px] sm:w-[56px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                                             onClick={() => handleSort('dkht')}
                                             title="Sắp xếp theo %DKHT"
                                         >
-                                            %DKHT {renderSortIcon('dkht')}
+                                            %DKHT
                                         </th>
                                         <th
-                                            className={`w-[44px] sm:w-[52px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight ${
-                                                sortConfig?.key === 'remaining'
-                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
-                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                                            }`}
+                                            className="w-[44px] sm:w-[52px] px-0.5 sm:px-1 py-[4px] text-center cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[11px] sm:text-[12px] font-black align-middle leading-tight bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
                                             onClick={() => handleSort('remaining')}
                                         >
-                                            C.LẠI {renderSortIcon('remaining')}
+                                            C.LẠI
                                         </th>
                                     </tr>
                                 </thead>

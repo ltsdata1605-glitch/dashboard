@@ -180,6 +180,30 @@ const EmployeeSelector: React.FC<{
     );
 };
 
+const formatEmpHeaderName = (fullName: string) => {
+    if (!fullName) return '';
+    // Bỏ phần mã nhân viên ở đầu (ví dụ: "107617 - A.NHÂN" -> "A.NHÂN")
+    let clean = fullName.replace(/^\d+\s*[-_:]\s*/, '').trim();
+    if (!clean) clean = fullName;
+
+    // Nếu có dấu chấm viết tắt (ví dụ: "A.NHÂN", "A. NHÂN", "T.ÚT", "V.THẮNG")
+    const dotMatch = clean.match(/^([A-ZÀ-Ỹ]\.(?:\s*[A-ZÀ-Ỹ]\.)*)\s*(.+)$/i);
+    if (dotMatch) {
+        return (
+            <span className="inline-flex flex-col items-center justify-center leading-tight">
+                <span className="block text-[10px] sm:text-[11px] font-bold opacity-80">{dotMatch[1].replace(/\s+/g, '')}</span>
+                <span className="block text-[11px] sm:text-[12px] font-black">{dotMatch[2]}</span>
+            </span>
+        );
+    }
+
+    // Nếu là tên thông thường nhiều từ, lấy từ cuối hoặc cho xuống dòng tự nhiên
+    const words = clean.split(/\s+/).filter(Boolean);
+    const displayName = words.length > 2 ? words[words.length - 1] : clean;
+
+    return <span className="block text-[11px] sm:text-[12px] font-black leading-tight break-words">{displayName}</span>;
+};
+
 const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     allEmployees,
     allCompetitionsByCriterion,
@@ -507,16 +531,25 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     </div>
 
                     {/* Detailed Competition Table */}
-                    {/* Detailed Competition Table */}
                     <div className="overflow-x-auto hide-scrollbar touch-auto">
                         <table className="w-full table-fixed text-left border-collapse compact-export-table">
                             <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 w-7 sm:w-8 text-center">#</th>
-                                    <th className="px-2 sm:px-3 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 min-w-0">Chương trình thi đua</th>
-                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-[52px] sm:w-[64px] truncate" title={empA.name}>{empA.name.split(' ').pop()}</th>
-                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center w-[64px] sm:w-[76px] whitespace-nowrap">Chênh Lệch</th>
-                                    <th className="px-1 py-1.5 sm:py-2.5 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-[52px] sm:w-[64px] truncate" title={empB.name}>{empB.name.split(' ').pop()}</th>
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider">
+                                    <th className="px-1 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 w-7 sm:w-8 text-center align-middle">#</th>
+                                    <th className="px-2 sm:px-3 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 min-w-0 align-middle leading-tight">
+                                        <span className="block sm:inline">CHƯƠNG TRÌNH </span>
+                                        <span className="block sm:inline">THI ĐUA</span>
+                                    </th>
+                                    <th className="px-0.5 sm:px-1 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-[52px] sm:w-[60px] align-middle" title={empA.name}>
+                                        {formatEmpHeaderName(empA.name)}
+                                    </th>
+                                    <th className="px-0.5 sm:px-1 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-slate-600 dark:text-slate-300 w-[56px] sm:w-[66px] align-middle">
+                                        <span className="block leading-tight">CHÊNH</span>
+                                        <span className="block leading-tight">LỆCH</span>
+                                    </th>
+                                    <th className="px-0.5 sm:px-1 py-1.5 sm:py-2 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-[52px] sm:w-[60px] align-middle" title={empB.name}>
+                                        {formatEmpHeaderName(empB.name)}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -77,7 +77,24 @@ test('Verify all 6 columns of Nhóm thi đua fit on mobile screen and long names
     await table.scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollBy(0, 300));
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'test-results/nhom-thi-dua-fit-mobile-scrolled.png' });
+    // Kiểm tra bấm sắp xếp vào cột TAR
+    const tarHeader = page.locator('table thead th', { hasText: 'TAR' }).first();
+    await tarHeader.click();
+    await page.waitForTimeout(500);
+
+    // Xác nhận tiêu đề cột TAR vẫn giữ trạng thái bình thường (không có icon mũi tên to, không đổi màu nền xanh)
+    const tarClass = await tarHeader.getAttribute('class');
+    expect(tarClass).not.toContain('bg-sky-50');
+    expect(tarClass).not.toContain('bg-sky-100');
+    expect(tarClass).toContain('bg-slate-50');
+
+    // Chụp ảnh bằng chứng cột TAR sau khi bấm sắp xếp vẫn ở trạng thái bình thường
+    await page.evaluate(() => {
+        const thead = document.querySelector('table thead');
+        if (thead) thead.scrollIntoView({ block: 'center' });
+    });
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: 'test-results/nhom-thi-dua-tar-sorted-normal-header.png' });
 
     // 2. Kiểm tra trên Desktop (1440 x 900)
     await page.setViewportSize({ width: 1440, height: 900 });

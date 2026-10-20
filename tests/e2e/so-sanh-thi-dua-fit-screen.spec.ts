@@ -83,15 +83,15 @@ test('Verify So sánh thi đua columns fit snugly to content and competition nam
         }
     }
 
-    // Cuộn bảng thi đua lên vị trí thuận tiện nhất để chụp rõ các dòng #1 đến #10
-    await table.scrollIntoViewIfNeeded();
+    // Chụp lại toàn bộ thẻ So Sánh bao gồm cả thead
+    const compareCard = page.locator('div[data-export-pdf="so-sanh"]').first();
+    const targetElement = (await compareCard.count()) > 0 ? compareCard : page.locator('table.compact-export-table').first();
+    await page.evaluate(() => {
+        const thead = document.querySelector('table.compact-export-table thead');
+        if (thead) thead.scrollIntoView({ block: 'center' });
+    });
     await page.waitForTimeout(500);
     await page.screenshot({ path: 'test-results/so-sanh-fit-mobile-table-top.png' });
-
-    // Cuộn xuống xem các dòng tiếp theo và chụp ảnh
-    await page.evaluate(() => window.scrollBy(0, 300));
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: 'test-results/so-sanh-fit-mobile-scrolled.png' });
 
     // 2. Kiểm tra trên Desktop (1440 x 900)
     await page.setViewportSize({ width: 1440, height: 900 });

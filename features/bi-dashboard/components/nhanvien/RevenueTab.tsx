@@ -13,7 +13,7 @@ import { resolveEmployeeTarget, computeDatMap, computeStoreDatPercent, computeSt
 
 
 import { DeltaBadge } from '../shared/Badges';
-import TimeProgressBar from './shared/TimeProgressBar';
+
 
 import { shortenSupermarketName } from '../../utils/dashboardHelpers';
 import * as db from '../../utils/db';
@@ -526,14 +526,6 @@ const RevenueView: React.FC<{
                 </div>
             </div>
 
-            {/* 3. Tiến độ thời gian */}
-            <div className="px-4 pt-3 pb-1">
-                <TimeProgressBar
-                    isRealtime={isRealtimeMode}
-                    customDaysPassed={timeProgressData.dayPassed}
-                    customTotalDays={timeProgressData.daysInMonth}
-                />
-            </div>
                     {isRealtimeMode && activeRows.length === 0 && (
                         <div className="mx-4 my-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex items-center gap-2">
                             <AppIcon name="warning" size="md" className="text-amber-600" />

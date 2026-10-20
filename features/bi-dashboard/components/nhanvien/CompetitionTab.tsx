@@ -24,7 +24,7 @@ import { Input } from '../../../../components/shared/ui/Input';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
-import TimeProgressBar from './shared/TimeProgressBar';
+
 import { useCompetitionData } from '../../hooks/useCompetitionData';
 import { useProgressiveCount } from '../../hooks/useProgressiveCount';
 import { TieuDeBaoCao } from './shared/TieuDeBaoCao';
@@ -696,7 +696,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 </div>
             </div>
 
-            {/* 3. Thanh TẤT CẢ CHỨC NĂNG & Quỹ thời gian CÙNG NẰM TRÊN 1 DÒNG DUY NHẤT */}
+            {/* 3. Thanh TẤT CẢ CHỨC NĂNG CÙNG NẰM TRÊN 1 DÒNG DUY NHẤT */}
+            {(activeCompetitionTab === 'nhom' || (activeCompetitionTab === 'canhan' && activeVersionName === null) || (activeCompetitionTab === 'tong' && activeVersionName === null)) && (
             <div className="flex flex-nowrap items-center justify-between px-2.5 sm:px-4 py-1 sm:py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1.5 sm:gap-3 w-full overflow-x-auto scrollbar-hide">
                 {/* Bên trái: Bộ lọc & Lựa chọn chức năng (nếu có ở tab Nhóm hoặc Cá nhân) */}
                 {(activeCompetitionTab === 'nhom' || (activeCompetitionTab === 'canhan' && activeVersionName === null)) && (
@@ -824,13 +825,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         </div>
                 )}
 
-                {/* Ở giữa: Quỹ thời gian (CÙNG NẰM TRÊN 1 DÒNG DUY NHẤT) */}
-                <div className="flex-1 min-w-[130px] sm:min-w-[160px] max-w-xl">
-                    <TimeProgressBar />
-                </div>
-
                 {/* Bên phải: Chế độ xem & Export */}
-                        <div className="flex gap-1 items-center shrink-0">
+                        <div className="flex gap-1 items-center shrink-0 ml-auto">
                             {activeCompetitionTab === 'nhom' && activeVersionName === null && (
                                 <>
                                     <Button
@@ -907,6 +903,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             )}
                         </div>
             </div>
+            )}
 
             {/* 4. Nội dung thi đua */}
             <div className="w-full overflow-visible px-4 pb-4">

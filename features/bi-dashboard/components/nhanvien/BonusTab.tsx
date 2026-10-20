@@ -12,7 +12,7 @@ import { getYesterdayDateString } from '../../utils/nhanVienHelpers';
 
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
-import TimeProgressBar from './shared/TimeProgressBar';
+
 import { AutoBonusPanel } from './bonus/AutoBonusPanel';
 import { UseBonusAutoBridgeResult } from '../../hooks/useBonusAutoBridge';
 import { UseMultiMonthBonusRunResult } from '../../hooks/useMultiMonthBonusRun';
@@ -173,10 +173,6 @@ export const BonusView: React.FC<{
                 </div>
             </div>
 
-            {/* 3. Tiến độ thời gian */}
-            <div className="px-4 pt-3 pb-1">
-                <TimeProgressBar />
-            </div>
 
             {/* 4. Bảng thưởng */}
             <div className="w-full overflow-hidden px-4 pb-4">
