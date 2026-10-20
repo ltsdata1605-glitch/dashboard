@@ -8604,3 +8604,12 @@ auth-fresh-login-no-flash, mo-lai-app-dung-cho-cu, offline-app-shell trên bản
 thấy 32px + vùng chạm 44 (`ycx-hit`) — sửa test đo khung ∪ `::after` như `mobile-iphone-6-module`; nay xanh.
 Còn có thể cắt tiếp nếu cần (chưa làm): `ActionMenu` 1,9 KB (menu "⋯" — tách phần thả xuống), `AppFooter` + `useSystemTraffic`
 1,2 KB (chân trang — đụng bài đếm lượt truy cập), tách bảng icon hiếm khỏi `vendor-icons` 18 KB (đụng `AppIcon` toàn app).
+
+## GĐ10 bước 2 — Khung app: dock Auto Sync + nút hẹn giờ (2026-10-20)
+
+`components/layout`: `<button>` thô **17 → 0** (16 nút dock nổi Auto Sync Pro trên laptop — thiết kế của chủ dự án: nút gradient, kính
+mờ, ánh kim — + liên kết "chrome://settings/performance" trong hộp hẹn giờ). Chỉ đổi thẻ: `<button type="button">` → `<Button
+type="button" variant="unstyled" size="none">`, giữ nguyên mọi lớp. Ảnh trước/sau (laptop 1440, dùng thử): dock mở rộng, thu gọn, rê
+chuột, hộp hẹn giờ GIỐNG HỆT từng điểm ảnh; chỉ khác vòng focus bàn phím (đen mặc định của trình duyệt → vòng xanh chuẩn của app).
+Kiểm: `npm run check`; e2e (Chromium) dock-position-alignment, gd7-mini-app, hen-gio-bi-va-bo-lo, line-gui-anh-va-hen-gio, tang-toc-gd2,
+ycx-tu-dong-phan-tich, ycx-tu-dong-report-mwg, apple-tuong-thich: 39 xanh, 5 bỏ qua có chủ đích.

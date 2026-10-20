@@ -464,6 +464,7 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
    - **Cấu hình SP — XONG 20/10** (17 → 0; 2 tab → segmented, điện thoại nhãn ngắn đủ bề ngang).
    - **Phân ca — XONG 20/10** (27 → 0; thêm `Textarea`, `Checkbox`, `Input dense` dùng chung; bỏ `.config-input` riêng; sửa lỗi "Tạo lịch" hỏng khi thiếu hẳn một giới tính).
    - **In Sticker — XONG 20/10** (29 → 0; 4 nút phân trang 24px có vùng chạm 44 — `mobile-iphone-6-module` hết đỏ; bản chép riêng `MultiSelectDropdown` → `StringMultiSelect` dùng chung: khung xổ bộ lọc trên iPhone trước bị modal cắt mất).
+   - **Khung app — XONG 20/10** (17 → 0: dock nổi Auto Sync + nút hẹn giờ, giữ nguyên hình) · **Gói tải đầu** 329,9 → 321,0 KB (chuông, sheet "Khác", nhắc cài app tách mảnh).
 3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.
 
