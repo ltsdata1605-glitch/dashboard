@@ -3,6 +3,8 @@ import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { PrintSettings } from './services/printService';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { Checkbox } from '../../components/shared/ui/Checkbox';
+import { Select } from '../../components/shared/ui/Select';
 
 interface PrintSettingsModalProps {
     settings: PrintSettings;
@@ -16,16 +18,14 @@ const CheckboxOption: React.FC<{
     checked: boolean;
     onChange: (id: keyof PrintSettings, value: boolean) => void;
 }> = ({ id, label, checked, onChange }) => (
-    <label htmlFor={id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors">
-        <input
-            type="checkbox"
-            id={id}
-            checked={checked}
-            onChange={(e) => onChange(id, e.target.checked)}
-            className="h-5 w-5 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-        />
-        <span className="text-sm font-medium text-slate-800">{label}</span>
-    </label>
+    <Checkbox
+        id={id}
+        checked={checked}
+        onChange={(e) => onChange(id, e.target.checked)}
+        label={label}
+        wrapperClassName="flex gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+        labelClassName="font-medium text-slate-800"
+    />
 );
 
 const FontUploadSection: React.FC<{
@@ -167,18 +167,17 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
 
                 <div>
                     <label htmlFor="tagsPerPage" className="block text-base font-semibold text-slate-700 mb-2">Bố cục trang in (A4)</label>
-                    <select
+                    <Select
                         id="tagsPerPage"
                         value={settings.tagsPerPage}
                         onChange={handleSelectChange}
-                        className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                     >
                         <option value={4}>4 sticker / trang (Lớn nhất)</option>
                         <option value={8}>8 sticker / trang</option>
                         <option value={16}>16 sticker / trang</option>
                         <option value={24}>24 sticker / trang (Nhỏ nhất)</option>
                         <option value={80}>Máy in Bill (K80 - Cuộn)</option>
-                    </select>
+                    </Select>
                 </div>
 
                 <div>

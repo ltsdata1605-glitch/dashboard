@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { Tabs } from '../../components/shared/ui/Tabs';
 
 interface LayoutSelectionModalProps {
     onSelect: (tagsPerPage: PrintSettings['tagsPerPage']) => void;
@@ -57,32 +58,16 @@ const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, o
             <div className="space-y-4">
                 <div className="py-2">
                     <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">1. Chọn Kiểu Sticker</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <label className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${stickerStyle === 'default' ? 'bg-sky-50 border-sky-200 ring-1 ring-sky-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
-                            <input
-                                type="radio"
-                                name="stickerStyle"
-                                value="default"
-                                checked={stickerStyle === 'default'}
-                                onChange={() => onStickerStyleChange('default')}
-                                className="h-4 w-4 text-sky-600 focus:ring-sky-500"
-                            />
-                            <span className="text-sm font-medium text-slate-800">Kiểu có sẵn</span>
-                        </label>
-                        <div className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors border ${stickerStyle === 'modern' ? 'bg-sky-50 border-sky-200 ring-1 ring-sky-200' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}>
-                            <label className="flex items-center gap-3 cursor-pointer flex-grow">
-                                <input
-                                    type="radio"
-                                    name="stickerStyle"
-                                    value="modern"
-                                    checked={stickerStyle === 'modern'}
-                                    onChange={() => onStickerStyleChange('modern')}
-                                    className="h-4 w-4 text-sky-600 focus:ring-sky-500"
-                                />
-                                <span className="text-sm font-medium text-slate-800">Kiểu hiện đại</span>
-                            </label>
-                        </div>
-                    </div>
+                    <Tabs
+                        variant="segment"
+                        fullWidth
+                        activeId={stickerStyle}
+                        onChange={(id) => onStickerStyleChange(id as 'default' | 'modern')}
+                        items={[
+                            { id: 'default', label: 'Kiểu có sẵn' },
+                            { id: 'modern', label: 'Kiểu hiện đại' },
+                        ]}
+                    />
                 </div>
 
                 <div className="space-y-3 pt-2">

@@ -5,6 +5,7 @@ import { updatePassword } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { Input } from '../../components/shared/ui/Input';
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -82,23 +83,25 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                         </div>
                     )}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Mật khẩu mới</label>
-                        <input
+                        <label htmlFor="sticker-mat-khau-moi" className="block text-sm font-medium text-slate-700 mb-1">Mật khẩu mới</label>
+                        <Input
+                            id="sticker-mat-khau-moi"
                             type="password"
+                            autoComplete="new-password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                             required
                             minLength={6}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Xác nhận mật khẩu mới</label>
-                        <input
+                        <label htmlFor="sticker-mat-khau-xac-nhan" className="block text-sm font-medium text-slate-700 mb-1">Xác nhận mật khẩu mới</label>
+                        <Input
+                            id="sticker-mat-khau-xac-nhan"
                             type="password"
+                            autoComplete="new-password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                             required
                             minLength={6}
                         />

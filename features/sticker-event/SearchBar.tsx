@@ -2,6 +2,7 @@ import React from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Product } from './types';
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -59,14 +60,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </div>
 
           {/* Input text */}
-          <input
+          {/* Khung bên ngoài lo viền + vòng sáng khi gõ (focus-within) → ô bên trong trong suốt, không viền, không ép 44px (nút quét
+              cạnh bên đã cao 44px trên máy cảm ứng) */}
+          <Input
             type="text"
+            aria-label="Tìm sản phẩm"
             placeholder={isMobile ? "Nhập tên hoặc mã sản phẩm..." : "Nhập mã hoặc tên sản phẩm..."}
             value={searchQuery}
             onChange={onSearchChange}
             disabled={disabled}
             autoComplete="off"
-            className={`w-full ${compact ? 'py-1 text-xs' : 'py-2.5 sm:py-2.5 text-sm sm:text-base'} pl-1 pr-2 text-slate-800 dark:text-slate-100 placeholder-slate-400 bg-transparent border-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed`}
+            className={`h-auto max-sm:min-h-0 pointer-coarse:min-h-0 ${compact ? 'py-1 text-xs' : 'py-2.5 text-sm sm:text-base'} pl-1 pr-2 rounded-none border-0 bg-transparent text-slate-800 focus-visible:ring-0 disabled:bg-transparent disabled:opacity-100`}
           />
 
           {/* Nút Clear X (khi có text) */}

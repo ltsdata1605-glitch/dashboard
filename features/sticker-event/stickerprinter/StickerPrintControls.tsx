@@ -5,6 +5,7 @@ import { DEFAULT_HISTORY_ID, DEFAULT_DRAW_HISTORY_ENTRY } from '../hooks/useStic
 import { StickerManualQueue } from './StickerManualQueue';
 import { Button, Input, Tabs, EmptyState, SectionCard, Switch } from '../../../components/shared/ui';
 import type { TabItem } from '../../../components/shared/ui';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
 
 interface StickerPrintControlsProps {
     manualPages: StickerPage[];
@@ -346,22 +347,24 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         />
                                         <div className="space-y-2">
                                             {filteredItems.map(item => (
-                                                <label key={item.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${item.selected ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-                                                    <input 
-                                                        type="checkbox" 
-                                                        checked={item.selected} 
-                                                        onChange={() => toggleItemSelection(item.id)}
-                                                        className="mt-1 w-4 h-4 text-sky-600 rounded border-slate-300"
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-xs text-slate-800 dark:text-white truncate" title={item.name}>{item.name}</p>
-                                                        <div className="flex gap-3 mt-1.5 text-[11px]">
-                                                            <span className="font-bold text-rose-600">{item.newPrice}</span>
-                                                            <span className="line-through text-slate-400">{item.oldPrice}</span>
-                                                            <span className="text-emerald-600 font-bold">{item.percent}</span>
-                                                        </div>
-                                                    </div>
-                                                </label>
+                                                <Checkbox
+                                                    key={item.id}
+                                                    checked={item.selected}
+                                                    onChange={() => toggleItemSelection(item.id)}
+                                                    className="mt-0.5"
+                                                    wrapperClassName={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${item.selected ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
+                                                    labelClassName="flex-1 min-w-0"
+                                                    label={
+                                                        <>
+                                                            <span className="block font-bold text-xs text-slate-800 truncate" title={item.name}>{item.name}</span>
+                                                            <span className="flex gap-3 mt-1.5 text-[11px]">
+                                                                <span className="font-bold text-rose-600">{item.newPrice}</span>
+                                                                <span className="line-through text-slate-400">{item.oldPrice}</span>
+                                                                <span className="text-emerald-600 font-bold">{item.percent}</span>
+                                                            </span>
+                                                        </>
+                                                    }
+                                                />
                                             ))}
                                         </div>
                                     </div>

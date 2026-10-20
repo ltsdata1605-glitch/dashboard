@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
+import { Input } from '../../components/shared/ui/Input';
 
 interface SaveListModalProps {
   isOpen: boolean;
@@ -49,12 +50,11 @@ const SaveListModal: React.FC<SaveListModalProps> = ({ isOpen, onClose, onSave, 
         <label htmlFor="listName" className="block text-sm font-medium text-slate-700 mb-1">
           Tên danh sách
         </label>
-        <input
+        <Input
           type="text"
           id="listName"
           value={listName}
           onChange={(e) => setListName(e.target.value)}
-          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
           placeholder="Nhập tên danh sách..."
           autoFocus
           required

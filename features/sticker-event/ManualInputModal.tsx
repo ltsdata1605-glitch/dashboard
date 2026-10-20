@@ -5,6 +5,9 @@ import { parseCurrency } from './services/fileParser';
 import { formatCurrency as formatCurrencyForDisplay } from './utils/format';
 import { ManualProductDoc } from './services/firebaseService';
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
+import { Textarea } from '../../components/shared/ui/Textarea';
+import { Checkbox } from '../../components/shared/ui/Checkbox';
 import { Modal } from '../../components/shared/ui/Modal';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
 
@@ -48,7 +51,8 @@ const InputField: React.FC<InputFieldProps> = ({ name, label, placeholder, value
         <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">
             {label} {required && <span className="text-rose-500">*</span>}
         </label>
-        <input
+        {/* Ô dùng chung: lỗi nối vào ô qua aria-invalid + aria-describedby (dòng lỗi do Input tự vẽ) */}
+        <Input
             type={type}
             id={name}
             name={name}
@@ -56,9 +60,8 @@ const InputField: React.FC<InputFieldProps> = ({ name, label, placeholder, value
             onChange={onChange}
             placeholder={placeholder}
             inputMode={inputMode}
-            className={`w-full px-3 py-2 text-base border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 ${error ? 'border-rose-500' : 'border-slate-300'}`}
+            error={error}
         />
-        {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
     </div>
 );
 
@@ -276,10 +279,10 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         </div>
                         <div>
                             <label htmlFor="khuyenMai" className="block text-sm font-medium text-slate-700 mb-1">Khuyến mãi (nếu có)</label>
-                            <textarea
+                            <Textarea
                                 id="khuyenMai" name="khuyenMai" value={formData.khuyenMai} onChange={handleChange}
                                 placeholder="Nội dung khuyến mãi..." rows={1}
-                                className="w-full px-3 py-2 text-base border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                                className="min-h-0"
                             />
                         </div>
                         <div className="flex justify-between items-center pt-1">
@@ -312,15 +315,13 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                     Danh sách sản phẩm ({manualProducts.length})
                                 </h3>
                                 {manualProducts.length > 0 && (
-                                    <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.size === manualProducts.length && manualProducts.length > 0}
-                                            onChange={toggleSelectAll}
-                                            className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                                        />
-                                        Chọn tất cả
-                                    </label>
+                                    <Checkbox
+                                        checked={selectedIds.size === manualProducts.length && manualProducts.length > 0}
+                                        onChange={toggleSelectAll}
+                                        label="Chọn tất cả"
+                                        wrapperClassName="gap-1.5"
+                                        labelClassName="text-xs text-slate-500"
+                                    />
                                 )}
                             </div>
                             <span className="text-xs text-sky-600 font-medium">Lưu trên Firebase</span>
@@ -352,12 +353,12 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                             }`}
                                         >
                                             {/* Checkbox */}
-                                            <input
-                                                type="checkbox"
+                                            <Checkbox
                                                 checked={isSelected}
                                                 onChange={() => p.firebaseId && toggleSelection(p.firebaseId)}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 flex-shrink-0"
+                                                aria-label={`Chọn ${p.sanPham}`}
+                                                wrapperClassName="shrink-0"
                                             />
 
                                             {/* Product info - clickable for edit */}

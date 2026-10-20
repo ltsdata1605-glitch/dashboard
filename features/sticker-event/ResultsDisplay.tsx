@@ -3,6 +3,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Product } from './types';
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
 
 interface ResultsDisplayProps {
@@ -135,8 +136,10 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 >
                     <AppIcon name="removeCircle" size="lg" />
                 </Button>
-                <input
+                <Input
                     type="number" inputMode="decimal"
+                    fullWidth={false}
+                    aria-label={`Số lượng tem ${result.msp}`}
                     value={result.quantity}
                     onChange={(e) => {
                         const val = parseInt(e.target.value);
@@ -144,7 +147,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                         else if (e.target.value === '') onSetQuantity(result.msp, 1);
                     }}
                     onFocus={(e) => e.target.select()}
-                    className="w-10 text-center font-black text-sm sm:text-base text-slate-800 bg-transparent border-none focus:ring-0 p-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none -moz-appearance-textfield tabular-nums"
+                    className="w-10 h-auto max-sm:min-h-0 pointer-coarse:min-h-0 p-0 text-center font-black text-sm sm:text-base text-slate-800 bg-transparent border-0 rounded-none focus-visible:ring-0 tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
                 <Button
                     variant="unstyled"

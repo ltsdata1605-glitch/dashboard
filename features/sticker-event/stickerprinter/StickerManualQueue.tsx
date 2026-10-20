@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import { StickerPage, SavedStickerList } from './types';
 import { Button, Input, EmptyState } from '../../../components/shared/ui';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
 import { resolvePagePrices } from './pageHtmlUtils';
 
 const cleanDisplayLabel = (label: string) => {
@@ -171,12 +172,12 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                     <div className="flex items-center justify-between shrink-0">
                         {/* Checkbox and Quantity on the left */}
                         <h4 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
-                            <input 
-                                type="checkbox"
+                            <Checkbox
                                 checked={allChecked}
                                 onChange={(e) => toggleAllPagesSelection(e.target.checked)}
-                                className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
                                 title="Chọn tất cả / Bỏ chọn tất cả"
+                                aria-label="Chọn tất cả trang"
+                                wrapperClassName="shrink-0"
                             />
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Số lượng: {manualPages.length}</span>
                         </h4>
@@ -359,14 +360,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 title="Click hoặc dùng mũi tên Lên/Xuống để chỉnh sửa"
                             >
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                    <input 
-                                        type="checkbox"
+                                    <Checkbox
                                         checked={page.selected !== false}
                                         onChange={(e) => {
                                             e.stopPropagation();
                                             togglePageSelection(page.id);
                                         }}
-                                        className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
+                                        aria-label={`Chọn trang ${idx + 1}`}
+                                        wrapperClassName="shrink-0"
                                     />
                                     <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 w-6 h-6 flex items-center justify-center rounded-full shrink-0">{idx + 1}</span>
                                     <div className="min-w-0 flex-1">

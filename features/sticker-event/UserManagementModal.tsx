@@ -4,6 +4,7 @@ import { fetchAllUsers, updateUserRole, clearAllUsers, deleteUserDoc } from './s
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from '../../components/shared/ui/Button';
+import { Select } from '../../components/shared/ui/Select';
 import { Modal } from '../../components/shared/ui/Modal';
 import { StickerEventUserRecord } from './types';
 
@@ -185,15 +186,17 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                     </div>
                                     
                                     <div className="flex items-center gap-2">
-                                        <select 
+                                        <Select
+                                            fullWidth={false}
+                                            aria-label={`Vai trò của ${user.email}`}
                                             value={user.role}
                                             onChange={(e) => handleRoleChange(user.uid, e.target.value as 'admin' | 'staff', user.username)}
                                             disabled={user.uid === currentUserId || user.username === 'admin'}
-                                            className="text-sm border-slate-300 rounded-lg focus:ring-sky-500 focus:border-sky-500 disabled:opacity-50 disabled:bg-slate-50"
-                                        >
-                                            <option value="staff">Nhân viên</option>
-                                            <option value="admin">Quản trị viên</option>
-                                        </select>
+                                            options={[
+                                                { value: 'staff', label: 'Nhân viên' },
+                                                { value: 'admin', label: 'Quản trị viên' },
+                                            ]}
+                                        />
                                         <Button
                                             variant="ghost"
                                             size="icon"

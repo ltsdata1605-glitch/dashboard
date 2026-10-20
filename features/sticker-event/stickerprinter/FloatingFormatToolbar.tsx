@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 
 interface FloatingFormatToolbarProps {
     // Không cần truyền handler phức tạp vì component tự lắng nghe selection change trên toàn document
@@ -555,9 +556,11 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 >
                     -
                 </Button>
-                <input 
+                <Input
+                    dense
+                    fullWidth={false}
                     type="text"
-                    onMouseDown={(e) => e.stopPropagation()} 
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
                     onFocus={() => { isTypingRef.current = true; }}
                     value={fontSizeInput}
@@ -568,8 +571,9 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                             (e.target as HTMLInputElement).blur();
                         }
                     }}
-                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[11px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
+                    className="w-9 h-5 px-0 text-center text-[11px] font-bold text-white bg-slate-900 border-slate-700 rounded-sm focus-visible:border-rose-500 focus-visible:ring-rose-500"
                     title="Kích thước cqw (gõ số hoặc dùng +/-)"
+                    aria-label="Cỡ chữ"
                 />
                 <Button
                     variant="secondary"
@@ -598,7 +602,9 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 >
                     -
                 </Button>
-                <input
+                <Input
+                    dense
+                    fullWidth={false}
                     type="text"
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => e.stopPropagation()}
@@ -611,8 +617,9 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                             (e.target as HTMLInputElement).blur();
                         }
                     }}
-                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[11px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
+                    className="w-9 h-5 px-0 text-center text-[11px] font-bold text-white bg-slate-900 border-slate-700 rounded-sm focus-visible:border-rose-500 focus-visible:ring-rose-500"
                     title="Khoảng cách dòng (gõ số hoặc dùng +/-)"
+                    aria-label="Khoảng cách dòng"
                 />
                 <Button
                     variant="secondary"

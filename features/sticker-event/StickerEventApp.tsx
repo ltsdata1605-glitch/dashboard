@@ -742,13 +742,15 @@ export default function App(): React.JSX.Element {
                 <p className="text-xs font-black text-white truncate">
                   Đã chọn: <span className="text-sky-300">{selectedCount}</span> SP (<span className="text-amber-300">{selectedTotalQty}</span> tem)
                 </p>
-                <button
+                <Button
                   type="button"
+                  variant="unstyled"
+                  size="none"
                   onClick={() => handleToggleAllSelect(false)}
-                  className="text-[11px] text-slate-300 hover:text-white underline cursor-pointer"
+                  className="ycx-hit text-[11px] text-slate-300 hover:text-white underline"
                 >
                   Bỏ chọn tất cả
-                </button>
+                </Button>
               </div>
             </div>
 

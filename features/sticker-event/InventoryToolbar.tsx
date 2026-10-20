@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { InventoryItem, Product } from './types';
-import MultiSelectDropdown from './MultiSelectDropdown';
 import SearchBar from './SearchBar';
 import { Button } from '../../components/shared/ui/Button';
+import { Checkbox } from '../../components/shared/ui/Checkbox';
+import { Select } from '../../components/shared/ui/Select';
+import { StringMultiSelect } from '../../components/shared/ui/StringMultiSelect';
 
 export type SortField = 'none' | 'giaGoc' | 'giaGiam' | 'tongThuong' | 'discount' | 'tonKho' | 'sanPham';
 export type SortDirection = 'asc' | 'desc';
@@ -144,15 +146,13 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         {inventory.length > 0 && (
           <>
             <div className="h-4 w-px bg-slate-300/60 dark:bg-slate-700 shrink-0" />
-            <label className="flex items-center gap-1.5 cursor-pointer shrink-0 px-1 py-1">
-              <input 
-                type="checkbox" 
-                checked={useInventoryQuantity}
-                onChange={(e) => onUseInventoryQuantityChange(e.target.checked)}
-                className="rounded border-slate-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500 w-3.5 h-3.5"
-              />
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Tồn kho</span>
-            </label>
+            <Checkbox
+              checked={useInventoryQuantity}
+              onChange={(e) => onUseInventoryQuantityChange(e.target.checked)}
+              label="Tồn kho"
+              wrapperClassName="gap-1.5 shrink-0 px-1 py-1"
+              labelClassName="text-xs font-semibold text-slate-700"
+            />
           </>
         )}
 
@@ -161,15 +161,15 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         {/* 4. Sort controls */}
         <div className="flex items-center gap-1 shrink-0">
           <AppIcon name="sort" size="sm" className="text-slate-400" />
-          <select
+          {/* GĐ10: ô chọn dùng chung — 32px trên laptop như nút "Bộ lọc" cạnh bên, 44px trên máy cảm ứng */}
+          <Select
+            fullWidth={false}
+            aria-label="Sắp xếp theo"
             value={sortField}
             onChange={(e) => handleSortFieldChange(e.target.value as SortField)}
-            className="text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 h-8 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 cursor-pointer"
-          >
-            {SORT_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+            className="h-8 pl-2 text-xs font-medium text-slate-700 border-slate-200"
+            options={SORT_OPTIONS}
+          />
           {sortField !== 'none' && (
             <Button
               variant="secondary"
@@ -219,31 +219,31 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
           {options.maSieuThi.length > 0 && (
             <div className="flex-1 min-w-0">
-              <MultiSelectDropdown
-                label=""
+              <StringMultiSelect
+                variant="compact"
+                label="Siêu thị"
                 options={options.maSieuThi}
-                selectedValues={filters.maSieuThi}
+                selected={filters.maSieuThi}
                 onChange={(values) => onFilterChange('maSieuThi', values)}
-                placeholder="Siêu thị"
               />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <MultiSelectDropdown
-              label=""
+            <StringMultiSelect
+              variant="compact"
+              label="Ngành hàng"
               options={options.nganhHang}
-              selectedValues={filters.nganhHang}
+              selected={filters.nganhHang}
               onChange={(values) => onFilterChange('nganhHang', values)}
-              placeholder="Ngành hàng"
             />
           </div>
           <div className="flex-1 min-w-0">
-            <MultiSelectDropdown
-              label=""
+            <StringMultiSelect
+              variant="compact"
+              label="Nhóm hàng"
               options={options.nhomHang}
-              selectedValues={filters.nhomHang}
+              selected={filters.nhomHang}
               onChange={(values) => onFilterChange('nhomHang', values)}
-              placeholder="Nhóm hàng"
             />
           </div>
         </div>

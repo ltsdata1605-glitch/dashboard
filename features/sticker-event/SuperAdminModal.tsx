@@ -4,6 +4,7 @@ import { db } from './firebase';
 import { collection, query, where, getDocs, limit, Query, DocumentData } from 'firebase/firestore';
 
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
 import { Modal } from '../../components/shared/ui/Modal';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
 import { getErrorMessage } from '../../utils/dataUtils';
@@ -108,16 +109,16 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
     >
       <div className="space-y-6">
           <form onSubmit={handleSearch} className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">Tìm kiếm tài khoản theo Mã kho hoặc Tên đăng nhập</label>
+            <label htmlFor="super-admin-tim" className="block text-sm font-medium text-slate-700">Tìm kiếm tài khoản theo Mã kho hoặc Tên đăng nhập</label>
             <div className="flex gap-2">
-              <div className="relative flex-1">
-                <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
+              <div className="flex-1 min-w-0">
+                <Input
+                  id="super-admin-tim"
                   type="text"
+                  leftIcon="search"
                   value={searchStoreId}
                   onChange={(e) => setSearchStoreId(e.target.value)}
                   placeholder="Nhập mã kho hoặc username..."
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
                 />
               </div>
               <Button

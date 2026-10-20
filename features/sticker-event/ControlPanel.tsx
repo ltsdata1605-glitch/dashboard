@@ -6,6 +6,7 @@ import FileUpload from './FileUpload';
 import SearchBar from './SearchBar';
 
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
 import { useActiveTab } from '../../contexts/LayoutContext';
 
 interface ControlPanelProps {
@@ -90,15 +91,18 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                         <div className="flex items-center justify-between gap-2">
                             {props.isEditingEmployeeName || !props.employeeName ? (
                                 <div className="flex-1 flex items-center gap-1.5">
-                                    <input
+                                    {/* GĐ10: ô dùng chung `dense` (28px — cùng cao nút "Lưu" cạnh bên); viền hồng khi chưa có tên như cũ */}
+                                    <Input
+                                        dense
                                         id="employee-name-input"
                                         type="text"
+                                        aria-label="Tên người in"
                                         placeholder="Tên / mã nhân viên..."
                                         value={props.employeeName}
                                         onChange={props.onEmployeeNameChange}
                                         onBlur={props.onSaveEmployeeName}
                                         onKeyDown={props.onEmployeeNameKeyDown}
-                                        className={`flex-1 px-2.5 py-1.5 text-xs font-medium border rounded-lg bg-white dark:bg-slate-900 focus:ring-2 focus:ring-sky-500 focus:outline-none transition ${isEmployeeNameEmpty ? 'border-rose-300 placeholder-rose-300' : 'border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100'}`}
+                                        className={`px-2.5 font-medium ${isEmployeeNameEmpty ? 'border-rose-300 placeholder:text-rose-300' : 'text-slate-800'}`}
                                         autoFocus={!props.employeeName}
                                     />
                                     <Button
@@ -120,14 +124,16 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                             <p className="font-bold text-xs text-slate-800 dark:text-slate-100 truncate" title={props.employeeName}>
                                                 {props.employeeName}
                                             </p>
-                                            <button
+                                            <Button
                                                 type="button"
+                                                variant="unstyled"
+                                                size="none"
                                                 onClick={() => props.onSetIsEditingEmployeeName(true)}
-                                                className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline shrink-0"
+                                                className="ycx-hit text-[11px] font-medium text-sky-600 hover:underline shrink-0"
                                                 title="Đổi tên người in"
                                             >
                                                 Sửa
-                                            </button>
+                                            </Button>
                                         </div>
                                         <span className="text-[11px] text-slate-400 font-medium block leading-tight">
                                             {isAdmin ? 'Quản trị viên' : 'Nhân viên in ấn'}
@@ -195,7 +201,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         title="Mở báo cáo tồn kho MWG để tải file"
                                     >
                                         <span>Lấy File Tồn Kho</span>
-                                        <span className="text-[11px]">&nearr;</span>
+                                        <AppIcon name="externalLink" size="xs" />
                                     </a>
                                     <Button
                                         variant="unstyled"

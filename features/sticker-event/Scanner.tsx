@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { Overlay } from '../../components/shared/ui/Overlay';
 
@@ -485,14 +486,16 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         {/* Nhập mã bằng tay: mã vạch mờ/rách hoặc máy ảnh bị chặn thì vẫn thêm được sản phẩm */}
         {showManualInput && (
           <form onSubmit={handleSubmitManualCode} className="mt-3 flex items-center gap-2">
-            <input
+            {/* Cao 44px bằng nút "Thêm" cạnh bên (cả trên laptop) */}
+            <Input
               type="text"
               inputMode="numeric"
               autoFocus
+              aria-label="Mã sản phẩm"
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
               placeholder="Gõ mã sản phẩm rồi Enter..."
-              className="flex-1 min-w-0 h-11 px-3 text-sm rounded border border-slate-300 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
+              className="h-11 text-slate-800"
             />
             <Button type="submit" variant="primary" size="none" disabled={!manualCode.trim()} className="h-11 px-4 rounded text-sm font-bold gap-1.5">
               <AppIcon name="enter" size="md" />

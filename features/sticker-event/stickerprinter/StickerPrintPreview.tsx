@@ -1,6 +1,7 @@
 import React, { useRef, useCallback, useMemo } from 'react';
 import { SectionCard } from '../../../components/shared/ui/SectionCard';
 import { Button } from '../../../components/shared/ui/Button';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import BarcodeCanvas from './BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
 import { DrawTicketBlock } from './DrawTicketBlock';
@@ -375,16 +376,16 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     <span className="text-[11px] font-bold text-slate-500 mr-1.5 uppercase">
                         Trang xem trước:
                     </span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 max-sm:gap-5 pointer-coarse:gap-5">
                         <Button
                             variant="secondary"
                             size="none"
                             onClick={() => setActiveDrawPage(p => Math.max(0, p - 1))}
                             disabled={activeDrawPage === 0}
-                            className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+                            className="ycx-hit w-6 h-6 flex items-center justify-center text-xs font-bold"
                             aria-label="Trang trước"
                         >
-                            &lt;
+                            <AppIcon name="chevronLeft" size="xs" />
                         </Button>
                         {Array.from({ length: totalDrawPages }).map((_, idx) => {
                             if (totalDrawPages > 5) {
@@ -404,8 +405,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                     size="none"
                                     key={idx}
                                     onClick={() => setActiveDrawPage(idx)}
-                                    className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+                                    className="ycx-hit w-6 h-6 flex items-center justify-center text-xs font-bold"
                                     aria-label={`Trang ${idx + 1}`}
+                                    aria-current={activeDrawPage === idx ? 'page' : undefined}
                                 >
                                     {idx + 1}
                                 </Button>
@@ -416,10 +418,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             size="none"
                             onClick={() => setActiveDrawPage(p => Math.min(totalDrawPages - 1, p + 1))}
                             disabled={activeDrawPage === totalDrawPages - 1}
-                            className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+                            className="ycx-hit w-6 h-6 flex items-center justify-center text-xs font-bold"
                             aria-label="Trang sau"
                         >
-                            &gt;
+                            <AppIcon name="chevronRight" size="xs" />
                         </Button>
                     </div>
                 </div>
