@@ -44,12 +44,20 @@ test('Xác thực giao diện mobile gọn gàng và resize chuẩn trên tab Ph
     // ≥ 44px, và việc nguy hiểm nhất ("Xoá tất cả dữ liệu") KHÔNG được nằm đầu trang.
     const cao = async (loc: import('@playwright/test').Locator) => (await loc.boundingBox())!.height;
 
-    // 1. Đăng xuất: nút trên thanh trên của khung app (usePageActions), vùng chạm 44×44
+    // 1. Đăng xuất: nút trên thanh trên của khung app (usePageActions), VÙNG CHẠM 44×44. Từ 57656d7 (2026-10-15) chủ dự án giữ cỡ
+    //    NHÌN THẤY 32×32 cho nút thanh trên + chuông (styles.css "Đồng bộ kích thước thị giác 32×32px"), vùng chạm 44 do `ycx-hit`
+    //    (::after vô hình) — nên đo khung ∪ ::after như mobile-iphone-6-module, không đo khung nút (test cũ đỏ từ đó).
     const logoutBtn = page.locator('[data-app-chrome="topbar"]').getByRole('button', { name: 'Đăng xuất' });
     await expect(logoutBtn).toBeVisible();
-    const logoutBox = (await logoutBtn.boundingBox())!;
-    expect(logoutBox.height).toBeGreaterThanOrEqual(43.5);
-    expect(logoutBox.width).toBeGreaterThanOrEqual(43.5);
+    const vungCham = await logoutBtn.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const af = getComputedStyle(el, '::after');
+        if (af.content === 'none' || af.position !== 'absolute') return { w: r.width, h: r.height };
+        const px = (v: string) => (v === 'auto' ? 0 : parseFloat(v) || 0);
+        return { w: r.width - px(af.left) - px(af.right), h: r.height - px(af.top) - px(af.bottom) };
+    });
+    expect(vungCham.h).toBeGreaterThanOrEqual(43.5);
+    expect(vungCham.w).toBeGreaterThanOrEqual(43.5);
 
     // 2. "Xoá tất cả dữ liệu" nằm trong nhóm "Vùng nguy hiểm" ở CUỐI trang — dưới danh sách duyệt, cả hàng là vùng chạm
     const vungNguyHiem = page.getByTestId('vung-nguy-hiem');
