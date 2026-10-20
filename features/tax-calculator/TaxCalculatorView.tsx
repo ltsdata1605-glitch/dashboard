@@ -3,6 +3,7 @@ import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../components/shared/ui/toast';
 import { usePageActions } from '../../components/shared/ui/PageActions';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
+import { Button } from '../../components/shared/ui/Button';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { auth } from '../../services/firebase';
 import { TaxCalculationInput, SavedTaxRecord } from './types/tax.types';
@@ -405,33 +406,36 @@ export const TaxCalculatorView: React.FC = () => {
               </div>
             </div>
 
-            <button
-              type="button"
+            {/* GĐ10 bước 2 (2026-10-20): 3 nút đầu trang dùng Button chung — cỡ sm (32px, vùng chạm 44 trên điện thoại), kiểu secondary;
+                "Lịch sử" đang mở là primary. Icon giữ màu nhấn để nhận ra nhanh. */}
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setShowApiKeyModal(true)}
               title="API Key Gemini dự phòng"
-              className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              aria-label="API Key Gemini dự phòng"
+              className="gap-1.5 px-2.5"
             >
               <AppIcon name="apiKey" size="md" className="text-amber-600" />
               <span className="hidden sm:inline">API Key</span>
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setShowBracketModal(true)}
-              className="min-h-11 sm:min-h-0 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              className="gap-1.5 px-2.5"
             >
               <AppIcon name="info" size="md" className="text-sky-500" />
               <span>Biểu thuế</span>
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              variant={showHistorySidebar ? 'primary' : 'secondary'}
+              size="sm"
               onClick={() => setShowHistorySidebar((prev) => !prev)}
-              className={`min-h-11 sm:min-h-0 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 relative cursor-pointer ${
-                showHistorySidebar
-                  ? 'bg-sky-600 text-white shadow-2xs'
-                  : 'text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60'
-              }`}
+              className="relative gap-1.5 px-2.5"
+              aria-pressed={showHistorySidebar}
               title={showHistorySidebar ? 'Thu gọn danh sách lịch sử bên phải' : 'Mở danh sách lịch sử bên phải'}
             >
               <AppIcon name="history" size="md" className={showHistorySidebar ? 'text-white' : 'text-sky-500'} />
@@ -443,7 +447,7 @@ export const TaxCalculatorView: React.FC = () => {
                   {historyList.length}
                 </span>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

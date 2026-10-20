@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 
 interface ApiKeyConfigModalProps {
     isOpen: boolean;
@@ -76,14 +77,9 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
             footer={
                 <div className="flex items-center justify-between gap-2">
 
-                    <button
-                        type="button"
-                        onClick={handleTestKey}
-                        disabled={isChecking}
-                        className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                    >
+                    <Button variant="secondary" size="sm" onClick={handleTestKey} isLoading={isChecking}>
                         {isChecking ? 'Đang kiểm tra...' : 'Kiểm tra key'}
-                    </button>
+                    </Button>
 
                     <div className="flex items-center gap-2">
                         <Button variant="secondary" size="sm" onClick={onClose}>
@@ -107,15 +103,17 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                     </p>
 
                     <div>
-                        <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                        <label htmlFor="tax-gemini-api-key" className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
                             Google Gemini API Key
                         </label>
-                        <input
+                        <Input
+                            id="tax-gemini-api-key"
                             type="password"
                             value={apiKey}
                             onChange={(e) => setApiKey(e.target.value)}
                             placeholder="AIzaSy..."
-                            className="w-full px-3 py-2 text-xs font-mono bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 text-slate-800 dark:text-slate-100 outline-none transition-all"
+                            autoComplete="off"
+                            className="font-mono text-xs"
                         />
                     </div>
 

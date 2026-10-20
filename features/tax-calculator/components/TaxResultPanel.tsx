@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
+import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 import { exportElementAsImage } from '../../../services/uiService';
 import { deliverImage } from '../../../components/shared/ui/imageDelivery';
 import { TaxCalculationResult } from '../types/tax.types';
@@ -232,7 +234,8 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               </div>
               {isEditingName && !maskIncomeForExport ? (
                 <div className="flex items-center gap-1.5 mt-1 flex-wrap" data-html2canvas-ignore="true">
-                  <input
+                  <Input
+                    fullWidth={false}
                     type="text"
                     value={editNameValue}
                     onChange={(e) => setEditNameValue(e.target.value)}
@@ -246,9 +249,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                     }}
                     autoFocus
                     placeholder="Nhập tên nhân viên..."
-                    className="px-2 py-0.5 text-xs font-bold uppercase bg-white dark:bg-slate-800 border border-sky-500 rounded text-slate-900 dark:text-white outline-none w-44"
+                    aria-label="Tên nhân viên"
+                    className="h-7 w-44 px-2 py-0 text-xs font-bold uppercase"
                   />
-                  <input
+                  <Input
+                    fullWidth={false}
                     type="text"
                     value={editMonthValue}
                     onChange={(e) => setEditMonthValue(e.target.value)}
@@ -262,28 +267,22 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                     }}
                     placeholder="08/2026"
                     title="Kỳ lương (MM/YYYY)"
-                    className="px-1.5 py-0.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white outline-none w-20 text-center"
+                    aria-label="Kỳ lương (MM/YYYY)"
+                    className="h-7 w-20 px-1.5 py-0 text-xs font-bold text-center"
                   />
-                  <button
-                    type="button"
-                    onClick={handleSaveName}
-                    title="Lưu"
-                    className="p-1 rounded relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden bg-sky-500 text-white hover:bg-sky-600 transition-colors cursor-pointer"
-                  >
-                    <AppIcon name="check" size="xs" />
-                  </button>
-                  <button
-                    type="button"
+                  <Button variant="primary" size="icon" onClick={handleSaveName} title="Lưu" aria-label="Lưu" icon="check" />
+                  <Button
+                    variant="secondary"
+                    size="icon"
                     onClick={() => {
                       setEditNameValue(name);
                       setEditMonthValue(monthYear);
                       setIsEditingName(false);
                     }}
                     title="Huỷ"
-                    className="p-1 rounded relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition-colors cursor-pointer"
-                  >
-                    <AppIcon name="close" size="xs" />
-                  </button>
+                    aria-label="Huỷ"
+                    icon="close"
+                  />
                 </div>
               ) : name ? (
                 <div className="group/name flex flex-col">
@@ -292,15 +291,17 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                       Phiếu của
                     </p>
                     {!maskIncomeForExport && (onNameChange || onMonthYearChange) && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="unstyled"
+                        size="none"
                         onClick={() => setIsEditingName(true)}
                         data-html2canvas-ignore="true"
                         title="Đổi tên / tháng phiếu"
-                        className="lg:opacity-0 lg:group-hover/name:opacity-100 relative after:absolute after:-inset-3 after:content-[''] lg:after:hidden hover:text-sky-600 dark:hover:text-sky-400 text-slate-400 transition-opacity p-0.5 cursor-pointer"
+                        aria-label="Đổi tên / tháng phiếu"
+                        className="ycx-hit lg:opacity-0 lg:group-hover/name:opacity-100 focus-visible:opacity-100 hover:text-sky-600 dark:hover:text-sky-400 text-slate-400 transition-opacity p-0.5 cursor-pointer"
                       >
                         <AppIcon name="edit" size="xs" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -331,14 +332,14 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                     </span>
                   )}
                   {!maskIncomeForExport && (onNameChange || onMonthYearChange) && (
-                    <button
-                      type="button"
+                    <Button
+                      variant="inline-link"
                       onClick={() => setIsEditingName(true)}
                       data-html2canvas-ignore="true"
-                      className="min-h-11 sm:min-h-0 text-[11px] text-sky-600 dark:text-sky-400 font-semibold hover:underline cursor-pointer"
+                      className="ycx-hit text-[11px] font-semibold"
                     >
                       (Nhập tên / tháng)
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -346,22 +347,26 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5" data-html2canvas-ignore="true">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setHideSensitive(!hideSensitive)}
               title={hideSensitive ? 'Hiện số liệu' : 'Ẩn số tiền'}
-              className="min-h-11 sm:min-h-0 whitespace-nowrap p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700/50 rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer"
+              aria-label={hideSensitive ? 'Hiện số liệu' : 'Ẩn số tiền'}
+              aria-pressed={hideSensitive}
+              className="gap-1.5 px-2.5"
             >
               {hideSensitive ? <AppIcon name="hide" size="md" className="text-amber-500" /> : <AppIcon name="show" size="md" />}
               <span className="hidden sm:inline">{hideSensitive ? 'Đang ẩn' : 'Bảo mật'}</span>
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              variant="tinted"
+              size="sm"
               onClick={handleExportImage}
               disabled={isExporting}
               title="Xuất bảng tính thành file ảnh PNG"
-              className="min-h-11 sm:min-h-0 whitespace-nowrap px-2 py-1.5 text-xs font-medium bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/50 rounded-lg flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-60"
+              className="gap-1.5 px-2.5"
             >
               {isExporting ? (
                 <AppIcon name="loading" size="md" spin className="text-sky-600" />
@@ -369,7 +374,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <AppIcon name="exportImage" size="md" />
               )}
               <span>{isExporting ? 'Đang lưu...' : 'Xuất ảnh'}</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -488,15 +493,15 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               <AppIcon name="layers" size="sm" className="text-sky-500" />
               {hasProxy ? 'Đối chiếu có / không nhận thay' : 'Chi tiết thu nhập & khấu trừ'}
             </span>
-            <button
-              type="button"
+            <Button
+              variant="inline-link"
               onClick={onOpenBracketModal}
               data-html2canvas-ignore="true"
-              className="min-h-11 sm:min-h-0 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+              className="ycx-hit text-xs gap-0.5"
             >
               <span>Biểu thuế</span>
               <AppIcon name="next" size="md" />
-            </button>
+            </Button>
           </div>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">

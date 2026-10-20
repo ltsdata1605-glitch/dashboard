@@ -13,6 +13,8 @@ import { normalizeBankCode } from '../services/bankCatalog';
 import { ParsedDay5, parseHrmDay5Text, parseHrmDay20Text } from '../services/hrmSlipTextParser';
 import { HrmCopyGuideModal } from './HrmCopyGuideModal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 
 interface TaxInputPanelProps {
   input: TaxCalculationInput;
@@ -451,15 +453,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
           <span>Hướng dẫn</span>
         </Button>
 
-        <button
-          type="button"
-          onClick={onReset}
-          title="Đặt lại dữ liệu"
-          className="min-h-11 sm:min-h-0 whitespace-nowrap inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-400 bg-slate-100 hover:bg-rose-50 dark:bg-slate-700/60 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
-        >
+        <Button variant="secondary" size="sm" onClick={onReset} title="Đặt lại dữ liệu" className="gap-1 px-2.5">
           <AppIcon name="reset" size="md" />
           <span>Đặt lại</span>
-        </button>
+        </Button>
         </div>
       </div>
 
@@ -831,27 +828,21 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
             {/* Quick Action buttons ngắn gọn, không rớt dòng */}
             <div className="flex items-center gap-1.5 text-xs shrink-0">
-              <button
-                type="button"
-                onClick={handleSelectAllVisibleItems}
-                className="min-h-11 sm:min-h-0 inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800 rounded-md hover:bg-rose-50 cursor-pointer whitespace-nowrap"
-              >
+              <Button variant="secondary" size="sm" onClick={handleSelectAllVisibleItems} title="Chọn hết các khoản đang hiện" className="gap-1 px-2 text-[11px]">
                 <AppIcon name="check" size="md" />Hết
-              </button>
-              <button
-                type="button"
-                onClick={handleDeselectVisibleItems}
-                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:text-rose-600 cursor-pointer whitespace-nowrap inline-flex items-center gap-1"
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleDeselectVisibleItems} title="Bỏ chọn các khoản đang hiện" className="gap-1 px-2 text-[11px]">
                 <AppIcon name="close" size="md" />Bỏ
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="tinted"
+                size="sm"
                 onClick={() => setShowAddCustomBonus(!showAddCustomBonus)}
-                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 rounded-md hover:bg-sky-50 cursor-pointer whitespace-nowrap"
+                aria-expanded={showAddCustomBonus}
+                className="gap-1 px-2 text-[11px]"
               >
-                + Thêm
-              </button>
+                <AppIcon name="add" size="md" />Thêm
+              </Button>
             </div>
           </div>
 
@@ -862,70 +853,48 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-rose-200 dark:border-rose-900/60 space-y-2 animate-fadeIn"
             >
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
-                <input
-                  type="text"
-                  value={customItemName}
-                  onChange={(e) => setCustomItemName(e.target.value)}
-                  placeholder="Tên khoản nhận thay (VD: Khoán bổ sung...)"
-                  className="sm:col-span-6 px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-rose-500"
-                />
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={customItemAmount}
-                  onChange={(e) => setCustomItemAmount(e.target.value)}
-                  placeholder="Số tiền VNĐ"
-                  className="sm:col-span-3 px-2.5 py-1.5 text-xs font-mono font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-rose-500"
-                />
-                <button
-                  type="submit"
-                  className="min-h-11 sm:min-h-0 sm:col-span-3 px-2.5 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                >
+                <div className="sm:col-span-6">
+                  <Input
+                    type="text"
+                    value={customItemName}
+                    onChange={(e) => setCustomItemName(e.target.value)}
+                    placeholder="Tên khoản nhận thay (VD: Khoán bổ sung...)"
+                    aria-label="Tên khoản nhận thay"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="sm:col-span-3">
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={customItemAmount}
+                    onChange={(e) => setCustomItemAmount(e.target.value)}
+                    placeholder="Số tiền VNĐ"
+                    aria-label="Số tiền nhận thay (VNĐ)"
+                    className="h-8 text-xs font-mono font-semibold"
+                  />
+                </div>
+                {/* Màu hồng = màu của khối "nhận thay" (cả khối dùng rose) — giữ nhận diện, kiểu/cỡ theo Button chuẩn. */}
+                <Button type="submit" variant="primary" size="sm" className="sm:col-span-3 bg-rose-600 hover:bg-rose-700">
                   Thêm mục
-                </button>
+                </Button>
               </div>
             </form>
           )}
 
           {/* Tab Filter ngắn gọn: Thưởng nóng vs Thưởng chính */}
           {allBonusItems.length > 0 && (
-            <div className="flex items-center gap-1 text-xs">
-              <button
-                type="button"
-                onClick={() => setBonusFilter('hot')}
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                  bonusFilter === 'hot'
-                    ? 'bg-rose-600 text-white shadow-2xs'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50'
-                }`}
-              >
-                <AppIcon name="flame" size="md" />Nóng ({hotBonusItems.length})
-              </button>
-              {mainBonusItems.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setBonusFilter('main')}
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                    bonusFilter === 'main'
-                      ? 'bg-sky-600 text-white shadow-2xs'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-sky-50'
-                  }`}
-                >
-                  <AppIcon name="briefcase" size="md" />Chính ({mainBonusItems.length})
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setBonusFilter('all')}
-                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                  bonusFilter === 'all'
-                    ? 'bg-slate-700 text-white shadow-2xs'
-                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
-                }`}
-              >
-                Tất cả ({allBonusItems.length})
-              </button>
-            </div>
+            <Tabs
+              variant="chips"
+              size="sm"
+              activeId={bonusFilter}
+              onChange={(id) => setBonusFilter(id as typeof bonusFilter)}
+              items={[
+                { id: 'hot', label: `Nóng (${hotBonusItems.length})`, icon: 'flame' },
+                ...(mainBonusItems.length > 0 ? [{ id: 'main', label: `Chính (${mainBonusItems.length})`, icon: 'briefcase' as const }] : []),
+                { id: 'all', label: `Tất cả (${allBonusItems.length})` },
+              ]}
+            />
           )}
 
           {/* DANH SÁCH CHECKBOX CÁC KHOẢN THƯỞNG */}
@@ -1005,9 +974,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
         {/* THÔNG TIN KÊ KHAI BỔ SUNG (ACCORDION GỌN) */}
         <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/30">
-          <button
-            type="button"
+          <Button
+            variant="unstyled"
+            size="none"
             onClick={() => setShowAdvanced(!showAdvanced)}
+            aria-expanded={showAdvanced}
             className="min-h-11 sm:min-h-0 w-full px-3 py-2 flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-1.5">
@@ -1015,77 +986,73 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               <span>Kê khai thêm & Giảm trừ gia cảnh</span>
             </div>
             {showAdvanced ? <AppIcon name="chevronUp" size="sm" /> : <AppIcon name="chevronDown" size="sm" />}
-          </button>
+          </Button>
 
           {showAdvanced && (
             <div className="p-3 pt-1 space-y-2.5 border-t border-slate-200 dark:border-slate-700/60">
               {/* Họ tên */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-0.5">
+                <label htmlFor="tax-ho-ten" className="block text-[11px] font-medium text-slate-500 mb-0.5">
                   Họ tên người kê khai
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-                    <AppIcon name="user" size="sm" />
-                  </div>
-                  <input
-                    type="text"
-                    value={input.name}
-                    onChange={(e) => onChange({ name: e.target.value })}
-                    placeholder="VD: TRƯƠNG HOÀNG PHÚC"
-                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
-                  />
-                </div>
+                <Input
+                  id="tax-ho-ten"
+                  type="text"
+                  value={input.name}
+                  onChange={(e) => onChange({ name: e.target.value })}
+                  placeholder="VD: TRƯƠNG HOÀNG PHÚC"
+                  leftIcon="user"
+                  className="h-8 text-xs"
+                />
               </div>
 
               {/* Kỳ lương / Tháng */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-0.5">
+                <label htmlFor="tax-ky-luong" className="block text-[11px] font-medium text-slate-500 mb-0.5">
                   Kỳ lương / Tháng tính thuế
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-                    <AppIcon name="calendar" size="sm" />
-                  </div>
-                  <input
-                    type="text"
-                    value={input.monthYear || ''}
-                    onChange={(e) => onChange({ monthYear: e.target.value })}
-                    placeholder="VD: 08/2026"
-                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
-                  />
-                </div>
+                <Input
+                  id="tax-ky-luong"
+                  type="text"
+                  value={input.monthYear || ''}
+                  onChange={(e) => onChange({ monthYear: e.target.value })}
+                  placeholder="VD: 08/2026"
+                  leftIcon="calendar"
+                  className="h-8 text-xs"
+                />
               </div>
 
               {/* Tổng thu nhập tháng */}
               <div>
                 <div className="flex justify-between items-center mb-0.5">
-                  <label className="text-[11px] font-medium text-slate-500">
+                  <label htmlFor="tax-tong-thu-nhap" className="text-[11px] font-medium text-slate-500">
                     Tổng thu nhập (Đợt 1 + 2)
                   </label>
                   <span className="text-[11px] text-slate-400">VNĐ</span>
                 </div>
-                <input
+                <Input
+                  id="tax-tong-thu-nhap"
                   type="text"
                   inputMode="numeric"
                   value={input.totalIncome === 0 ? '' : formatNumber(input.totalIncome)}
                   onChange={(e) => handleCurrencyChange('totalIncome', e.target.value)}
                   placeholder="0"
-                  className="w-full px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  className="h-8 text-xs font-semibold"
                 />
               </div>
 
               {/* Số người phụ thuộc */}
               <div>
                 <div className="flex justify-between items-center mb-0.5">
-                  <label className="text-[11px] font-medium text-slate-500">
+                  <label htmlFor="tax-phu-thuoc" className="text-[11px] font-medium text-slate-500">
                     Người phụ thuộc ({formatNumber(dependentUnit)} đ/người)
                   </label>
                   <span className="text-[11px] text-sky-600 font-semibold">
                     Giảm: {formatNumber(input.dependents * dependentUnit)} đ
                   </span>
                 </div>
-                <input
+                <Input
+                  id="tax-phu-thuoc"
                   type="number" inputMode="decimal"
                   min="0"
                   max="20"
@@ -1095,22 +1062,23 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     onChange({ dependents: isNaN(val) ? 0 : val });
                   }}
                   placeholder="0"
-                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  className="h-8 text-xs"
                 />
               </div>
 
               {/* Giảm trừ bảo hiểm */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-0.5">
+                <label htmlFor="tax-bao-hiem" className="block text-[11px] font-medium text-slate-500 mb-0.5">
                   Bảo hiểm bắt buộc (BHXH 10.5%)
                 </label>
-                <input
+                <Input
+                  id="tax-bao-hiem"
                   type="text"
                   inputMode="numeric"
                   value={input.insurance === 0 ? '' : formatNumber(input.insurance)}
                   onChange={(e) => handleCurrencyChange('insurance', e.target.value)}
                   placeholder="0"
-                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
@@ -1119,18 +1087,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
         {/* NÚT LƯU KẾT QUẢ VÀO LỊCH SỬ */}
         <div className="pt-1">
-          <button
-            type="button"
-            onClick={onSave}
-            className={`min-h-11 sm:min-h-0 w-full py-2 px-3 rounded-xl font-medium text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
-              isSaved
-                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'bg-sky-600 hover:bg-sky-700 text-white active:scale-[0.99]'
-            }`}
-          >
+          <Button variant={isSaved ? 'success' : 'primary'} size="md" onClick={onSave} className="w-full gap-1.5">
             <AppIcon name="save" size="md" />
             <span>{isSaved ? 'Đã lưu kết quả' : 'Lưu kết quả tính thuế'}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

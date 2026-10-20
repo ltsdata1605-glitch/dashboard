@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
+import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
+import { Select } from '../../../components/shared/ui/Select';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 import { SavedTaxRecord } from '../types/tax.types';
 import { formatVnd } from '../services/taxCalculatorService';
 import { groupRecordsByMonth } from '../services/taxHistoryGrouping';
@@ -133,76 +137,58 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                    <button
-                        type="button"
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
                         title="Xuất file Excel danh sách hoàn thuế"
-                        className="min-w-11 sm:min-w-0 min-h-11 sm:min-h-0 p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                        aria-label="Xuất file Excel danh sách hoàn thuế"
+                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                     >
                         <AppIcon name="spreadsheet" size="md" />
-                    </button>
-                    <button
-                        type="button"
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={onClose}
                         title="Thu gọn danh sách lịch sử"
-                        className="min-w-11 sm:min-w-0 min-h-11 sm:min-h-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+                        aria-label="Thu gọn danh sách lịch sử"
+                        className="text-slate-400 hover:text-slate-600"
                     >
                         <AppIcon name="panelClose" size="md" />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Ô tìm kiếm nhanh tên nhân viên */}
             <div className="px-3 pt-2.5 pb-1.5 border-b border-slate-100 dark:border-slate-700/60">
-                <div className="relative flex items-center">
-                    <AppIcon name="search" size="sm" className="absolute left-2.5 text-slate-400 pointer-events-none" />
-                    <input
-                        type="text"
-                        value={searchKeyword}
-                        onChange={(e) => setSearchKeyword(e.target.value)}
-                        placeholder="Tìm theo tên nhân viên..."
-                        className="w-full pl-8 pr-7 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                    />
-                    {searchKeyword && (
-                        <button
-                            type="button"
-                            onClick={() => setSearchKeyword('')}
-                            className="absolute right-2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                        >
-                            <AppIcon name="close" size="xs" />
-                        </button>
-                    )}
-                </div>
+                <Input
+                    type="search"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    placeholder="Tìm theo tên nhân viên..."
+                    aria-label="Tìm theo tên nhân viên"
+                    leftIcon="search"
+                    rightIcon={searchKeyword ? 'close' : undefined}
+                    onRightIconClick={searchKeyword ? () => setSearchKeyword('') : undefined}
+                    className="h-8 text-xs"
+                />
             </div>
 
             {/* Bộ lọc tháng (Pill tabs) */}
             {monthGroups.length > 1 && (
-                <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-850 border-b border-slate-100 dark:border-slate-700/60 flex items-center gap-1 overflow-x-auto no-scrollbar">
-                    <button
-                        type="button"
-                        onClick={() => setSelectedMonthFilter('all')}
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-                            selectedMonthFilter === 'all'
-                                ? 'bg-sky-500 text-white shadow-2xs'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                        }`}
-                    >
-                        Tất cả ({filteredRecords.length})
-                    </button>
-                    {monthGroups.map(group => (
-                        <button
-                            key={group.key}
-                            type="button"
-                            onClick={() => setSelectedMonthFilter(group.key)}
-                            className={`px-2 py-0.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
-                                selectedMonthFilter === group.key
-                                    ? 'bg-sky-500 text-white shadow-2xs'
-                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                            }`}
-                        >
-                            {group.label} ({group.records.length})
-                        </button>
-                    ))}
+                <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-850 border-b border-slate-100 dark:border-slate-700/60">
+                    {/* Chip lọc tháng dùng chung (Tabs chips) — cùng kiểu bộ lọc ở các phân hệ khác (GĐ10 bước 2). */}
+                    <Tabs
+                        variant="chips"
+                        size="sm"
+                        activeId={selectedMonthFilter}
+                        onChange={setSelectedMonthFilter}
+                        items={[
+                            { id: 'all', label: `Tất cả (${filteredRecords.length})` },
+                            ...monthGroups.map((group) => ({ id: group.key, label: `${group.label} (${group.records.length})` })),
+                        ]}
+                    />
                 </div>
             )}
 
@@ -231,7 +217,9 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                         {group.label} ({group.records.length})
                                     </span>
                                     {onUpdateGroupMonth && (
-                                        <select
+                                        <Select
+                                            dense
+                                            fullWidth={false}
                                             value={group.key}
                                             onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => {
@@ -241,7 +229,8 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                 }
                                             }}
                                             title="Đổi tháng cho toàn bộ bản ghi trong nhóm này"
-                                            className="text-[11px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
+                                            aria-label="Đổi tháng cho cả nhóm"
+                                            className="text-[11px] font-semibold bg-sky-50 text-sky-700 border-sky-200 hover:border-sky-400"
                                         >
                                             <option value={group.key} disabled>
                                                 Đổi tháng cả nhóm...
@@ -251,7 +240,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                     Sang Tháng {m}
                                                 </option>
                                             ))}
-                                        </select>
+                                        </Select>
                                     )}
                                 </div>
                                 <span className="text-slate-500 dark:text-slate-400 shrink-0 font-mono">
@@ -287,7 +276,9 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                     )}
 
                                                     {onUpdateMonth ? (
-                                                        <select
+                                                        <Select
+                                                            dense
+                                                            fullWidth={false}
                                                             value={rec.monthYear || ''}
                                                             onClick={(e) => e.stopPropagation()}
                                                             onChange={(e) => {
@@ -295,14 +286,15 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                                 onUpdateMonth(rec, e.target.value);
                                                             }}
                                                             title="Bấm để đổi tháng của bản ghi này"
-                                                            className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
+                                                            aria-label="Đổi tháng của bản ghi"
+                                                            className="text-[11px] font-bold bg-emerald-50 text-emerald-700 border-emerald-300 hover:border-emerald-500 shadow-2xs"
                                                         >
                                                             {generateMonthOptions(rec.monthYear).map((m) => (
                                                                 <option key={m} value={m}>
                                                                     T{m}
                                                                 </option>
                                                             ))}
-                                                        </select>
+                                                        </Select>
                                                     ) : rec.monthYear ? (
                                                         <span className="text-[11px] font-bold px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                                             {rec.monthYear.includes('/') ? `T${rec.monthYear}` : rec.monthYear}
@@ -348,17 +340,19 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
 
                                             {/* Nút xóa bản ghi */}
                                             {rec.id !== undefined && (
-                                                <button
-                                                    type="button"
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onDeleteRecord(rec.id!);
                                                     }}
                                                     title="Xóa bản ghi này"
-                                                    className="lg:opacity-0 lg:group-hover:opacity-100 p-1 rounded-md relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+                                                    aria-label="Xóa bản ghi này"
+                                                    className="ycx-hit lg:opacity-0 lg:group-hover:opacity-100 focus-visible:opacity-100 p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
                                                 >
                                                     <AppIcon name="delete" size="sm" />
-                                                </button>
+                                                </Button>
                                             )}
                                         </div>
                                     </div>
@@ -372,34 +366,36 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
             {/* Footer Sidebar */}
             {records.length > 0 && (
                 <div className="p-2.5 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between gap-1.5">
-                    <button
-                        type="button"
+                    <Button
+                        variant="inline-link"
                         onClick={onClearAll}
-                        className="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                        className="ycx-hit text-[11px] gap-1 text-rose-500 hover:text-rose-700"
                     >
                         <AppIcon name="delete" size="md" />
                         <span>Xóa tất cả</span>
-                    </button>
+                    </Button>
 
                     <div className="flex items-center gap-1.5">
-                        <button
-                            type="button"
+                        <Button
+                            variant="secondary"
+                            size="sm"
                             onClick={() => handleCopyGoogleSheets(activeRecords, activeMonthLabel)}
-                            className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 cursor-pointer"
+                            className="gap-1 px-2.5"
                             title="Sao chép bảng cho Google Sheets"
                         >
                             {isCopied ? <AppIcon name="check" size="md" className="text-emerald-600" /> : <AppIcon name="copy" size="md" />}
                             <span>{isCopied ? 'Đã copy!' : 'Copy Sheets'}</span>
-                        </button>
-                        <button
-                            type="button"
+                        </Button>
+                        <Button
+                            variant="success"
+                            size="sm"
                             onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
-                            className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer"
+                            className="gap-1 px-2.5"
                             title="Xuất file Excel (.xlsx)"
                         >
                             <AppIcon name="spreadsheet" size="md" />
                             <span>Xuất Excel</span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}

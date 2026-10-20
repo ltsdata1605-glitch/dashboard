@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
+import { Select } from '../../../components/shared/ui/Select';
 import { BANK_OPTIONS } from '../services/bankCatalog';
 import { generateVietQrUrl, formatVnd } from '../services/taxCalculatorService';
 
@@ -76,13 +78,14 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                 {/* Bank Information Form */}
                 <div className="space-y-2.5">
                     <div>
-                        <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        <label htmlFor="tax-qr-bank" className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Ngân hàng nhận tiền
                         </label>
-                        <select
+                        <Select
+                            id="tax-qr-bank"
                             value={bankCode}
                             onChange={e => setBankCode(e.target.value)}
-                            className="w-full h-8.5 px-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+                            className="font-semibold"
                         >
                             <option value="">-- Chọn ngân hàng --</option>
                             {BANK_OPTIONS.map(opt => (
@@ -90,56 +93,58 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                     {opt.label}
                                 </option>
                             ))}
-                        </select>
+                        </Select>
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                            <label htmlFor="tax-qr-stk" className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                 Số tài khoản
                             </label>
                             {bankAccount && (
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="inline-link"
                                     onClick={() => handleCopy(bankAccount, 'Số tài khoản')}
-                                    className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
+                                    className="ycx-hit text-[11px] font-bold gap-0.5"
                                 >
                                     {copiedField === 'Số tài khoản' ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                                     <span>Copy STK</span>
-                                </button>
+                                </Button>
                             )}
                         </div>
-                        <input
+                        <Input
+                            id="tax-qr-stk"
                             type="text"
+                            inputMode="numeric"
                             value={bankAccount}
                             onChange={e => setBankAccount(e.target.value)}
                             placeholder="Nhập số tài khoản..."
-                            className="w-full h-8.5 px-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="font-mono font-bold"
                         />
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                            <label htmlFor="tax-qr-noi-dung" className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                 Nội dung chuyển khoản
                             </label>
                             {qrDescription && (
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="inline-link"
                                     onClick={() => handleCopy(qrDescription, 'Nội dung CK')}
-                                    className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
+                                    className="ycx-hit text-[11px] font-bold gap-0.5"
                                 >
                                     {copiedField === 'Nội dung CK' ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                                     <span>Copy nội dung</span>
-                                </button>
+                                </Button>
                             )}
                         </div>
-                        <input
+                        <Input
+                            id="tax-qr-noi-dung"
                             type="text"
                             value={qrDescription}
                             onChange={e => setQrDescription(e.target.value)}
                             placeholder={`Hoan thue TNCN cho ${name || 'dong nghiep'}`}
-                            className="w-full h-8.5 px-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500"
                         />
                     </div>
 
