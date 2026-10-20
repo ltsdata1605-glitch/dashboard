@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Textarea } from '../../../components/shared/ui/Textarea';
 
 interface GoogleSheetExportModalProps {
   data: string;
@@ -76,11 +77,12 @@ const GoogleSheetExportModal: React.FC<GoogleSheetExportModalProps> = ({ data, o
         </ol>
       </div>
 
-      <textarea
+      <Textarea
         ref={textareaRef}
         readOnly
         value={data}
-        className="w-full h-32 my-4 p-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-xs"
+        aria-label="Dữ liệu lịch để dán vào Google Sheet"
+        className="h-32 my-4 p-2 bg-slate-50 font-mono text-xs"
       />
     </Modal>
   );

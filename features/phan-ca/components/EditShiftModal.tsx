@@ -5,6 +5,7 @@ import { calculateTotalHours, findAutomaticReplacement } from '../utils/schedule
 import { toast } from '../../../components/shared/ui/toast';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 /**
@@ -384,15 +385,15 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
             </div>
             {isAddingNewCommon ? (
                 <div className="flex gap-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-200 dark:border-slate-700">
-                    <input
+                    <div className="flex-grow min-w-0"><Input
                         type="text"
                         value={customCommonShift}
                         onChange={(e) => setCustomCommonShift(e.target.value)}
                         placeholder="Nhập mã ca, VD: 126"
-                        className="config-input flex-grow"
+                        aria-label="Mã ca thường mới"
                         autoFocus
                         onKeyDown={(e) => { if(e.key === 'Enter') handleSaveCustomShift('common') }}
-                    />
+                    /></div>
                     <Button variant="success" size="sm" onClick={() => handleSaveCustomShift('common')}>Lưu</Button>
                     <Button variant="secondary" size="sm" onClick={() => { setIsAddingNewCommon(false); setCustomCommonShift(''); }}>Hủy</Button>
                 </div>
@@ -425,14 +426,15 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                  </div>
                  {isAddingNewSpecial ? (
                     <div className="flex gap-2 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-200 dark:border-slate-700">
-                         <input
-                            type="text"
-                            value={customSpecialShift}
-                            onChange={(e) => setCustomSpecialShift(e.target.value)}
-                            placeholder="VD: 126 (Kho)"
-                            className="config-input flex-grow" autoFocus
-                            onKeyDown={(e) => { if(e.key === 'Enter') handleSaveCustomShift('special') }}
-                        />
+                         <div className="flex-grow min-w-0"><Input
+                        type="text"
+                        value={customSpecialShift}
+                        onChange={(e) => setCustomSpecialShift(e.target.value)}
+                        placeholder="VD: 126 (Kho)"
+                        aria-label="Mã ca đặc biệt mới"
+                        autoFocus
+                        onKeyDown={(e) => { if(e.key === 'Enter') handleSaveCustomShift('special') }}
+                    /></div>
                         <Button variant="success" size="sm" onClick={() => handleSaveCustomShift('special')}>Lưu</Button>
                         <Button variant="secondary" size="sm" onClick={() => { setIsAddingNewSpecial(false); setCustomSpecialShift(''); }}>Hủy</Button>
                     </div>
@@ -506,17 +508,15 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Chọn đối tác hoán đổi ca</h3>
           </div>
 
-          <div className="relative">
-              <input
-                  type="text"
-                  className="config-input w-full pl-10"
-                  placeholder="Tìm theo tên hoặc bộ phận..."
-                  value={swapSearchTerm}
-                  onChange={(e) => setSwapSearchTerm(e.target.value)}
-                  autoFocus
-              />
-              <AppIcon name="search" size="lg" className="absolute left-3 top-2.5 text-slate-400" />
-          </div>
+          <Input
+              type="search"
+              leftIcon="search"
+              aria-label="Tìm đối tác hoán đổi"
+              placeholder="Tìm theo tên hoặc bộ phận..."
+              value={swapSearchTerm}
+              onChange={(e) => setSwapSearchTerm(e.target.value)}
+              autoFocus
+          />
 
           <div className="max-h-60 overflow-y-auto pr-1 space-y-2 custom-scroll">
               {swapCandidates.length > 0 ? (

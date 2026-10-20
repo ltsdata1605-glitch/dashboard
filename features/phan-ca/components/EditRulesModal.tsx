@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { SchedulingRules } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 
 interface EditRulesModalProps {
@@ -99,16 +100,18 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
         <div className="space-y-3 max-h-56 overflow-y-auto pr-2 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
           {configuredShifts.length > 0 ? configuredShifts.map(shift => (
             <div key={shift} className="flex items-center gap-3">
-              <label className="w-1/3 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label htmlFor={`quy-tac-ca-${shift}`} className="w-1/3 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Ca {shift}:
               </label>
-              <input
-                type="number" inputMode="decimal"
-                className="flex-grow config-input"
-                value={rules[ruleKey][shift] || 0}
-                onChange={(e) => handleInputChange(shift, e.target.value)}
-                min="0"
-              />
+              <div className="flex-grow min-w-0">
+                <Input
+                  id={`quy-tac-ca-${shift}`}
+                  type="number" inputMode="decimal"
+                  value={rules[ruleKey][shift] || 0}
+                  onChange={(e) => handleInputChange(shift, e.target.value)}
+                  min="0"
+                />
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
@@ -124,9 +127,10 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
         </div>
 
         <div className="flex items-center gap-2">
-            <input
+            <div className="flex-grow min-w-0">
+            <Input
               type="text"
-              className="config-input flex-grow"
+              aria-label="Mã ca mới"
               placeholder="Nhập mã ca (VD: 123, 456...)"
               list="available-shifts"
               value={newShiftCode}
@@ -140,6 +144,7 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
                   }
               }}
             />
+            </div>
             <datalist id="available-shifts">
                 {unconfiguredShifts.map(s => <option key={s} value={s} />)}
             </datalist>

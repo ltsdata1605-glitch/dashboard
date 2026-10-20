@@ -15,10 +15,13 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   rightIconLabel?: string;
   onLeftIconClick?: () => void;
   fullWidth?: boolean;
+  /** Ô gọn 28px, chữ 12px cho ô nằm trong lưới/bảng dày (vd ô số trong lưới mẫu ca) — KHÔNG ép cao 44px (vỡ mật độ dòng), như
+   *  `Select dense` (GĐ10 2026-10-20). Ô nhập trong form để mặc định (36px, cảm ứng 44px). */
+  dense?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, leftIcon, rightIcon, onRightIconClick, rightIconLabel, onLeftIconClick, fullWidth = true, ...props }, ref) => {
+  ({ className, error, leftIcon, rightIcon, onRightIconClick, rightIconLabel, onLeftIconClick, fullWidth = true, dense = false, ...props }, ref) => {
     // Audit A17 (2026-09-30): dòng lỗi trước đây chỉ là <p> đứng cạnh — trình đọc màn hình không biết
     // ô nào đang lỗi. Nay nối lỗi vào ô qua aria-invalid + aria-describedby (giữ describedby sẵn có).
     const errorId = `${useId()}-error`;
@@ -50,7 +53,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={cn(
-            "flex h-9 max-sm:min-h-11 pointer-coarse:min-h-11 w-full rounded-control border bg-white px-3 py-2 text-sm font-normal transition-colors",
+            dense
+              ? "flex h-7 w-full rounded-control border bg-white px-2 py-0 text-xs font-normal transition-colors"
+              : "flex h-9 max-sm:min-h-11 pointer-coarse:min-h-11 w-full rounded-control border bg-white px-3 py-2 text-sm font-normal transition-colors",
             "border-slate-300 text-slate-900 placeholder:text-slate-400",
             "focus-visible:outline-none focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500",
             "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100",

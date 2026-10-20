@@ -233,27 +233,8 @@
         :where(.phanca-root) .col-total { color: var(--text-secondary); background-color: #fdfdfd; }
         :where(.phanca-root) .col-total-final { color: var(--text-primary); font-weight: 700; background-color: var(--surface-1); }
 
-        /* ═══════════════════════════════════════
-           FORM INPUTS — Clean & Flat
-           ═══════════════════════════════════════ */
-        :where(.phanca-root) .config-input {
-            border: 1.5px solid var(--border-light);
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-weight: 600;
-            font-size: 13px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            background: var(--surface-0);
-            outline: none;
-            color: var(--text-primary);
-        }
-        :where(.phanca-root) .config-input:focus {
-            border-color: var(--brand-secondary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
-        }
-        :where(.phanca-root) .config-input:hover:not(:focus) {
-            border-color: var(--border-default);
-        }
+        /* Ô nhập (.config-input riêng của Phân ca: viền 1,5px, bo 6px, viền focus chàm) ĐÃ BỎ 2026-10-20 — GĐ10 dùng Input/Select/
+           Textarea dùng chung (components/shared/ui), cùng chuẩn với cả app. */
 
         /* ═══════════════════════════════════════
            EXPORT UTILITIES

@@ -5,6 +5,9 @@ import * as idb from '../db/idb';
 import { DailyRequirements, SchedulingRules, ShiftDefinitions, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
+import { Select } from '../../../components/shared/ui/Select';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import AiSuggestPatternModal from './AiSuggestPatternModal';
 
@@ -287,16 +290,20 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         )}
 
         <div className="mb-3 flex items-center gap-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-2 rounded-md">
-            <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Chọn bộ phận:</label>
-            <select
-                value={selectedDept}
-                onChange={(e) => setSelectedDept(e.target.value)}
-                className="flex-grow px-2 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 outline-none focus:border-sky-500 rounded"
-            >
-                {allDepartments.map(dept => (
-                    <option key={dept} value={dept}>{dept} ({staffCountByDept[dept] || 0} NV)</option>
-                ))}
-            </select>
+            <label htmlFor="pattern-bo-phan" className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Chọn bộ phận:</label>
+            <div className="flex-grow min-w-0">
+                <Select
+                    dense
+                    id="pattern-bo-phan"
+                    value={selectedDept}
+                    onChange={(e) => setSelectedDept(e.target.value)}
+                    className="h-8 font-bold text-slate-700"
+                >
+                    {allDepartments.map(dept => (
+                        <option key={dept} value={dept}>{dept} ({staffCountByDept[dept] || 0} NV)</option>
+                    ))}
+                </Select>
+            </div>
         </div>
 
         {previewStats && (
@@ -324,17 +331,23 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                 {['1', '2', '3', '4', '5', '6'].map(slot => (
                                     <td key={slot} className="p-1">
                                         <div className="flex flex-col items-center gap-0.5">
-                                            <input
+                                            <Input
+                                                dense
+                                                fullWidth={false}
                                                 type="time"
+                                                aria-label={`Giờ bắt đầu ca ${slot}`}
                                                 value={shiftDefinitions[slot]?.startTime || ''}
                                                 onChange={(e) => onShiftDefinitionsUpdate({ ...shiftDefinitions, [slot]: { ...shiftDefinitions[slot], startTime: e.target.value } })}
-                                                className="w-[60px] text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-0.5 text-center focus:border-sky-500 outline-none"
+                                                className="w-[60px] px-0.5 text-[11px] font-mono font-bold text-slate-600 text-center"
                                             />
-                                            <input
+                                            <Input
+                                                dense
+                                                fullWidth={false}
                                                 type="time"
+                                                aria-label={`Giờ kết thúc ca ${slot}`}
                                                 value={shiftDefinitions[slot]?.endTime || ''}
                                                 onChange={(e) => onShiftDefinitionsUpdate({ ...shiftDefinitions, [slot]: { ...shiftDefinitions[slot], endTime: e.target.value } })}
-                                                className="w-[60px] text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-0.5 text-center focus:border-sky-500 outline-none"
+                                                className="w-[60px] px-0.5 text-[11px] font-mono font-bold text-slate-600 text-center"
                                             />
                                         </div>
                                     </td>
@@ -353,7 +366,9 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                 <td className="p-1.5 font-bold text-rose-600 dark:text-rose-400 text-left">Yêu Cầu</td>
                                 {['1', '2', '3', '4', '5', '6'].map(slot => (
                                     <td key={slot} className="p-1">
-                                        <input
+                                        <Input
+                                            dense
+                                            aria-label={`Yêu cầu ca ${slot}`}
                                             id={`pattern-req-input-${slot}`}
                                             type="number" inputMode="decimal"
                                             value={departmentRequirements[selectedDept]?.[slot] || ''}
@@ -369,7 +384,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                                     }
                                                 }
                                             }}
-                                            className="w-full max-w-[50px] mx-auto text-center font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600 p-1 focus:border-sky-500 outline-none text-xs rounded"
+                                            className="max-w-[50px] mx-auto px-1 text-center font-bold text-slate-800"
                                             min="0"
                                             placeholder="-"
                                         />
@@ -430,20 +445,21 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                         <div className="col-span-1 text-center text-slate-400 dark:text-slate-500 font-mono text-xs font-bold">{index + 1}</div>
                         {SHIFTS.map(shift => (
                             <div key={shift} className="col-span-1 text-center flex justify-center">
-                                <input
-                                    type="checkbox"
+                                <Checkbox
                                     checked={pattern.includes(String(shift))}
                                     onChange={() => handleCheckboxChange(index, shift)}
-                                    className="h-4 w-4 border-slate-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500 cursor-pointer rounded-none accent-sky-600"
+                                    aria-label={`Ca ${shift} — dòng ${index + 1}`}
                                 />
                             </div>
                         ))}
                         <div className="col-span-2 px-1 border-l border-slate-100 dark:border-slate-700">
-                            <input
+                            <Input
+                                dense
                                 type="text"
                                 value={pattern}
                                 onChange={(e) => handlePatternTextChange(index, e.target.value)}
-                                className="w-full text-center font-mono font-bold text-sky-700 dark:text-sky-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 py-1 text-xs outline-none focus:border-sky-500 rounded"
+                                aria-label={`Mã ca dòng ${index + 1}`}
+                                className="text-center font-mono font-bold text-sky-700 border-slate-200"
                                 placeholder="-"
                             />
                         </div>

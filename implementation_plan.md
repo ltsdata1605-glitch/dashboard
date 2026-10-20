@@ -8526,3 +8526,25 @@ Test: `taiLaiKhiLoiChunk.test.ts` (4 tình huống) + `lazy-with-retry.test.ts` 
   phách nhấp nháy như cũ), giữ cỡ 34px.
 - Ảnh trước/sau bằng TÀI KHOẢN TEST (chỉ đọc — `chanGhiCloud` chặn mọi lượt ghi, ảnh ở scratchpad, không commit; quyền xem, không phải
   Super Admin) + harness `ma-sp`. Kiểm: gd10-xac-nhan-va-bang, phan-quyen-tab-cau-hinh, product-config-real-user, apple-tuong-thich: 11 xanh.
+
+## GĐ10 bước 2 — Phân ca + 3 thành phần dùng chung mới (2026-10-20)
+
+**Lỗi thật phát hiện khi chụp ảnh (sửa trước, commit riêng 35c0375):** hộp "Cấu hình nhập nhân viên" MẶC ĐỊNH chọn Nữ cho mọi người;
+người dùng chưa chỉnh ai thành Nam → `balanceTimeDistribution('Kho', 'Nam')` (features/phan-ca/utils/scheduleUtils.ts) lọc ra danh
+sách rỗng rồi đọc `candidates[0].id` → TypeError → "Tạo lịch" hỏng, lịch trống, KHÔNG báo gì. Chặn `< 2` như `balanceSpecificRole`
+(1 người thì logic cũ cũng không đổi được gì → kết quả các trường hợp bình thường không đổi). Test `phan-ca-can-bang-thieu-gioi-tinh`
+(toàn nữ / toàn nam — đỏ trước, xanh sau).
+
+**Thành phần dùng chung mới** (components/shared/ui, README đã ghi, test `TextareaCheckbox.test.ts`):
+- `Textarea` — cùng chuẩn với `Input` (18 chỗ tự vẽ trong dự án, mỗi nơi một kiểu).
+- `Checkbox` — ô 16px sky, LUÔN bọc `<label>` có `ycx-hit` (vùng chạm 44 — `::after` không gắn được lên chính `<input>`);
+  `wrapperClassName`/`labelClassName` để giữ kiểu chip (25 chỗ tự vẽ trong dự án).
+- `Input dense` — ô 28px trong lưới/bảng dày, không ép 44px (như `Select dense`).
+
+**Phân ca:** ô tự vẽ **27 → 0** (còn ô chọn tệp Excel ẩn). Kiểu ô nhập riêng `.config-input` (viền 1,5px, bo 6px, viền focus CHÀM —
+lệch bảng màu) bỏ hẳn, CSS chết đã gỡ khỏi `phanca.css`. Lưới mẫu ca / ô yêu cầu / ô giờ → `Input dense`; chip "Tăng ca… / Tính TN
+vào SBH" → `Checkbox` giữ nguyên hình chip; "Ưu tiên SBH" (chọn gạch chân trong dòng) → `Select dense` giữ kiểu gạch chân; ô tìm
+đối tác hoán đổi → `Input leftIcon`; mọi ô có tên (`label htmlFor` hoặc `aria-label`).
+Ảnh trước/sau (dùng thử + tệp Excel 13 NV giả, iPhone 440 + laptop 1440, 7 màn): màn lịch + lưới Ca xoay gần như y hệt; hộp Gợi ý
+AI đổi sang ô chuẩn chung (chữ thường thay đậm, mũi tên chọn chuẩn). Kiểm: css-pham-vi-va-vung-cham, gd7-mini-app, apple-tuong-thich,
+chuan-thiet-ke-b, icon-audit-man-goc: 22 xanh.

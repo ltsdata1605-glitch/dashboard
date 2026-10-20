@@ -2,6 +2,7 @@ import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { StaffMember, ScheduleConfig, DailyRequirements, UnresolvedConflict } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 
 interface DailyStatsTableProps {
   staffList: StaffMember[];
@@ -113,7 +114,9 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                     </td>
                                     {canEditRequirements && (
                                         <td className="sticky left-[96px] bg-white z-10 border-r border-b border-slate-200 px-1 py-2 text-center">
-                                            <input
+                                            <Input
+                                                dense
+                                                aria-label={`Yêu cầu ca ${slot}`}
                                                 id={`req-input-${slot}`}
                                                 type="number" inputMode="decimal"
                                                 value={requirements[slot] || ''}
@@ -129,7 +132,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                                         }
                                                     }
                                                 }}
-                                                className="w-full text-center font-bold bg-slate-50 border border-slate-200 p-1.5 text-sm outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-none"
+                                                className="h-8 px-1.5 text-center font-bold bg-slate-50 border-slate-200 text-sm rounded-none"
                                                 min="0"
                                             />
                                         </td>

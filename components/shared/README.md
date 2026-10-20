@@ -13,7 +13,8 @@ sinh ra 2 bản `MultiSelectDropdown`, 17 công tắc tự vẽ, 5 kiểu toast 
 | Cần gì | Dùng | Ghi chú |
 |---|---|---|
 | Nút | `Button` | `primary` (một nút/màn) · `secondary` (Huỷ, phụ) · `tinted` (phụ quan trọng) · `destructive` (việc nguy hiểm) · `danger` (chỉ nút xác nhận cuối) · `ghost`. Cỡ `sm/md` tự cao 44px trên điện thoại/cảm ứng. Nút icon trơn cần vùng chạm 44 → thêm lớp `ycx-hit`. |
-| Ô nhập / chọn | `Input` (có `leftIcon`, `type="search"`), `Select` | chọn một có ô tìm: `SearchableSelect` |
+| Ô nhập / chọn | `Input` (có `leftIcon`, `type="search"`, nút icon phải có tên: `rightIconLabel`), `Select`, `Textarea` (nhiều dòng) | chọn một có ô tìm: `SearchableSelect`. Ô trong lưới/bảng dày: `dense` (28px, không ép 44px) cho cả `Input` lẫn `Select` |
+| Ô tick | `Checkbox` (`label`, `wrapperClassName` cho khung chip, `labelClassName`) — luôn bọc `<label>` có `ycx-hit` (vùng chạm 44) | không chữ thì PHẢI có `aria-label`; bật/tắt một tuỳ chọn → `Switch` |
 | Chọn nhiều | `StringMultiSelect` (danh sách chuỗi: kho, ngành hàng — có tìm, "Tất cả", đếm) · `MultiSelectDropdown` (tuỳ chọn có key/nhóm) | |
 | Bật/tắt | `Switch` (`size="sm"` trong bảng/menu) | CẤM tự vẽ (`khongCongTacTuVe.test.ts`). Công tắc chỉ để nhìn trong hàng bấm được: bọc `aria-hidden`, `tabIndex={-1}`. |
 | Chọn 1 trong 2–5 chế độ | `Tabs variant="segment"` | dải cuộn ngang tự đưa mục đang chọn vào giữa; `underline` cho tab trang |

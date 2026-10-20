@@ -2,6 +2,9 @@ import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ScheduleTargets, SbhGenderBoost } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
+import { Select } from '../../../components/shared/ui/Select';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
 
 interface LegendProps {
     targets: ScheduleTargets | null;
@@ -117,7 +120,10 @@ const Legend: React.FC<LegendProps> = ({
                                 : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
                             }`}>
                                 <span className="font-bold uppercase tracking-wider whitespace-nowrap">Ưu tiên SBH:</span>
-                                <select
+                                <Select
+                                    dense
+                                    fullWidth={false}
+                                    aria-label="Ưu tiên SBH theo giới tính"
                                     value={sbhGenderBoost.gender || ''}
                                     onChange={(e) => {
                                         const val = e.target.value as 'Nu' | 'Nam' | '';
@@ -126,17 +132,20 @@ const Legend: React.FC<LegendProps> = ({
                                             hours: sbhGenderBoost.hours || 5
                                         });
                                     }}
-                                    className="bg-transparent text-xs font-bold focus:outline-none cursor-pointer border-b border-dashed border-current pb-0.5"
+                                    className="h-6 pl-0 border-0 border-b border-dashed border-current rounded-none bg-transparent text-inherit font-bold"
                                 >
                                     <option value="" className="text-slate-800 bg-white dark:bg-slate-800 dark:text-slate-200">Không</option>
                                     <option value="Nu" className="text-slate-800 bg-white dark:bg-slate-800 dark:text-slate-200">Nữ cao hơn</option>
                                     <option value="Nam" className="text-slate-800 bg-white dark:bg-slate-800 dark:text-slate-200">Nam cao hơn</option>
-                                </select>
+                                </Select>
 
                                 {sbhGenderBoost.gender && (
                                     <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-sky-200 dark:border-sky-700">
                                         <span className="font-bold text-sky-600 dark:text-sky-400">+</span>
-                                        <input
+                                        <Input
+                                            dense
+                                            fullWidth={false}
+                                            aria-label="Số giờ ưu tiên"
                                             type="number" inputMode="decimal"
                                             min={1}
                                             max={50}
@@ -148,7 +157,7 @@ const Legend: React.FC<LegendProps> = ({
                                                     hours: val
                                                 });
                                             }}
-                                            className="w-10 h-6 text-center font-black bg-white dark:bg-slate-900 border border-sky-300 dark:border-sky-600 rounded px-0.5 text-sky-900 dark:text-sky-200 focus:outline-none focus:ring-1 focus:ring-sky-500 text-xs"
+                                            className="w-10 h-6 px-0.5 text-center font-black border-sky-300 text-sky-900"
                                         />
                                         <span className="font-bold text-sky-600 dark:text-sky-400">h</span>
                                     </div>
@@ -159,36 +168,30 @@ const Legend: React.FC<LegendProps> = ({
                         {/* TN in SBH toggle — pushed to right */}
                         <div className="ml-auto flex items-center gap-2">
                             {onAutoAddWeekendShiftsChange && (
-                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={autoAddWeekendShifts}
-                                        onChange={(e) => onAutoAddWeekendShiftsChange(e.target.checked)}
-                                        className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500 accent-sky-600"
-                                    />
-                                    <span className="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors">Tăng ca 2,5 T7-CN</span>
-                                </label>
+                                <Checkbox
+                                    checked={autoAddWeekendShifts}
+                                    onChange={(e) => onAutoAddWeekendShiftsChange(e.target.checked)}
+                                    label="Tăng ca 2,5 T7-CN"
+                                    wrapperClassName="h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group"
+                                    labelClassName="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors"
+                                />
                             )}
                             {onAutoAddWeekendShift1Change && (
-                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={autoAddWeekendShift1}
-                                        onChange={(e) => onAutoAddWeekendShift1Change(e.target.checked)}
-                                        className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500 accent-sky-600"
-                                    />
-                                    <span className="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors">Tăng ca 1 T7-CN</span>
-                                </label>
+                                <Checkbox
+                                    checked={autoAddWeekendShift1}
+                                    onChange={(e) => onAutoAddWeekendShift1Change(e.target.checked)}
+                                    label="Tăng ca 1 T7-CN"
+                                    wrapperClassName="h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group"
+                                    labelClassName="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors"
+                                />
                             )}
-                            <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group gap-2">
-                                <input
-                                    type="checkbox"
+                            <Checkbox
                                     checked={includeTnInSbh}
                                     onChange={(e) => onIncludeTnInSbhChange(e.target.checked)}
-                                    className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500 accent-sky-600"
+                                    label="Tính TN vào SBH"
+                                    wrapperClassName="h-9 px-4 border border-slate-200 hover:border-sky-200 bg-white transition-colors group"
+                                    labelClassName="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors"
                                 />
-                                <span className="font-semibold text-slate-600 group-hover:text-sky-600 text-xs transition-colors">Tính TN vào SBH</span>
-                            </label>
                         </div>
                     </div>
                 </div>
