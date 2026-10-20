@@ -8453,7 +8453,7 @@ Job `e2e-webkit` đỏ ở 37e0ec5 hai lượt liền, mỗi lượt một bài.
 
 | Bài đỏ | Nguyên nhân (đo) | Xử lý |
 |---|---|---|
-| xuất hàng loạt NV trên iPhone (đỏ 2/27 lượt CI từ 13/10) | Bảng tiến trình kẹt ở "Đã xuất 2/3 ảnh. Chưa xuất được: Nhân Viên 2". Vòng hàng loạt (`hooks/useExportLogic.ts`) vẽ thẻ ngoài màn hình rồi CHỜ CỨNG 800 ms; đúng lúc đó lượt **tự xuất Bot LINE** (mặc định bật cho "Chi tiết theo kho", chạy ngầm 1,5 s sau khi tải tệp) đang chụp ảnh → máy bận → React chưa vẽ xong → mục bị đánh "Không dựng được nội dung" (bản ghi: 3 lượt chụp = 1 tự xuất + 2 hàng loạt, mục 2 không tới bước chụp) | Chờ đúng thẻ của đúng người (`data-batch-employee`, tối đa 15 s; vẽ trễ thì thêm 400 ms cho biểu đồ). Tái hiện chắc chắn: bộ lập lịch React (MessageChannel) đến trễ 1,2 s → code cũ **0/3** ảnh, code mới **3/3** — thành test hồi quy trong `xuat-hang-loat-dien-thoai-chia-se-mot-lan.spec.ts` (job WebKit chạy cả file) |
+| xuất hàng loạt NV trên iPhone (đỏ 2/27 lượt CI từ 13/10) | Bảng tiến trình kẹt ở "Đã xuất 2/3 ảnh. Chưa xuất được: Nhân Viên 2". Vòng hàng loạt (`hooks/useExportLogic.ts`) vẽ thẻ ngoài màn hình rồi CHỜ CỨNG 800 ms; đúng lúc đó lượt **tự xuất Bot LINE** (mặc định bật cho "Chi tiết theo kho", chạy ngầm 1,5 s sau khi tải tệp) đang chụp ảnh → máy bận → React chưa vẽ xong → mục bị đánh "Không dựng được nội dung" (bản ghi: 3 lượt chụp = 1 tự xuất + 2 hàng loạt, mục 2 không tới bước chụp) | Chờ đúng thẻ của đúng người (`data-batch-employee`, tối đa 15 s; vẽ trễ thì thêm 400 ms cho biểu đồ). Tái hiện chắc chắn: bộ lập lịch React (MessageChannel) đến trễ 1,2 s → code cũ **0/3** ảnh, code mới **3/3**. Test hồi quy: `tests/unit/cho-the-nhan-vien.test.ts` (hàm chờ tách ra `hooks/choTheNhanVien.ts`, đồng hồ giả — thẻ vẽ trễ 2,5 s vẫn lấy được, thẻ người trước còn sót không nhận nhầm). Bản e2e làm trễ React cả app bị LOẠI sau 1 lượt CI WebKit: tổng thời gian 43 s → hơn 150 s tuỳ máy, không ổn định |
 | in tem PDF trên điện thoại | CSP chặn `https://apis.google.com/js/gen_204` — gapi (đã có ở `script-src`, Firebase Auth nạp) tự gửi ping về chính host đó; WebKit báo "Refused to connect" | `connect-src` thêm `https://apis.google.com` (chỉ quyền gửi request) + test tĩnh `csp-frame-src-va-cdn-pin` |
 
 Ghi chú cho người dùng thật: lỗi 1 không chỉ có trên CI — iPhone đời cũ bấm "Xuất hàng loạt" ngay sau khi tải tệp cũng gặp. Bóp CPU đều tay
@@ -8513,3 +8513,16 @@ Test: `taiLaiKhiLoiChunk.test.ts` (4 tình huống) + `lazy-with-retry.test.ts` 
   không nền (4.1b), ô chọn kênh / tìm cao 44px trên iPhone, 25/50 thành segmented.
 - Kiểm: `npm run check` xanh; 8 spec Check thưởng + gd7 + icon-audit-man-goc + chuan-thiet-ke-b + apple-tuong-thich + tax-qr: 39 xanh,
   2 bỏ qua có chủ đích.
+
+## GĐ10 bước 2 — Cấu hình SP (2026-10-20)
+
+`features/product-config`: tự vẽ **17 → 0** (còn ô chọn tệp Excel ẩn — có chủ đích).
+- Ô sửa tại chỗ trong 2 bảng → `Input` (cao 28px trên laptop giữ mật độ bảng; máy cảm ứng 44px khi đang sửa); form thêm → `Input` có
+  `id` + `label htmlFor`; nút xoá dòng → `Button unstyled` + `ycx-hit` + tên có mã (`Xoá nhóm hàng 4479`), hiện khi focus bàn phím;
+  số mục/trang → `Select dense`.
+- 2 tab "Khai báo ngành hàng (N) / Cấu hình theo Mã sản phẩm (M)" → `Tabs variant="segment"` (icon + số mục). Điện thoại: đủ bề ngang +
+  nhãn ngắn "Ngành hàng / Mã sản phẩm" (`useIsSheetWidth`, như dải Phân quyền | Ngành hàng | Duyệt) — nhãn dài bị khuất mép phải.
+- 3 nút công cụ → `Button size="icon"` (tải Excel `tinted`, xuất Excel `secondary`, lưu cloud `primary`; có thay đổi chưa lưu vẫn nền hổ
+  phách nhấp nháy như cũ), giữ cỡ 34px.
+- Ảnh trước/sau bằng TÀI KHOẢN TEST (chỉ đọc — `chanGhiCloud` chặn mọi lượt ghi, ảnh ở scratchpad, không commit; quyền xem, không phải
+  Super Admin) + harness `ma-sp`. Kiểm: gd10-xac-nhan-va-bang, phan-quyen-tab-cau-hinh, product-config-real-user, apple-tuong-thich: 11 xanh.

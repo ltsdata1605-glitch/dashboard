@@ -38,7 +38,7 @@ const InlineInput: React.FC<{
     };
 
     return (
-        <input
+        <Input
             ref={ref}
             type={type}
             step={type === 'number' ? '0.01' : undefined}
@@ -46,7 +46,7 @@ const InlineInput: React.FC<{
             onChange={e => setVal(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={() => onSave(val)}
-            className={`w-full bg-white border border-sky-400 rounded px-1.5 py-0.5 text-xs outline-none focus:ring-1 focus:ring-sky-400 ${className || ''}`}
+            className={`h-7 px-1.5 py-0 text-xs border-sky-400 ${className || ''}`}
         />
     );
 };
@@ -203,58 +203,63 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
             {showAddForm && isEditable && (
                 <div className="p-3 bg-emerald-50/60 border-b border-emerald-200 flex flex-wrap items-end gap-2">
                     <div className="flex-1 min-w-[100px]">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Mã nhóm hàng</label>
-                        <input
+                        <label htmlFor="cfg-ma-nhom" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Mã nhóm hàng</label>
+                        <Input
+                            id="cfg-ma-nhom"
                             type="text"
                             placeholder="VD: 4479"
                             value={newItem.code}
                             onChange={e => setNewItem(prev => ({ ...prev, code: e.target.value }))}
-                            className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none font-mono font-bold"
+                            className="h-8 px-2 text-xs font-mono font-bold"
                         />
                     </div>
                     <div className="flex-1 min-w-[140px]">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Ngành hàng</label>
-                        <input
+                        <label htmlFor="cfg-nganh-hang" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Ngành hàng</label>
+                        <Input
+                            id="cfg-nganh-hang"
                             type="text"
                             placeholder="VD: 164 - VAS hoặc CE"
                             value={newItem.industry}
                             onChange={e => setNewItem(prev => ({ ...prev, industry: e.target.value }))}
-                            className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none"
+                            className="h-8 px-2 text-xs"
                         />
                     </div>
                     <div className="flex-1 min-w-[120px]">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm cha</label>
-                        <input
+                        <label htmlFor="cfg-nhom-cha" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm cha</label>
+                        <Input
+                            id="cfg-nhom-cha"
                             type="text"
                             placeholder="VD: CE"
                             value={newItem.parentGroup}
                             onChange={e => setNewItem(prev => ({ ...prev, parentGroup: e.target.value }))}
                             list="parent-groups-list"
-                            className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none"
+                            className="h-8 px-2 text-xs"
                         />
                         <datalist id="parent-groups-list">
                             {parentGroups.map(p => <option key={p} value={p} />)}
                         </datalist>
                     </div>
                     <div className="flex-1 min-w-[120px]">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm con</label>
-                        <input
+                        <label htmlFor="cfg-nhom-con" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm con</label>
+                        <Input
+                            id="cfg-nhom-con"
                             type="text"
                             placeholder="VD: Máy lạnh"
                             value={newItem.subgroup}
                             onChange={e => setNewItem(prev => ({ ...prev, subgroup: e.target.value }))}
-                            className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none"
+                            className="h-8 px-2 text-xs"
                         />
                     </div>
                     <div className="w-24">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Hệ số</label>
-                        <input
+                        <label htmlFor="cfg-he-so" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Hệ số</label>
+                        <Input
+                            id="cfg-he-so"
                             type="number"
                             step="0.01"
                             min="0"
                             value={newItem.multiplier}
                             onChange={e => setNewItem(prev => ({ ...prev, multiplier: e.target.value }))}
-                            className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none text-right tabular-nums font-bold"
+                            className="h-8 px-2 text-xs text-right tabular-nums font-bold"
                         />
                     </div>
                     <Button
@@ -319,13 +324,17 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                                         </td>
                                         {isEditable && (
                                             <td className="py-2 px-1 text-center">
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
+                                                    type="button"
                                                     onClick={() => onDeleteItem?.(item.code)}
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-rose-50 text-slate-300 hover:text-rose-500"
+                                                    className="ycx-hit opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded hover:bg-rose-50 text-slate-300 hover:text-rose-500"
                                                     title="Xoá"
+                                                    aria-label={`Xoá nhóm hàng ${item.code}`}
                                                 >
                                                     <AppIcon name="close" size="xs" />
-                                                </button>
+                                                </Button>
                                             </td>
                                         )}
                                     </tr>

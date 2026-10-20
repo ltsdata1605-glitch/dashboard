@@ -41,7 +41,7 @@ const InlineInput: React.FC<{
     };
 
     return (
-        <input
+        <Input
             ref={ref}
             type={type}
             step={type === 'number' ? '0.01' : undefined}
@@ -49,7 +49,7 @@ const InlineInput: React.FC<{
             onChange={e => setVal(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={() => onSave(val)}
-            className={`w-full bg-white border border-sky-400 rounded px-1.5 py-0.5 text-xs outline-none focus:ring-1 focus:ring-sky-400 ${className || ''}`}
+            className={`h-7 px-1.5 py-0 text-xs border-sky-400 ${className || ''}`}
         />
     );
 };
@@ -292,13 +292,15 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                     </div>
                     <div className="flex items-center justify-between pt-1">
                         <div className="flex items-center gap-2">
-                            <label className="text-[11px] font-semibold text-slate-500">Hệ số quy đổi:</label>
-                            <input
+                            <label htmlFor="cfg-ma-sp-he-so" className="text-[11px] font-semibold text-slate-500">Hệ số quy đổi:</label>
+                            <Input
+                                id="cfg-ma-sp-he-so"
                                 type="number"
                                 step="0.01"
+                                fullWidth={false}
                                 value={newHeSo}
                                 onChange={e => setNewHeSo(e.target.value)}
-                                className="w-20 h-7 text-xs px-2 border border-slate-300 rounded outline-none font-semibold text-slate-700"
+                                className="w-20 h-7 text-xs px-2 font-semibold text-slate-700"
                             />
                         </div>
                         <div className="flex items-center gap-2">
@@ -477,13 +479,17 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                         </td>
                                         {isEditable && (
                                             <td className="px-3 py-2 text-center">
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
+                                                    type="button"
                                                     onClick={() => setHoiXoaMa({ mo: true, ma: item.maSanPham })}
-                                                    className="p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-rose-50 transition-colors"
+                                                    className="ycx-hit p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-rose-50 transition-colors"
                                                     title="Xoá mã sản phẩm"
+                                                    aria-label={`Xoá mã sản phẩm ${item.maSanPham}`}
                                                 >
                                                     <AppIcon name="close" size="xs" />
-                                                </button>
+                                                </Button>
                                             </td>
                                         )}
                                     </tr>
@@ -499,18 +505,21 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 text-xs text-slate-500">
                     <div className="flex items-center gap-2">
                         <span>Hiển thị mỗi trang:</span>
-                        <select
+                        <Select
+                            dense
+                            fullWidth={false}
+                            aria-label="Số mục mỗi trang"
                             value={pageSize}
                             onChange={e => {
                                 setPageSize(Number(e.target.value));
                                 setPage(1);
                             }}
-                            className="bg-white border border-slate-200 rounded px-1.5 py-0.5 text-xs text-slate-700 outline-none"
+                            className="border-slate-200 text-slate-700"
                         >
                             <option value={25}>25 mục</option>
                             <option value={50}>50 mục</option>
                             <option value={100}>100 mục</option>
-                        </select>
+                        </Select>
                         <span className="text-slate-400">|</span>
                         <span>
                             Trang <strong>{page}</strong> / <strong>{totalPages}</strong> (

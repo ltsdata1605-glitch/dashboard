@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
+import { Tabs } from '../../../components/shared/ui/Tabs';
+import { useIsSheetWidth } from '../../../components/shared/ui/Modal';
 import { toast } from '../../../components/shared/ui/toast';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { ProductConfig } from '../../../types';
@@ -19,6 +22,8 @@ import * as dbService from '../../../services/dbService';
 
 export const ProductConfigManagerTab: React.FC = () => {
     const { user, userRole, departmentId } = useAuth();
+    // Điện thoại: segmented đủ bề ngang + nhãn ngắn (như dải Phân quyền | Ngành hàng | Duyệt) — nhãn dài bị khuất mép phải
+    const laDienThoai = useIsSheetWidth();
     const [config, setConfig] = useState<ProductConfig | null>(null);
     const [summary, setSummary] = useState<ProductConfigSummary | null>(null);
     const [configType, setConfigType] = useState<'category' | 'productCode'>('category');
@@ -424,51 +429,18 @@ export const ProductConfigManagerTab: React.FC = () => {
             {/* Hàng Tab điều hướng & Cụm 3 nút chức năng (Icon-only) nằm cùng dòng */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
                 {/* Dạng Tab: Khai báo ngành hàng & Cấu hình theo Mã sản phẩm */}
-                <div className="inline-flex items-center p-1 bg-slate-100/90 rounded-xl border border-slate-200/80 shadow-2xs">
-                    <button
-                        type="button"
-                        onClick={() => setConfigType('category')}
-                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-                            configType === 'category'
-                                ? 'bg-white text-sky-700 shadow-xs border border-slate-200/50'
-                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-                        }`}
-                    >
-                        <AppIcon name="table" size="xs" className={configType === 'category' ? 'text-sky-600' : 'text-slate-400'} />
-                        <span>Khai báo ngành hàng</span>
-                        <span
-                            className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-colors ${
-                                configType === 'category'
-                                    ? 'bg-sky-100 text-sky-700'
-                                    : 'bg-slate-200/80 text-slate-600'
-                            }`}
-                        >
-                            {tableItems.length}
-                        </span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => setConfigType('productCode')}
-                        className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-                            configType === 'productCode'
-                                ? 'bg-white text-sky-700 shadow-xs border border-slate-200/50'
-                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-                        }`}
-                    >
-                        <AppIcon name="template" size="xs" className={configType === 'productCode' ? 'text-sky-600' : 'text-slate-400'} />
-                        <span>Cấu hình theo Mã sản phẩm</span>
-                        <span
-                            className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-colors ${
-                                configType === 'productCode'
-                                    ? 'bg-sky-100 text-sky-700'
-                                    : 'bg-slate-200/80 text-slate-600'
-                            }`}
-                        >
-                            {productCodeTableItems.length}
-                        </span>
-                    </button>
-                </div>
+                {/* GĐ10: segmented dùng chung — icon + nhãn + số mục, vùng chạm 44 trên điện thoại */}
+                <Tabs
+                    variant="segment"
+                    size="sm"
+                    fullWidth={laDienThoai}
+                    activeId={configType}
+                    onChange={(id) => setConfigType(id as typeof configType)}
+                    items={[
+                        { id: 'category', label: laDienThoai ? 'Ngành hàng' : 'Khai báo ngành hàng', icon: 'table', badge: tableItems.length },
+                        { id: 'productCode', label: laDienThoai ? 'Mã sản phẩm' : 'Cấu hình theo Mã sản phẩm', icon: 'template', badge: productCodeTableItems.length },
+                    ]}
+                />
 
                 {/* Cụm 3 nút chức năng gom gọn: Tải file Excel, Xuất Excel, Lưu (Chỉ để icon, không để text) */}
                 <div className="flex items-center gap-1.5 self-end sm:self-center">
@@ -481,43 +453,46 @@ export const ProductConfigManagerTab: React.FC = () => {
                     />
 
                     {isCanManage && (
-                        <button
+                        <Button
+                            variant="tinted"
+                            size="icon"
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             title={configType === 'category' ? 'Tải file Excel (.xlsx) - Khai báo ngành hàng' : 'Tải file Excel (.xlsx) - Cấu hình theo mã sản phẩm'}
                             aria-label={configType === 'category' ? 'Tải file Excel (.xlsx) - Khai báo ngành hàng' : 'Tải file Excel (.xlsx) - Cấu hình theo mã sản phẩm'}
-                            className="w-8.5 h-8.5 flex items-center justify-center rounded-lg border border-sky-200 text-sky-700 bg-sky-50/70 hover:bg-sky-100 hover:border-sky-300 transition-all shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                            className="w-8.5 h-8.5 border-sky-200 shadow-2xs"
                         >
                             <AppIcon name="upload" size="sm" />
-                        </button>
+                        </Button>
                     )}
 
-                    <button
+                    <Button
+                        variant="secondary"
+                        size="icon"
                         type="button"
                         disabled={!config}
                         onClick={handleExportExcel}
                         title={configType === 'category' ? 'Xuất Excel - Khai báo ngành hàng' : 'Xuất Excel - Cấu hình theo mã sản phẩm'}
                         aria-label={configType === 'category' ? 'Xuất Excel - Khai báo ngành hàng' : 'Xuất Excel - Cấu hình theo mã sản phẩm'}
-                        className="w-8.5 h-8.5 flex items-center justify-center rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                        className="w-8.5 h-8.5 shadow-2xs"
                     >
                         <AppIcon name="download" size="sm" />
-                    </button>
+                    </Button>
 
                     {isCanManage && (
-                        <button
+                        <Button
+                            variant="primary"
+                            size="icon"
                             type="button"
                             disabled={!config || isSaving}
                             onClick={handleSaveToCloud}
                             title={isDirty ? 'Lưu lên Cloud Firebase (Có thay đổi chưa lưu)' : 'Lưu lên Cloud Firebase'}
                             aria-label="Lưu lên Cloud Firebase"
-                            className={`w-8.5 h-8.5 flex items-center justify-center rounded-lg transition-all shadow-2xs hover:shadow-xs active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
-                                isDirty
-                                    ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse border border-amber-500'
-                                    : 'bg-sky-600 hover:bg-sky-700 text-white border border-sky-600'
-                            }`}
+                            // Có thay đổi chưa lưu: nền hổ phách nhấp nháy (thiết kế cũ, nhắc lưu)
+                            className={`w-8.5 h-8.5 shadow-2xs ${isDirty ? 'bg-amber-600 hover:bg-amber-700 animate-pulse' : ''}`}
                         >
                             <AppIcon name={isSaving ? 'loading' : 'cloud'} size="sm" spin={isSaving} />
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
