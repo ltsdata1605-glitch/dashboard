@@ -6,7 +6,7 @@ import { Button } from '../shared/ui/Button';
 import { Banner } from '../shared/ui/Banner';
 
 import FontSelector from './FontSelector';
-import NotificationDropdown from './NotificationDropdown';
+import NotificationBell from './NotificationBell';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useSync } from '../../contexts/SyncContext';
@@ -299,7 +299,7 @@ const Header: React.FC<HeaderProps> = ({
                     )}
 
                     <div className="border-l border-slate-100 dark:border-slate-700">
-                        <NotificationDropdown buttonClassName="relative w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
+                        <NotificationBell buttonClassName="relative w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
                     </div>
                 </div>
             </div>,

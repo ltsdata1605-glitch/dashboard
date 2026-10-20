@@ -1,15 +1,13 @@
-import React, { useState, useCallback, useTransition } from 'react';
+import React, { Suspense, useCallback, useEffect, useState, useTransition } from 'react';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 import { AppIcon, type IconName } from '../shared/ui/icon';
-import { Modal } from '../shared/ui/Modal';
-import { ListGroup, ListRow, type ListIconTone } from '../shared/ui/ListGroup';
 import { cn } from '../shared/ui/utils';
 import { NAV_TAB_ICONS } from './navIcons';
-import { formatCleanDisplayName } from '../../utils/basicHelpers';
+import { lazyWithRetry } from '../../utils/lazyWithRetry';
+import type { NavTabItem as TabItem } from './MobileMoreSheet';
 
-interface TabItem { id: string; label: string; icon: IconName; tone?: ListIconTone }
+const MobileMoreSheet = lazyWithRetry(() => import('./MobileMoreSheet'), 'MobileMoreSheet');
 
 /**
  * THANH TAB DƯỚI iPhone/iPad + bảng "Khác" (GĐ4, KE_HOACH_GIAO_DIEN_APPLE.md mục 3.5).
@@ -22,8 +20,20 @@ interface TabItem { id: string; label: string; icon: IconName; tone?: ListIconTo
  */
 const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
-    const { user, userRole, employeeName, departmentId, isDemoMode, logout } = useAuth();
     const [isMoreOpen, setIsMoreOpen] = useState(false);
+    const [daMoKhac, setDaMoKhac] = useState(false);
+
+    // Tải trước sheet "Khác" khi máy rảnh — chỉ màn có thanh tab dưới (< lg) — để lần bấm đầu mở ngay như khi còn chung gói.
+    useEffect(() => {
+        if (!window.matchMedia?.('(max-width: 1023.98px)').matches) return;
+        const taiTruoc = () => { void MobileMoreSheet.preload(); };
+        if ('requestIdleCallback' in window) {
+            const h = window.requestIdleCallback(taiTruoc, { timeout: 4000 });
+            return () => window.cancelIdleCallback(h);
+        }
+        const t = setTimeout(taiTruoc, 2000);
+        return () => clearTimeout(t);
+    }, []);
     const [isPending, startTransition] = useTransition();
 
     // Icon theo TÊN CHỨC NĂNG (chuẩn hoá icon 2026-10-02) — cùng tên với Sidebar nên 2 thanh luôn cùng hình.
@@ -55,8 +65,6 @@ const MobileBottomNav: React.FC = React.memo(() => {
     }, [setActiveTab]);
 
     const isMoreActive = [...toolTabs, ...systemTabs].some(t => activeTab === t.id) || activeTab.startsWith('tools-');
-    const tenHienThi = employeeName || formatCleanDisplayName(user?.displayName, isDemoMode ? 'Tài khoản Thử nghiệm' : 'Khách');
-    const vaiTro = userRole === 'admin' ? 'Admin' : userRole === 'manager' ? 'Quản lý' : userRole ? 'Nhân viên' : null;
 
     const oTab = (opts: { key: string; label: string; icon: IconName; active: boolean; onClick: () => void }) => (
         <Button
@@ -94,79 +102,18 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
     return (
         <>
-            <Modal
-                isOpen={isMoreOpen}
-                onClose={() => setIsMoreOpen(false)}
-                position="bottom"
-                maxWidth="sm"
-                title="Thêm"
-                panelClassName="bg-slate-100"
-            >
-                <div className="space-y-5 pb-1" data-testid="mobile-more-scroll">
-                    {/* Thẻ tài khoản — bấm mở Phân quyền & cài đặt; nút Đăng xuất bên phải (không lồng nút trong nút). */}
-                    <ListGroup>
-                        <div className="flex items-center pr-1.5">
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => handleTabClick('settings')}
-                                title="Chạm để mở Phân Quyền & Cài Đặt"
-                                className="flex-1 min-w-0 flex items-center gap-3 pl-4 pr-2 py-2.5 text-left active:bg-slate-100 transition-colors"
-                            >
-                                <span className="w-11 h-11 shrink-0 rounded-full bg-sky-100 flex items-center justify-center overflow-hidden">
-                                    {user?.photoURL ? (
-                                        <img src={user.photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                    ) : (
-                                        <span className="font-semibold text-[17px] text-sky-700">
-                                            {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? 'T' : 'U')}
-                                        </span>
-                                    )}
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="flex items-center gap-1.5 min-w-0">
-                                        <span className="text-[17px] leading-[22px] font-semibold text-slate-900 truncate">{tenHienThi}</span>
-                                        {vaiTro && (
-                                            <span className={cn('shrink-0 rounded-full px-1.5 text-[11px] leading-4 font-semibold',
-                                                userRole === 'admin' ? 'bg-amber-100 text-amber-800' : userRole === 'manager' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-700')}>
-                                                {vaiTro}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className="block text-[13px] leading-[18px] text-slate-500 truncate">
-                                        {user?.email || (departmentId ? `Kho: ${departmentId}` : 'Chế độ Offline')}
-                                        {departmentId && user?.email ? ` · Kho ${departmentId}` : ''}
-                                    </span>
-                                </span>
-                                <AppIcon name="chevronRight" size="md" className="shrink-0 text-slate-300" />
-                            </Button>
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={logout}
-                                title="Đăng xuất"
-                                aria-label="Đăng xuất"
-                                className="min-h-11 min-w-11 shrink-0 flex items-center justify-center rounded-full text-rose-600 active:bg-rose-50"
-                            >
-                                <AppIcon name="logout" size="md" />
-                            </Button>
-                        </div>
-                    </ListGroup>
-
-                    <ListGroup title="Công cụ">
-                        {toolTabs.map(t => (
-                            <ListRow key={t.id} label={t.label} icon={t.icon} iconTone={t.tone}
-                                selected={activeTab === t.id} chevron={activeTab !== t.id}
-                                onClick={() => handleTabClick(t.id)} />
-                        ))}
-                    </ListGroup>
-
-                    <ListGroup title="Hệ thống">
-                        {systemTabs.map(t => (
-                            <ListRow key={t.id} label={t.label} icon={t.icon} iconTone={t.tone}
-                                selected={activeTab === t.id} chevron={activeTab !== t.id}
-                                onClick={() => handleTabClick(t.id)} />
-                        ))}
-                    </ListGroup>
-                </div>
-            </Modal>
+            {/* Sheet "Khác": mảnh code riêng (MobileMoreSheet) — gắn từ lần mở đầu và GIỮ gắn để hiệu ứng đóng vẫn chạy. */}
+            {(isMoreOpen || daMoKhac) && (
+                <Suspense fallback={null}>
+                    <MobileMoreSheet
+                        isOpen={isMoreOpen}
+                        onClose={() => setIsMoreOpen(false)}
+                        onTabClick={handleTabClick}
+                        toolTabs={toolTabs}
+                        systemTabs={systemTabs}
+                    />
+                </Suspense>
+            )}
 
             {/* Thanh tab dưới nổi kiểu Apple Floating Dock — thiết kế tinh tế, nhỏ gọn, hiện đại */}
             <nav
@@ -183,7 +130,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                     {oTab({
                         key: 'more', label: 'Khác', icon: 'navTools',
                         active: isMoreActive || isMoreOpen,
-                        onClick: () => setIsMoreOpen(o => !o),
+                        onClick: () => { setDaMoKhac(true); setIsMoreOpen(o => !o); },
                     })}
                 </div>
             </nav>

@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react';
-import { TouchTitleHint } from './components/shared/ui/TouchTitleHint';
 import { LayoutProvider, useLayout, useActiveTab } from './contexts/LayoutContext';
 import ErrorBoundary from './components/shared/ui/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
@@ -35,6 +34,10 @@ const LoginView = lazyWithRetry(() => import('./components/views/LoginView'), 'L
 const PendingApprovalView = lazyWithRetry(() => import('./components/views/PendingApprovalView'), 'PendingApprovalView');
 const CouponConverterView = lazyWithRetry(() => import('./components/views/CouponConverterView'), 'CouponConverterView');
 const GlobalAutoSyncDock = lazyWithRetry(() => import('./components/layout/GlobalAutoSyncDock'), 'GlobalAutoSyncDock');
+// Gói tải đầu (GĐ10 2026-10-20): 2 phần không cần cho lượt vẽ đầu — nhắc cài app (vốn chờ 4 s mới hiện, chỉ Safari iPhone) và gợi ý
+// nhấn-giữ đọc `title` trên màn cảm ứng — tách khỏi gói vào. Chuông thông báo: components/layout/NotificationBell.tsx.
+const InstallAppHint = lazyWithRetry(() => import('./components/layout/InstallAppHint'), 'InstallAppHint');
+const TouchTitleHint = lazyWithRetry(() => import('./components/shared/ui/TouchTitleHint').then(m => ({ default: m.TouchTitleHint })), 'TouchTitleHint');
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SyncProvider } from './contexts/SyncContext';
@@ -43,7 +46,6 @@ import MobileNavBar from './components/layout/MobileNavBar';
 import PageActionsBar from './components/layout/PageActionsBar';
 import { PageActionsProvider } from './components/shared/ui/PageActions';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
-import InstallAppHint from './components/layout/InstallAppHint';
 import AppFooter from './components/layout/AppFooter';
 import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
 import { napPhongGoogle } from './components/shared/ui/googleFonts';
@@ -337,7 +339,7 @@ function AppContent() {
 
                 <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">
                     {/* Nhắc cài app (chỉ Safari iPhone): dải mảnh NẰM TRONG trang ở đầu nội dung — không nổi đè lên nội dung. */}
-                    <InstallAppHint hidden={isFullscreenMobileTool} />
+                    {sauLanRanhDau && <Suspense fallback={null}><InstallAppHint hidden={isFullscreenMobileTool} /></Suspense>}
 
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
@@ -432,7 +434,7 @@ export default function App() {
                         {/* Toast dùng chung: viên nang trên giữa màn hình, không đè thanh tab (components/shared/ui/toast). */}
                         <AppToaster />
                         {/* Màn cảm ứng: nhấn giữ nút có `title` để đọc chú thích (audit A14) */}
-                        <TouchTitleHint />
+                        <Suspense fallback={null}><TouchTitleHint /></Suspense>
                     </ErrorBoundary>
                 </LayoutProvider>
             </SyncProvider>

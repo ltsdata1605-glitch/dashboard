@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../shared/ui/Button';
 import { AppIcon, type IconName } from '../shared/ui/icon';
 import { cn } from '../shared/ui/utils';
-import NotificationDropdown from './NotificationDropdown';
+import NotificationBell from './NotificationBell';
 import { PageActionsBar } from './PageActionsBar';
 
 interface MobileNavBarProps {
@@ -59,7 +59,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBa
                 <div id="mobile-topbar-actions" className="flex items-center justify-end min-w-0" />
                 <div data-action-capsule="" className="flex items-center min-w-0">
                     <PageActionsBar variant="mobile" />
-                    <NotificationDropdown buttonClassName="relative flex items-center justify-center w-11 h-11 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0 ycx-hit" />
+                    <NotificationBell buttonClassName="relative flex items-center justify-center w-11 h-11 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0 ycx-hit" />
                 </div>
             </div>
         </div>
