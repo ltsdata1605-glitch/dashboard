@@ -2168,9 +2168,9 @@ export const lineBotWebhook = onRequest(
                 // Bot gửi tin xác nhận TRÍCH DẪN thẻ coupon (LIFF sendMessages không hỗ trợ quoteToken —
                 // developers.line.biz/en/reference/liff/#send-messages). Thất bại (hết hạn mức push…) →
                 // quotedSent=false, LIFF tự gửi tin thường thay người dùng như trước.
-                // 2026-10-15 (chủ dự án chốt): bot KHÔNG tự PUSH tin xác nhận nữa — tin PUSH vào nhóm tốn hạn mức LINE theo SỐ THÀNH VIÊN
-                // nhóm (đã làm 2 bot hết hạn mức tháng, lịch Gửi Notify bị LINE từ chối). Trang LIFF gửi tin xác nhận DƯỚI TÊN người
-                // dùng (liff.sendMessages — miễn phí); đổi lại tin không trích dẫn thẻ. Bật lại: đặt BOT_TRICH_DAN_COUPON = true.
+                // TẮT HẲN tin xác nhận dùng coupon (chủ dự án chốt 2026-10-15 bỏ push, 2026-10-20 "Tắt tin nhắn xác nhận khi dùng coupon"):
+                // bot không PUSH (tốn hạn mức LINE theo số thành viên nhóm) và trang LIFF cũng không gửi thay — chỉ đánh dấu đã dùng.
+                // Đặt true là bot push lại, nhưng public/liff-copy.html không còn nhánh hiển thị tương ứng.
                 const BOT_TRICH_DAN_COUPON = false;
                 const pushPromise: Promise<{ ok: boolean; status: number; error?: string } | null> = (BOT_TRICH_DAN_COUPON && !isDuplicate && quoteTarget)
                     ? (async () => {

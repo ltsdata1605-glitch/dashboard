@@ -159,7 +159,9 @@ export interface LineBotConfig {
     syntaxTemplate: string; // Mẫu cú pháp chuẩn
     filterUserNames?: string[]; // Danh sách tên người để lọc PMH (ví dụ: ["Lê Trường Sơn", "Sơn"])
     liffId?: string; // LINE LIFF ID để 1-chạm vừa copy vừa gửi tin nhắn xác nhận
-    scheduledGroupId?: string; // ID nhóm LINE nhận thông báo định kỳ (6h00 & 22h00)
+    /** @deprecated 2026-10-20 — báo cáo 6h00/22h00 đã xoá; còn trong dữ liệu cũ, không còn dùng. */
+    scheduledGroupId?: string;
+    /** @deprecated 2026-10-20 — báo cáo 6h00/22h00 đã xoá. */
     scheduledNotifications?: {
         morningReport?: boolean; // Bật thông báo 6h00 sáng (chỉ gửi khi còn tồn coupon)
         eveningReport?: boolean; // Bật tổng kết 22h00 tối (tổng số phiếu & danh sách người dùng)

@@ -8416,3 +8416,13 @@ Bước 1 — thiết kế:
   `coupon-bang-iphone`, `tax-qr-and-export`, `smoke` xanh; `npm run check` xanh (ESLint 0 lỗi, cảnh báo `<button>` thô 194 → 193;
   gói tải đầu 327,2 KB / 330).
 - Chưa làm (bước 2–4): 193 `<button>` thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng màu.
+
+## Xoá báo cáo tồn kho 06:00 + tổng kết 22:00, tắt hẳn tin xác nhận dùng coupon (2026-10-20, chủ dự án chốt)
+
+- `functions/src/lineBotScheduler.ts`: chỉ còn `lineBotUserSchedules` (Gửi Notify). Xoá `dailyMorningInventoryReport`, `dailyEveningUsageSummary`,
+  `createDailyUsageSummaryFlexCard`, `isUsedOnVnDay`, `conDuChoNotify`; xoá 2 hàm trên Cloud (deploy `--force`). Lệnh "tk" (bot TRẢ LỜI, miễn
+  phí) giữ nguyên — dùng chung `formatInventoryReportMessage`/`createInventoryReportFlexMessage` ở webhook.
+- `LineBotSettingsTab.tsx`: bỏ mục "Thông báo & báo cáo định kỳ" (chọn nhóm + 2 công tắc). Field `scheduledGroupId`/`scheduledNotifications`
+  còn trong dữ liệu cũ, đánh dấu deprecated.
+- `public/liff-copy.html`: KHÔNG gửi tin nào (bỏ `liff.sendMessages`) — chỉ copy mã + `mark-used`. Bot vẫn không push (`BOT_TRICH_DAN_COUPON = false`).
+- `functions/src/lineQuota.ts`: bỏ `choPhepGuiTuDong` (chỉ phục vụ 2 báo cáo). Test: `liff-dung-coupon-khong-gui-tin.spec.ts`.

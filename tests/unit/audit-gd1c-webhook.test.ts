@@ -214,11 +214,5 @@ describe('D09 — 2 lệnh DUYỆT cùng lúc không cấp 1 mã cho 2 người'
     });
 });
 
-const { isUsedOnVnDay } = await import('../../functions/src/lineBotScheduler');
-describe('D10 — báo cáo theo NGÀY VIỆT NAM', () => {
-    it('lượt dùng 06:30 sáng giờ VN (23:30 UTC hôm trước) được tính vào hôm nay', () => {
-        expect(isUsedOnVnDay('2026-10-06T23:30:00.000Z', '2026-10-07')).toBe(true);
-        expect(isUsedOnVnDay('2026-10-07T17:30:00.000Z', '2026-10-07')).toBe(false); // 00:30 ngày 8 giờ VN
-        expect(isUsedOnVnDay('', '2026-10-07')).toBe(false);
-    });
-});
+// D10 (báo cáo 22:00 theo ngày Việt Nam): báo cáo đã XOÁ 2026-10-20 theo yêu cầu chủ dự án — test bỏ theo.
+

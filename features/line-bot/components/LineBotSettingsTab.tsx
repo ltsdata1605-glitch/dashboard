@@ -41,9 +41,6 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
     const [isWarehouseShared, setIsWarehouseShared] = useState<boolean>(config?.isWarehouseShared ?? true);
     const [autoApprove, setAutoApprove] = useState<boolean>(config?.autoApprove ?? true);
     const [approvalCmd, setApprovalCmd] = useState<string>(config?.approvalCommand || 'DUYỆT');
-    const [scheduledGroupId, setScheduledGroupId] = useState<string>(config?.scheduledGroupId || '');
-    const [morningReport, setMorningReport] = useState<boolean>(config?.scheduledNotifications?.morningReport === true);
-    const [eveningReport, setEveningReport] = useState<boolean>(config?.scheduledNotifications?.eveningReport === true);
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
     const [tokenFocused, setTokenFocused] = useState<boolean>(false);
     const [secretFocused, setSecretFocused] = useState<boolean>(false);
@@ -59,9 +56,6 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             setIsWarehouseShared(config.isWarehouseShared ?? true);
             setAutoApprove(config.autoApprove ?? true);
             setApprovalCmd(config.approvalCommand || 'DUYỆT');
-            setScheduledGroupId(config.scheduledGroupId || '');
-            setMorningReport(config.scheduledNotifications?.morningReport === true);
-            setEveningReport(config.scheduledNotifications?.eveningReport === true);
         }
     }, [config, departmentId]);
 
@@ -79,13 +73,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             liffId: liffId.trim() || '2011679071-BclvutpD',
             autoApprove,
             approvalCommand: approvalCmd.trim() || 'DUYỆT',
-            scheduledGroupId: scheduledGroupId.trim(),
             departmentId: deptId.trim(),
-            isWarehouseShared,
-            scheduledNotifications: {
-                morningReport,
-                eveningReport
-            }
+            isWarehouseShared
         });
     };
 
@@ -431,84 +420,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
 
             </div>
 
-            {/* Thông Báo & Báo Cáo Định Kỳ (6h00 & 22h00) */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <AppIcon name="clock" size="md" className="text-amber-500" />
-                        <span>Thông báo & báo cáo định kỳ (6h00 & 22h00)</span>
-                    </h4>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                        Chỉ gửi vào nhóm
-                    </span>
-                </div>
-
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Bot sẽ tự động gửi tin nhắn vào đúng Nhóm LINE được thiết lập dưới đây (tuyệt đối không gửi riêng tư).
-                </p>
-
-                {/* Chọn nhóm LINE */}
-                <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                        <AppIcon name="users" size="sm" className="text-sky-500" />
-                        <span>Nhóm LINE nhận tin nhắn định kỳ:</span>
-                    </label>
-                    <select
-                        value={scheduledGroupId}
-                        onChange={e => setScheduledGroupId(e.target.value)}
-                        className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    >
-                        <option value="">-- Chưa chọn nhóm (Tắt gửi định kỳ) --</option>
-                        {groups && groups.length > 0 ? (
-                            groups.map(g => (
-                                <option key={g.groupId} value={g.groupId}>
-                                    {g.groupName || g.groupId} ({g.groupId.slice(0, 10)}...)
-                                </option>
-                            ))
-                        ) : (
-                            <option value="" disabled>Chưa có nhóm LINE nào (Mời bot vào nhóm trước)</option>
-                        )}
-                    </select>
-                    <span className="flex items-start gap-1.5 text-[11px] text-slate-400 mt-1">
-                        <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" />Để xuất hiện nhóm trong danh sách này, hãy mời Bot vào nhóm LINE của bạn và nhắn 1 tin bất kỳ.
-                    </span>
-                </div>
-
-                {/* 2026-10-15: 2 báo cáo tự động mặc định TẮT — tin bot TỰ GỬI vào nhóm tốn hạn mức LINE theo số thành viên nhóm.
-                    Bật lên thì máy chủ vẫn chỉ gửi khi hạn mức còn đủ cho các lịch Gửi Notify (functions/src/lineQuota.ts). */}
-                <span className="flex items-start gap-1.5 text-[11px] text-slate-500">
-                    <AppIcon name="info" size="xs" className="mt-0.5 shrink-0 text-sky-600" />
-                    Mỗi tin bot tự gửi vào nhóm tốn hạn mức tin LINE bằng số thành viên nhóm. Hai báo cáo dưới đây mặc định tắt và luôn
-                    nhường hạn mức cho Gửi Notify. Xem tồn kho miễn phí: gõ "tk" trong nhóm, bot trả lời.
-                </span>
-                {/* Tùy chọn 6h00 sáng */}
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span id="bot-bao-cao-sang" className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-amber-600" />06h00 sáng: báo cáo tồn kho ("tk")</span>
-                            <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-mono">Tự ngắt nếu 0 mã</span>
-                        </div>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                            Chỉ gửi khi trong kho còn tồn coupon (UNUSED). Nếu kho hết sạch mã, Bot tự động giữ im lặng để không làm phiền nhóm.
-                        </span>
-                    </div>
-                    <Switch checked={morningReport} onChange={setMorningReport} aria-labelledby="bot-bao-cao-sang" className="ml-4 shrink-0" />
-                </div>
-
-                {/* Tùy chọn 22h00 tối */}
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span id="bot-bao-cao-toi" className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-sky-600" />22h00 tối: tổng kết coupon đã dùng hôm nay</span>
-                            <span className="text-[11px] font-semibold bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded font-mono">Dạng thẻ Flex</span>
-                        </div>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
-                            Gửi Thẻ Flex tổng kết: Tổng số lượng phiếu PMH đã dùng hôm nay kèm danh sách chi tiết các bạn đã sử dụng.
-                        </span>
-                    </div>
-                    <Switch checked={eveningReport} onChange={setEveningReport} aria-labelledby="bot-bao-cao-toi" className="ml-4 shrink-0" />
-                </div>
-            </div>
+            {/* Mục "Thông báo & báo cáo định kỳ (6h00 & 22h00)" ĐÃ XOÁ 2026-10-20 (chủ dự án chốt): báo cáo tồn kho 06:00 và
+                tổng kết 22:00 tự đẩy vào nhóm, tốn hạn mức tin LINE. Xem tồn kho: gõ "tk" trong nhóm (bot trả lời, miễn phí). */}
 
             {/* Nút lưu — nút chính chuẩn (GĐ7: trước tự tô xanh lá); iPhone trải hết bề ngang cho dễ bấm */}
             <div className="flex justify-end pt-2">

@@ -215,16 +215,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
     const showDeptHeaders = dataToRender && (Object.keys(dataToRender).length > 1 ||
         (Object.keys(dataToRender).length === 1 && Object.keys(dataToRender)[0] !== 'Không Phân Ca'));
 
-    if (!dataToRender || Object.keys(dataToRender).length === 0) {
-        return (
-            <div ref={tableRef}>
-                <EmptyState icon="empty" title="Không có dữ liệu hiển thị" description="Thử đổi bộ lọc kho, bộ phận hoặc khoảng thời gian." />
-            </div>
-        );
-    }
-
-    const canCopyKeys = new Set(['doanhThuThuc', 'doanhThuQD', 'percentHT', 'dtVuot', 'hieuQuaValue', 'dtTraChamPercent_CE_ICT']);
-
+    // Hook PHẢI đứng trước mọi lệnh return sớm (rules-of-hooks): trước 2026-10-20 nằm sau nhánh "không có dữ liệu" →
+    // đổi bộ lọc từ rỗng sang có dữ liệu là React báo "Rendered more hooks…" và màn hình sập.
     const tabMenuItems: ActionMenuItem[] = useMemo(() => [
         {
             id: 'doanhThu',
@@ -248,6 +240,17 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
             description: groupType === 'vuotTroi' ? 'Đang xem' : undefined,
         },
     ], [handleTabChange, groupType]);
+
+    if (!dataToRender || Object.keys(dataToRender).length === 0) {
+        return (
+            <div ref={tableRef}>
+                <EmptyState icon="empty" title="Không có dữ liệu hiển thị" description="Thử đổi bộ lọc kho, bộ phận hoặc khoảng thời gian." />
+            </div>
+        );
+    }
+
+    const canCopyKeys = new Set(['doanhThuThuc', 'doanhThuQD', 'percentHT', 'dtVuot', 'hieuQuaValue', 'dtTraChamPercent_CE_ICT']);
+
 
     return (
         <div ref={tableRef} className="flex flex-col overflow-hidden">

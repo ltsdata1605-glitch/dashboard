@@ -4,8 +4,8 @@ import { runsOnDay, parseHHmm, type ScheduleLike, type VnNow } from './lineBotSc
  * Hạn mức tin LINE — ƯU TIÊN "Gửi Notify" (2026-10-15, chủ dự án yêu cầu "khắc phục triệt để, ưu tiên gửi notify").
  *
  * Đo trên log 01→15/10: 2 bot hết hạn mức tháng ngay 02/10. Tin PUSH vào nhóm tính theo SỐ THÀNH VIÊN nhóm. Thủ phạm:
- * tin xác nhận dùng coupon (đã tắt), báo cáo tồn kho 06:00 tự đẩy mỗi ngày. Quy tắc mới: mọi tin TỰ ĐỘNG không phải
- * Notify (06:00, 22:00) chỉ gửi khi phần hạn mức còn lại vẫn đủ cho các lượt Notify còn lại của tháng.
+ * tin xác nhận dùng coupon và báo cáo tồn kho 06:00 / tổng kết 22:00 — cả hai đã XOÁ (2026-10-20). Nay chỉ còn ước tính
+ * tin các lịch Notify cần (màn Gửi Notify cảnh báo khi vượt hạn mức gói).
  */
 
 const ngayTrongThang = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate();
@@ -40,13 +40,6 @@ export function uocTinhNotifyConLai(
         tong += soLuotConLai(s, now) * tinMoiLuot;
     }
     return tong;
-}
-
-/** Tin tự động (không phải Notify) chỉ được gửi khi gửi xong vẫn còn đủ cho Notify. Gói không giới hạn → luôn được. */
-export function choPhepGuiTuDong(p: { limit: number | null; used: number | null; chiPhi: number; duTruNotify: number }): boolean {
-    if (p.limit === null) return true;
-    if (p.used === null) return false; // không đọc được mức đã dùng → an toàn: nhường cho Notify
-    return p.limit - p.used - p.chiPhi >= p.duTruNotify;
 }
 
 // ── Gọi LINE (miễn phí, không tính vào hạn mức) ──────────────────────────────────────────────
