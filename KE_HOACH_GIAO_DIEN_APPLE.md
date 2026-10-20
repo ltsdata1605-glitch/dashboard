@@ -463,7 +463,7 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
    - **Check thưởng — XONG 20/10** (28 → 0; nút đầu thẻ theo 4.1b; khu Top thưởng giữ góc vuông; capsule Kho 1/Kho 2 giữ nguyên).
    - **Cấu hình SP — XONG 20/10** (17 → 0; 2 tab → segmented, điện thoại nhãn ngắn đủ bề ngang).
    - **Phân ca — XONG 20/10** (27 → 0; thêm `Textarea`, `Checkbox`, `Input dense` dùng chung; bỏ `.config-input` riêng; sửa lỗi "Tạo lịch" hỏng khi thiếu hẳn một giới tính).
-   - Ghi nhận cho lượt In Sticker: 4 nút phân trang xem trước 24px chưa có vùng chạm 44 (`mobile-iphone-6-module` đỏ sẵn).
+   - **In Sticker — XONG 20/10** (29 → 0; 4 nút phân trang 24px có vùng chạm 44 — `mobile-iphone-6-module` hết đỏ; bản chép riêng `MultiSelectDropdown` → `StringMultiSelect` dùng chung: khung xổ bộ lọc trên iPhone trước bị modal cắt mất).
 3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.
 

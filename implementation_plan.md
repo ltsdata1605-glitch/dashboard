@@ -8548,3 +8548,34 @@ vào SBH" → `Checkbox` giữ nguyên hình chip; "Ưu tiên SBH" (chọn gạc
 Ảnh trước/sau (dùng thử + tệp Excel 13 NV giả, iPhone 440 + laptop 1440, 7 màn): màn lịch + lưới Ca xoay gần như y hệt; hộp Gợi ý
 AI đổi sang ô chuẩn chung (chữ thường thay đậm, mũi tên chọn chuẩn). Kiểm: css-pham-vi-va-vung-cham, gd7-mini-app, apple-tuong-thich,
 chuan-thiet-ke-b, icon-audit-man-goc: 22 xanh.
+
+## GĐ10 bước 2 — In Sticker (2026-10-20)
+
+`features/sticker-event`: `<button>`/`<input>`/`<select>`/`<textarea>` tự vẽ **29 → 0** (2 nút + 27 ô; còn 9 ô chọn tệp — ẩn trong nhãn
+dạng nút hoặc phủ trong ô kéo-thả, có chủ đích), ESLint 0 cảnh báo nút thô ở `features/sticker-event`.
+- **4 nút phân trang xem trước 24px** (`StickerPrintPreview.tsx`, phiếu rút thăm) — lỗi `mobile-iphone-6-module` còn treo từ trước: GIỮ
+  cỡ 24px + trang đang xem màu đỏ (`danger`) như chủ dự án đặt ở 0338e43, thêm `ycx-hit` (vùng chạm 44) và giãn khe 4 → 20px CHỈ trên màn
+  hẹp/cảm ứng (24 + 20 = 44 → vùng chạm 2 nút cạnh nhau không chồng; chồng thì chạm mép phải số "1" lại trúng "2" vì nút sau vẽ đè nút
+  trước). Laptop giữ khe 4px. Ký tự `<` `>` → `AppIcon` chevron; trang đang xem có `aria-current="page"`.
+- **Bản `MultiSelectDropdown` chép riêng của In Sticker → `StringMultiSelect` dùng chung** (3 ô lọc Siêu thị/Ngành hàng/Nhóm hàng, kiểu
+  `compact`) và xoá tệp chép. Bản cũ: nút xổ là `<div onClick>` (bàn phím, trình đọc màn hình không dùng được), khung xổ `absolute` BỊ hộp
+  "Bộ lọc & Sắp xếp" trên iPhone CẮT MẤT (ảnh trước: chỉ còn một vệt — không chọn được bộ lọc nào); bản chung có tìm, "Tất cả", đếm, khung xổ nổi trên modal. Khác nhìn thấy: chọn 1 mục hiện tên bộ lọc + số
+  đếm thay cho tên mục (như mọi bộ lọc khác của app).
+- Ô nhập → `Input`: tên người in (`dense` 28px — cùng cao nút "Lưu"), tìm sản phẩm (ô trong suốt trong khung tìm kiếm tự vẽ viền + nút
+  quét — giữ nguyên hình), số lượng tem trong cụm − n + (trong suốt), mã nhập tay ở máy quét (44px bằng nút "Thêm"), tìm tài khoản Super
+  Admin (`leftIcon`), tên danh sách, 2 ô mật khẩu (trước nhãn KHÔNG gắn với ô — nay `htmlFor`/`id` + `autoComplete="new-password"`), 6 ô
+  nhập sản phẩm thủ công (lỗi nối vào ô qua `error` của Input — KHÔNG thêm `required` để không bật bong bóng kiểm tra của trình duyệt
+  thay thông báo lỗi riêng), 2 ô số trên thanh định dạng nổi tối (`dense` + màu tối giữ nguyên).
+- Ô khuyến mãi → `Textarea` (1 dòng); ô sắp xếp, ô vai trò người dùng, ô bố cục trang in → `Select`; 9 ô tick → `Checkbox` (thẻ "Danh
+  sách in" của giá ĐSD: cả thẻ vẫn là vùng bấm, nội dung đi vào `label` của Checkbox — không lồng `<label>`).
+- 2 ô radio "Kiểu có sẵn / Kiểu hiện đại" → `Tabs variant="segment"` (đúng kiểu "Nền in ĐMX/TGĐ" cùng phân hệ).
+- Lỗi hiển thị nhỏ sửa kèm: cạnh "Lấy File Tồn Kho" hiện thô chữ `&nearr;` (thực thể HTML5 — JSX chỉ hiểu thực thể HTML4) → icon
+  `externalLink`; trên laptop ô tên người in không co được nên đẩy chữ "Xóa DL" tràn khỏi thẻ — `Input` (độ rộng %) co đúng.
+- Ghi nhận khi đo (KHÔNG sửa ở lượt này): `tailwind-merge` không nhận ra lớp bo góc token (`rounded-control`) nên không gỡ nó khi truyền
+  lớp bo khác — lớp nào thắng do thứ tự trong CSS (theo bảng chữ cái): `rounded-none/-sm/-md/-lg/-xl/-full` thắng, `rounded` và
+  `rounded-card` THUA. Muốn đè bo góc của `Input`/`Select`/`Button` thì dùng nhóm thắng.
+- Ảnh trước/sau (dùng thử + đăng nhập In Sticker giả như `sticker-nut-va-quet-ma.spec.ts`, Firestore bị chặn, dữ liệu giả; iPhone 440 +
+  laptop 1440, 15 màn): bố cục giữ nguyên; khác: ô chọn/ô tick theo chuẩn chung (ô tick 16px, mũi tên chọn chuẩn, ô cao 44px trên
+  máy cảm ứng), bộ lọc mở được trên iPhone, phân trang giãn trên điện thoại. 0 lỗi runtime.
+- Kiểm: `npm run check`; e2e (Chromium) 6 bài In Sticker + `mobile-iphone-6-module` (In Sticker: nút < 44px 4 → 0) + `gd7-mini-app`,
+  `chuan-thiet-ke-b`, `icon-audit-man-goc`, `apple-tuong-thich`: 29 xanh, 1 bỏ qua có chủ đích (máy không có BarcodeDetector).

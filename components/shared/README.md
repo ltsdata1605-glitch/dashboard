@@ -38,6 +38,11 @@ sinh ra 2 bản `MultiSelectDropdown`, 17 công tắc tự vẽ, 5 kiểu toast 
 Chữ dùng thang `type-*` (`type-title`, `type-headline`, `type-body`, `type-subhead`, `type-footnote`, `type-caption`…), bo góc dùng
 token (`rounded-control/card/popup/overlay`), màu theo 5 họ semantic — chi tiết `DESIGN_SYSTEM.md` mục 7.
 
+Đè lớp qua `className` (`cn` = tailwind-merge): lớp cùng nhóm được gộp (vd `h-9` → `h-8`, `text-sm` → `text-xs`, `border` →
+`border-0`). RIÊNG bo góc token: tailwind-merge không nhận ra `rounded-control/card/…` nên KHÔNG gỡ chúng — lớp nào thắng do thứ tự
+trong CSS (theo bảng chữ cái): `rounded-none/-sm/-md/-lg/-xl/-full` thắng `rounded-control`; `rounded` (trơn) và `rounded-card` THUA
+(đo 20/10 khi làm In Sticker).
+
 ## `export/` — xuất ảnh DUY NHẤT
 
 `exportElementAsImage` / `startExportJob` (preset `standard` · `bi` · `raw`), `ExportOptionsModal` (sheet Tải về / Chia sẻ). CẤM import
