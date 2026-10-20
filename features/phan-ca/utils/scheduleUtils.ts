@@ -538,6 +538,9 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
             return true;
         });
         const THRESHOLD = 2; // Chấp nhận lệch tối đa 2 ca (VD: 4 sáng - 2 chiều)
+        // Thiếu hẳn một giới tính (hộp nhập NV mặc định chọn Nữ cho mọi người) → danh sách rỗng → candidates[0].id văng lỗi, cả
+        // lượt "Tạo lịch" hỏng không báo gì (2026-10-20). Dưới 2 người thì không có ai để đổi — như balanceSpecificRole.
+        if (candidates.length < 2) return;
 
         for (let pass = 0; pass < 10; pass++) {
             let hasAction = false;
