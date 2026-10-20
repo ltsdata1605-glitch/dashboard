@@ -8579,3 +8579,28 @@ dạng nút hoặc phủ trong ô kéo-thả, có chủ đích), ESLint 0 cảnh
   máy cảm ứng), bộ lọc mở được trên iPhone, phân trang giãn trên điện thoại. 0 lỗi runtime.
 - Kiểm: `npm run check`; e2e (Chromium) 6 bài In Sticker + `mobile-iphone-6-module` (In Sticker: nút < 44px 4 → 0) + `gd7-mini-app`,
   `chuan-thiet-ke-b`, `icon-audit-man-goc`, `apple-tuong-thich`: 29 xanh, 1 bỏ qua có chủ đích (máy không có BarcodeDetector).
+
+## Gói tải đầu 329,9 → 321,0 KB gzip (2026-10-20)
+
+Ngân sách 330 KB (`npm run check:budget`) chỉ còn 0,1 KB — lần sửa nhỏ kế tiếp ở khung app là đỏ. Đo bằng sourcemap (bản build
+`--sourcemap`, quy byte của từng tệp nguồn trong mảnh `index-*.js` ra gzip theo tỉ lệ nén của mảnh): ngoài phần lõi bắt buộc (React
+59 KB, Firebase 146 KB — Firestore + Auth, icon 18 KB, CSS 41 KB) còn vài khối KHÔNG cần cho lượt vẽ đầu mà vẫn nằm trong gói vào.
+Tách 4 khối (giao diện không đổi):
+- **Chuông thông báo** (`NotificationDropdown` 2,5 KB + hộp "Thông báo admin" 1,7 KB + `notificationService`): `components/layout/
+  NotificationBell.tsx` vẽ chuông TĨNH đúng cỡ lúc mở app, mảnh thật nạp NGAY khi chuông được vẽ (không chờ bấm) — huy hiệu chưa đọc,
+  toast thông báo mới vẫn chạy, chỉ trễ một nhịp mạng. Thanh trên iPhone + thanh tiêu đề laptop đều dùng.
+- **Sheet "Khác"** của thanh tab dưới (`Modal` 2,2 KB + `ListGroup` + nội dung): `components/layout/MobileMoreSheet.tsx`, tải trước
+  khi máy rảnh (chỉ màn < lg) nên lần bấm đầu vẫn mở ngay; gắn từ lần mở đầu và giữ gắn để hiệu ứng đóng vẫn chạy.
+- **Nhắc cài app** (`InstallAppHint`, vốn chờ 4 s mới hiện, chỉ Safari iPhone) — gắn sau lần rảnh đầu (`useSauLanRanhDau`).
+- **Gợi ý nhấn-giữ đọc `title`** (`TouchTitleHint`) — tải lười.
+Kết quả: mảnh `index` 57,2 → 48,3 KB; tổng 329,9 → **321,0 KB** (còn ~9 KB dư). Offline không đổi: `sw.js` vẫn tải sẵn MỌI tệp
+`/assets/` của bản build (lõi lúc cài, phần còn lại khi trang rảnh) nên 4 mảnh mới cũng có sẵn khi mất mạng như mọi tab khác.
+Chuông giữ chỗ là NÚT có `title="Thông báo"` (trơ: `tabIndex -1`, `aria-hidden`) — styles.css (capsule thanh trên, chủ dự án 57656d7)
+ép đúng `button[title="Thông báo"]` về 32×32; giữ chỗ khác thẻ sẽ to 44px rồi co lại khi chuông thật nạp (nhảy bố cục).
+Kiểm: `npm run check`; e2e (Chromium) 42 bài khung app (khung-app-gd4, menu-khac-xoay-ngang, nhan-giu-xem-chu-thich, header-group,
+desktop-menu-toggle, icon-dieu-huong, check-thuong-mobile-topbar, mobile-settings-compact, apple-tuong-thich, mobile-iphone-6-module,
+auth-fresh-login-no-flash, mo-lai-app-dung-cho-cu, offline-app-shell trên bản build, toast-thong-nhat, phan-quyen-3-tab) + lazy-tai-truoc.
+`mobile-settings-compact` đỏ TỪ 15/10 (không chạy trên CI): đo khung nút Đăng xuất thanh trên ≥ 44 trong khi chủ dự án giữ cỡ nhìn
+thấy 32px + vùng chạm 44 (`ycx-hit`) — sửa test đo khung ∪ `::after` như `mobile-iphone-6-module`; nay xanh.
+Còn có thể cắt tiếp nếu cần (chưa làm): `ActionMenu` 1,9 KB (menu "⋯" — tách phần thả xuống), `AppFooter` + `useSystemTraffic`
+1,2 KB (chân trang — đụng bài đếm lượt truy cập), tách bảng icon hiếm khỏi `vendor-icons` 18 KB (đụng `AppIcon` toàn app).

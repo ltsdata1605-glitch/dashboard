@@ -68,6 +68,8 @@ là mọi thứ agent đẩy lên `main` sẽ tự về máy chủ dự án — 
    (`npm run check:budget`, 2026-10-14) và lint-ratchet). Ngân sách đỏ: chú thích đầu `scripts/kiem-goi-tai-dau.cjs` chỉ cách tìm
    thủ phạm — hay gặp nhất là code khung app (App.tsx, contexts/, components/layout/, hooks/useCloudSync, services/firestoreService|
    syncService) import barrel `services/dbService` hay `utils/dataUtils` (dùng `services/dbService/core` · `utils/basicHelpers`).
+   Phần khung app chỉ cần khi bấm/sau lượt vẽ đầu đã tách mảnh riêng (2026-10-20, 329,9 → 321,0 KB): chuông `NotificationBell`,
+   sheet "Khác" `MobileMoreSheet`, `InstallAppHint`, `TouchTitleHint` — đừng import thẳng `NotificationDropdown`/`Modal` vào khung app.
 8. **Luôn TỰ TEST rồi mới báo cáo**: `npm run check` chỉ chứng minh code biên dịch được, KHÔNG
    chứng minh tính năng chạy đúng. Sau mỗi lần sửa/nâng cấp, agent phải tự kiểm chứng thay đổi ở
    mức cao nhất có thể rồi **báo cáo kết quả thật** (đã chạy gì, thấy gì), không đẩy toàn bộ việc
