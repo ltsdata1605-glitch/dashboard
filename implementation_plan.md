@@ -8613,3 +8613,22 @@ type="button" variant="unstyled" size="none">`, giữ nguyên mọi lớp. Ảnh
 chuột, hộp hẹn giờ GIỐNG HỆT từng điểm ảnh; chỉ khác vòng focus bàn phím (đen mặc định của trình duyệt → vòng xanh chuẩn của app).
 Kiểm: `npm run check`; e2e (Chromium) dock-position-alignment, gd7-mini-app, hen-gio-bi-va-bo-lo, line-gui-anh-va-hen-gio, tang-toc-gd2,
 ycx-tu-dong-phan-tich, ycx-tu-dong-report-mwg, apple-tuong-thich: 39 xanh, 5 bỏ qua có chủ đích.
+
+## GĐ10 bước 2 — Bộ xuất ảnh + lẻ tẻ (2026-10-20)
+
+14 nút thô (13 + nút xoá mã TNB thành nút icon của `Input`) + 3 ô nhập tự vẽ → thành phần dùng chung, giữ hình (thiết kế chủ dự án):
+- Hộp "Cấu hình tự xuất cho Bot LINE" (`components/shared/export/AreaAutoExportButton.tsx`): chip "Lệnh: bcrt/bclk", "Mặc định", Lưu,
+  Đóng → `Button unstyled` giữ lớp + `ycx-hit`; 2 ô sửa lệnh → `Input dense` có tên; ký tự "↺" làm icon → `AppIcon reset`.
+- Hộp xuất ảnh (`ExportOptionsModal`): 2 nút bật/tắt "Tự lưu lên Bot" → `Button` + `aria-pressed` + `ycx-hit`. Bảng tiến trình xuất
+  ảnh (`ExportProgressHost`): nút ✕ 24px + `ycx-hit` — `ycx-hit` nằm trong `@layer components` nên `absolute` (utilities) vẫn thắng.
+- Màn đăng nhập: 2 nút dạng liên kết "Đăng nhập chuyển hướng" → `Button unstyled` + `ycx-hit`.
+- Hộp mã TNB (`components/modals/TnbDataConfigModal.tsx`): ô mã + nút xoá → `Input` (`rightIcon` khi có mã, tên "Xóa mã"), giữ hình
+  ô mã (cao 44, viền 2px sky, mono in hoa).
+Ảnh trước/sau (spec tạm, không commit; Report BI có dữ liệu gieo + dock laptop + màn đăng nhập 2 khung): màn đăng nhập giống hệt; hộp
+Bot LINE chỉ khác icon "Mặc định"; ô mã TNB: dấu × to hơn (icon chuẩn của `Input`). Còn lại sau lượt này: Bot LINE 71 + Report BI 22
+nút thô (để cuối — đang được sửa ở phiên/máy khác).
+Kiểm: `npm run check`; e2e report-bi-auto-export, xuat-anh-chung, xuat-anh-giao-anh-chung, xuat-anh-hang-loat-ket-qua,
+ios-xuat-anh-chia-se, xuat-hang-loat-dien-thoai-chia-se-mot-lan, login-view-redesign, ios-pwa-dang-nhap, pwa-iphone,
+tnb-data-userscript: 29 xanh. `auth-fresh-login-no-flash` (không chạy trên CI) đỏ 1/4 lượt vì chỉ kịp lấy 4 mẫu trong 2,3 s (máy
+bận — mỗi mẫu `innerText` cả dashboard ~575 ms) dù 4/4 mẫu là dashboard: ngưỡng tối thiểu 5 → 3, giữ nguyên 2 assert chính (0 mẫu
+Login/chờ duyệt, ≤ 2 mẫu không phải dashboard); chạy lại 3/3 xanh.

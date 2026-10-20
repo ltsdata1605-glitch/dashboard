@@ -465,6 +465,7 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
    - **Phân ca — XONG 20/10** (27 → 0; thêm `Textarea`, `Checkbox`, `Input dense` dùng chung; bỏ `.config-input` riêng; sửa lỗi "Tạo lịch" hỏng khi thiếu hẳn một giới tính).
    - **In Sticker — XONG 20/10** (29 → 0; 4 nút phân trang 24px có vùng chạm 44 — `mobile-iphone-6-module` hết đỏ; bản chép riêng `MultiSelectDropdown` → `StringMultiSelect` dùng chung: khung xổ bộ lọc trên iPhone trước bị modal cắt mất).
    - **Khung app — XONG 20/10** (17 → 0: dock nổi Auto Sync + nút hẹn giờ, giữ nguyên hình) · **Gói tải đầu** 329,9 → 321,0 KB (chuông, sheet "Khác", nhắc cài app tách mảnh).
+   - **Bộ xuất ảnh + lẻ tẻ — XONG 20/10** (14 nút + 3 ô; giữ hình). Còn lại: Bot LINE 71 + Report BI 22 nút thô — để cuối (đang được sửa ở phiên/máy khác), xong thì `<button>` thô thành chặn.
 3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.
 

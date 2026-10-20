@@ -121,8 +121,11 @@ test('mở app có cache admin: vào thẳng dashboard, không spinner/không m�
     // Cho phép 1-2 mẫu spinner đầu tiên (lúc chưa đọc xong cache IndexedDB), còn lại phải là dashboard.
     // Đếm theo TỈ LỆ, không theo số mẫu tuyệt đối: đọc innerText cả dashboard mất ~200ms/mẫu nên 2,3s
     // chỉ lấy được ~11 mẫu — ngưỡng cũ "> 15" đỏ dù 11/11 mẫu đều là dashboard (sửa 2026-09-30).
+    // Tối thiểu 3 (trước 5, 2026-10-20): máy bận / Vite dev biên dịch lần đầu thì mỗi mẫu innerText ~575 ms → 2,3 s chỉ kịp 4 mẫu
+    // dù 4/4 đều là dashboard (đo 3 lượt liền: 5/5, 4/4, 7/7). Điều bài canh — không nháy màn Login/chờ duyệt, gần như toàn
+    // dashboard — vẫn do 2 assert trên + assert "không phải dashboard ≤ 2" bên dưới giữ.
     const tong = seen.length;
     const dashboard = summary['DASHBOARD'] || 0;
-    expect(dashboard, `dashboard ${dashboard}/${tong} mẫu`).toBeGreaterThanOrEqual(5);
+    expect(dashboard, `dashboard ${dashboard}/${tong} mẫu`).toBeGreaterThanOrEqual(3);
     expect(tong - dashboard, 'số mẫu KHÔNG phải dashboard').toBeLessThanOrEqual(2);
 });
