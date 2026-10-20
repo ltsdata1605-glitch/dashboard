@@ -85,7 +85,6 @@
         // BƯỚC 0 (chạy ngay khi parse, trước cả SDK): đọc params → copy → gọi server luôn nếu đã biết tên.
         const urlParams = new URLSearchParams(window.location.search);
         const couponCode = (urlParams.get('code') || '').trim();
-        const couponType = (urlParams.get('type') || 'PMH').trim();
         const cardIndex = (urlParams.get('index') || '1').trim();
         const requestedBy = (urlParams.get('reqBy') || '').trim().replace(/^[@👤\s]+/, '');
         const productName = (urlParams.get('prod') || '').trim();
@@ -124,7 +123,7 @@
         }
         const autoCopyPromise = couponCode ? copyToClipboard(couponCode) : Promise.resolve(false);
 
-        // Gọi server đánh dấu USED + bot gửi xác nhận trích dẫn. Tham số qua query + POST không body →
+        // Gọi server đánh dấu USED (không gửi tin nào vào nhóm — 2026-10-20). Tham số qua query + POST không body →
         // "simple request" không tốn preflight OPTIONS; keepalive → đóng LIFF sớm request vẫn đi tới nơi.
         function markUsed(usedBy) {
             // b/t: vé thẻ do bot ký (functions/src/liffTicket.ts) — thẻ cũ không có thì bỏ trống.
@@ -211,115 +210,39 @@
             return displayName || 'Bạn';
         }
 
-        function getVietnamTime() {
-            return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
-        }
 
-        // Rút gọn tên LINE về "Mã NV - Tên" — BẢN CHÉP của functions/src/userName.ts (trang tĩnh không
-        // bundler): "DMST-Nhân-107617SALE" -> "107617 - Nhân". Sửa bên kia thì sửa cả đây.
-        function formatShortUserName(raw) {
-            const name = String(raw || '').trim();
-            if (!name) return name;
-            const parts = name.split(/[\s_\-–—]+/).filter(Boolean);
-            let idIdx = -1, id = '';
-            for (let i = 0; i < parts.length; i++) {
-                const m = parts[i].match(/^(\d{4,7})[^\d]*$/);
-                if (m) { idIdx = i; id = m[1]; break; }
-            }
-            if (idIdx === -1) return name;
-            const KNOWN_CODES = new Set(['DMST', 'ĐMST', 'DMX', 'ĐMX', 'STR', 'HGI', 'TGDD', 'TC', 'AIO', 'BOSS', 'SALE', 'QL', 'NV']);
-            const isCode = (s) => /^[A-ZĐ0-9]{1,6}$/.test(s) || KNOWN_CODES.has(s.toUpperCase());
-            const after = parts.slice(idIdx + 1).filter(p => !isCode(p));
-            let nameParts = parts.slice(0, idIdx);
-            if (nameParts.length > 0 && isCode(nameParts[0]) && (nameParts.length > 1 || after.length > 0)) nameParts = nameParts.slice(1);
-            if (nameParts.length === 0) nameParts = after.slice(0, 2);
-            const titleCaseVi = (w0) => { const w = w0.normalize('NFC'); return w.charAt(0).toLocaleUpperCase('vi') + w.slice(1).toLocaleLowerCase('vi'); };
-            const shortName = nameParts.map(titleCaseVi).join(' ').trim();
-            return shortName ? `${id} - ${shortName}` : name;
-        }
-
-        // Dự phòng: bot không gửi được (hết hạn mức push / lỗi mạng) → gửi tin thường thay người dùng (không trích dẫn được)
-        // Nhãn theo LOẠI thẻ — BẢN CHÉP của couponUsedLabel() trong functions/src/pmhSequence.ts
-        // (trang tĩnh không có bundler). Sửa bên kia thì sửa cả đây, nếu không 2 đường gửi ra 2 câu
-        // khác nhau cho cùng một việc.
-        /** 68 -> "0068" — khớp hệt huy hiệu in trên thẻ (formatPmhLabel ở pmhSequence.ts) */
-        function formatPmhLabel(n) {
-            const num = Number(n);
-            if (!Number.isFinite(num) || num <= 0) return String(n == null ? '' : n);
-            return String(Math.floor(num)).padStart(4, '0');
-        }
-
-        function couponUsedLabel(categoryLabel, index) {
-            const so = formatPmhLabel(index);
-            const cat = String(categoryLabel || '').toLowerCase();
-            if (cat.includes('event')) return `Coupon Event ${so}`;
-            if (cat.includes('giờ vàng') || cat.includes('gio vang') || cat.includes('gvgs') || /^gv\b/.test(cat)) {
-                return `Coupon GVGS ${so}`;
-            }
-            return `PMH ${so}`;
-        }
-
-        async function sendFallbackMessage(displayName) {
-            const prefix = cardIndex ? couponUsedLabel(couponType, cardIndex) : 'Mã này';
-            const messageText = `👉 ${prefix} sử dụng lúc ${getVietnamTime()}!\n↳ User: ${formatShortUserName(displayName)}`;
-            try {
-                await initPromise;
-                await Promise.race([liff.sendMessages([{ type: 'text', text: messageText }]), timeout(1500)]);
-            } catch (sendErr) {
-                console.warn('[LIFF] sendMessages error:', sendErr);
-            }
-        }
-
-        // XÁC NHẬN SỬ DỤNG. Từ 2026-10-15 tin xác nhận gửi DƯỚI TÊN người dùng (liff.sendMessages — miễn phí). Bot không tự
-        // PUSH tin trích dẫn nữa vì tốn hạn mức tin LINE theo số thành viên nhóm (server trả quotedSent=false; vẫn giữ nhánh
-        // quotedSent=true phòng khi bật lại BOT_TRICH_DAN_COUPON ở functions/src/lineBotWebhook.ts).
+        // GHI NHẬN SỬ DỤNG — KHÔNG gửi tin xác nhận nào vào nhóm (2026-10-20, chủ dự án chốt "Tắt tin nhắn xác nhận khi dùng
+        // coupon"): trước 15/10 bot PUSH tin trích dẫn (tốn hạn mức LINE theo số thành viên nhóm), 15→20/10 người dùng gửi thay.
+        // Nay chỉ copy mã + đánh dấu đã dùng trên máy chủ (Dashboard vẫn thấy ai dùng lúc nào).
         async function confirmUsage(displayName, existingPromise) {
             if (alreadySentLocally) {
                 spinner.style.display = 'none';
                 statusTitle.textContent = '✅ Đã sao chép mã coupon!';
                 statusDesc.textContent = '💡 Bạn đã xác nhận sử dụng mã này rồi.';
-                statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
+                statusDetail.textContent = '';
                 closeNow(900);
                 return;
             }
-            statusTitle.textContent = '⚡ Đang gửi xác nhận...';
-            statusDesc.textContent = 'Đang ghi nhận và gửi tin xác nhận vào nhóm.';
+            statusTitle.textContent = '⚡ Đang ghi nhận...';
+            statusDesc.textContent = 'Đánh dấu mã đã sử dụng.';
             statusDetail.textContent = '';
             if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
 
             const request = (existingPromise || markUsed(displayName)).then(r => ({ res: r })).catch(e => ({ err: e }));
             const outcome = await Promise.race([request, timeout(4000, { timedOut: true })]);
-
-            if (outcome.timedOut) {
-                // Server chậm (cold start): request keepalive vẫn tới nơi và ghi nhận "đã dùng". Bot không còn tự đăng xác nhận
-                // (2026-10-15) → người dùng gửi tin xác nhận luôn, kẻo nhóm không thấy gì.
-                await sendFallbackMessage(displayName);
-                spinner.style.display = 'none';
-                statusTitle.textContent = '✅ Đã copy & xác nhận!';
-                closeNow(0);
-                return;
-            }
-            const markRes = outcome.res || null;
+            const markRes = outcome.timedOut ? null : (outcome.res || null);
+            spinner.style.display = 'none';
             if (markRes && markRes.alreadyUsed) {
-                spinner.style.display = 'none';
                 statusTitle.textContent = '⚠️ Mã này đã được sử dụng!';
                 statusDesc.textContent = markRes.previousUser
                     ? `Đã được ${markRes.previousUser} bấm sử dụng trước đó.`
                     : 'Mã này đã có người xác nhận sử dụng.';
-                statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
                 closeNow(1400);
                 return;
             }
-            if (markRes && markRes.quotedSent) {
-                spinner.style.display = 'none';
-                statusTitle.textContent = '✅ Đã copy & xác nhận!';
-                statusDesc.textContent = 'Bot đã trả lời trích dẫn thẻ coupon.';
-                closeNow(0);
-                return;
-            }
-            await sendFallbackMessage(displayName);
-            spinner.style.display = 'none';
-            statusTitle.textContent = '✅ Đã copy & xác nhận!';
+            // Máy chủ chậm (cold start): request keepalive vẫn tới nơi và ghi nhận — đóng luôn.
+            statusTitle.textContent = '✅ Đã copy mã!';
+            statusDesc.textContent = 'Đã ghi nhận sử dụng.';
             closeNow(0);
         }
 
