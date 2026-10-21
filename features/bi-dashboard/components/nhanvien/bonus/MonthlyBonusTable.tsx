@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { EmptyState } from '../../../../../components/shared/ui/EmptyState';
+import { Button } from '../../../../../components/shared/ui/Button';
 import AvatarDisplay from '../shared/AvatarDisplay';
 
 /** Rút gọn theo đơn vị triệu, 1 chữ số thập phân, kèm hậu tố "Tr". */
@@ -203,7 +204,9 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Năm hiển thị:</span>
             <div className="flex gap-1.5">
                 {availableYears.map(yr => (
-                    <button
+                    <Button
+                        variant="unstyled"
+                        size="none"
                         key={yr}
                         type="button"
                         onClick={() => onSelectYear(yr)}
@@ -214,7 +217,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
                         }`}
                     >
                         {yr} {yr === new Date().getFullYear() ? '(Năm nay)' : '(Năm trước)'}
-                    </button>
+                    </Button>
                 ))}
             </div>
         </div>

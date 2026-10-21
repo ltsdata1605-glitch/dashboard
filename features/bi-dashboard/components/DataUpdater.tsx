@@ -35,6 +35,7 @@ import { BiAutoSyncModal } from './BiAutoSyncModal';
 import { LuyKeMonthPickerModal } from './LuyKeMonthPickerModal';
 import { extractSupermarketList, extractAllSupermarketList, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
+import { Textarea } from '../../../components/shared/ui/Textarea';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { Modal } from '../../../components/shared/ui/Modal';
@@ -231,9 +232,10 @@ const StatusTile: React.FC<{
             >
                 {isPasting ? (
                     <div className="w-full flex flex-col gap-1.5 animate-in fade-in duration-150">
-                        <textarea
+                        <Textarea
+                            aria-label={`Dán dữ liệu ${title}`}
                             autoFocus
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-mono resize-none p-1.5 h-12 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
+                            className="min-h-0 h-12 p-1.5 bg-slate-50 border-slate-200 rounded-md text-[11px] font-mono resize-none leading-tight text-slate-800 focus-visible:ring-0 focus-visible:border-slate-200"
                             placeholder={pasteHint(placeholder)}
                             onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');

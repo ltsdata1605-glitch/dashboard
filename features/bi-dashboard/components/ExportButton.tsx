@@ -167,7 +167,9 @@ const ExportButton: React.FC<ExportButtonProps> = ({
             </div>
             <div className="space-y-0.5">
               {options.map((opt) => (
-                <button
+                <Button
+                  variant="unstyled"
+                  size="none"
                   key={opt.id}
                   type="button"
                   onClick={() => handleSelectOption(opt)}
@@ -186,7 +188,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                       </div>
                     )}
                   </div>
-                </button>
+                </Button>
               ))}
             </div>
           </div>,

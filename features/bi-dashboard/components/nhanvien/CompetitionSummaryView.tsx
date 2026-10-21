@@ -26,6 +26,7 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { MedalBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Select } from '../../../../components/shared/ui/Select';
 import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
@@ -608,10 +609,13 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             {/* Bộ lọc nhóm tiêu chí */}
             {allAvailableGroups.length > 0 && (
                 <div className="relative flex items-center no-print shrink-0">
-                    <select
+                    <Select
+                        dense
+                        fullWidth={false}
+                        aria-label="Lọc theo nhóm tiêu chí"
                         value={selectedGroupFilter}
                         onChange={(e) => setSelectedGroupFilter(e.target.value)}
-                        className="text-[11px] font-bold h-7 sm:h-7.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 py-0.5 sm:py-1 rounded-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer appearance-none shadow-2xs hover:border-sky-300 dark:hover:border-sky-600 transition-colors max-w-[95px] xs:max-w-[125px] sm:max-w-none truncate"
+                        className="h-7 sm:h-7.5 pl-2.5 pr-6 sm:pl-3 sm:pr-7 py-0.5 sm:py-1 rounded-full bg-slate-50 border-slate-200 text-[11px] font-bold text-slate-700 shadow-2xs hover:border-sky-300 transition-colors max-w-[95px] xs:max-w-[125px] sm:max-w-none truncate"
                         title="Lọc theo nhóm tiêu chí"
                     >
                         <option value="all">Tất cả ({rawVisibleHeaders.length})</option>
@@ -626,8 +630,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                 </option>
                             );
                         })}
-                    </select>
-                    <AppIcon name="chevronDown" size="sm" className="absolute right-1 sm:right-1.5 text-slate-400 pointer-events-none scale-75 sm:scale-100" />
+                    </Select>
                 </div>
             )}
 

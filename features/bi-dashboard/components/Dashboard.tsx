@@ -45,7 +45,9 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
             </div>
         </div>
 
-        <button
+        <Button
+            variant="unstyled"
+            size="none"
             type="button"
             onClick={onNavigate}
             className="w-full relative group/dropzone flex flex-col items-center justify-center min-h-[120px] border-2 border-dashed border-slate-200 dark:border-slate-700/60 hover:border-sky-400/50 dark:hover:border-sky-500/50 rounded-xl cursor-pointer bg-slate-50/50 dark:bg-slate-800/20 hover:bg-sky-50/30 dark:hover:bg-sky-950/20 transition-all duration-300 overflow-hidden p-4"
@@ -59,7 +61,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
             <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                 Tự động đồng bộ từ Tampermonkey hoặc nhập thủ công
             </p>
-        </button>
+        </Button>
 
         <p className="mt-3 text-[12px] font-medium text-slate-500 dark:text-slate-400 text-center">
             {message || 'Chưa có dữ liệu nào được nạp.'}

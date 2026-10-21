@@ -20,6 +20,7 @@ import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { cn } from '../../../components/shared/ui/utils';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
+import { Textarea } from '../../../components/shared/ui/Textarea';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { Input } from '../../../components/shared/ui/Input';
@@ -465,9 +466,10 @@ const StatusTile: React.FC<{
             >
                 {isPasting ? (
                     <div className="w-full flex flex-col gap-1.5 animate-in fade-in duration-150">
-                        <textarea
+                        <Textarea
+                            aria-label={`Dán dữ liệu ${title}`}
                             autoFocus
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-mono resize-none p-1.5 h-12 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
+                            className="min-h-0 h-12 p-1.5 bg-slate-50 border-slate-200 rounded-md text-[11px] font-mono resize-none leading-tight text-slate-800 focus-visible:ring-0 focus-visible:border-slate-200"
                             placeholder={pasteHint(placeholder)}
                             onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');
@@ -828,7 +830,10 @@ const CompetitionTarget: React.FC<{
                             return (
                                 <div className="flex items-center justify-center">
                                     <div className={`flex items-center gap-0.5 ${t.inputBg} px-1 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-2xs shrink-0`}>
-                                        <input
+                                        <Input
+                                            dense
+                                            fullWidth={false}
+                                            aria-label={`% Target ${comp.name}`}
                                             type="number" inputMode="decimal"
                                             value={Math.round(ratio).toString()}
                                             onFocus={(e) => e.target.select()}
@@ -838,7 +843,7 @@ const CompetitionTarget: React.FC<{
                                                 const v = parseInt(val, 10);
                                                 if (!isNaN(v)) handleSliderChange(comp.name)(v);
                                             }}
-                                            className={`w-7 sm:w-8 bg-transparent text-center text-xs font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                            className={`w-7 sm:w-8 text-xs ${t.inputText} h-auto p-0 border-0 rounded-none bg-transparent text-center font-black focus-visible:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                         />
                                         <span className="text-[11px] font-bold opacity-75">%</span>
                                     </div>

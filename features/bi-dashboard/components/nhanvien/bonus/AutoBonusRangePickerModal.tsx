@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { Select } from '../../../../../components/shared/ui/Select';
+import { Input } from '../../../../../components/shared/ui/Input';
 import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { ConfirmDialog } from '../../../../../components/shared/ui/ConfirmDialog';
 import {
@@ -228,15 +230,16 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                     <div className="space-y-3">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Chọn tháng</label>
-                            <select
+                            <Select
+                                aria-label="Chọn tháng"
                                 value={selectedMonth}
                                 onChange={e => setSelectedMonth(e.target.value)}
-                                className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                className="h-auto pl-3 py-2 text-sm rounded-md text-slate-700"
                             >
                                 {recentMonths.map(m => (
                                     <option key={m.yyyymm} value={m.yyyymm}>{m.label}</option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
                         {monthRange && (
                             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -289,32 +292,34 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                             <div className="grid grid-cols-2 gap-2 pt-1">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Từ tháng</label>
-                                    <select
+                                    <Select
+                                        aria-label="Từ tháng"
                                         value={fromMonth}
                                         onChange={e => {
                                             const v = Number(e.target.value);
                                             setFromMonth(v);
                                             if (toMonth != null && toMonth < v) setToMonth(v);
                                         }}
-                                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                        className="h-auto pl-2.5 py-1.5 text-xs rounded-md text-slate-700"
                                     >
                                         {Array.from({ length: maxMonthIndex + 1 }, (_, i) => (
                                             <option key={i} value={i}>Tháng {i + 1}</option>
                                         ))}
-                                    </select>
+                                    </Select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Đến tháng</label>
-                                    <select
+                                    <Select
+                                        aria-label="Đến tháng"
                                         value={actualToMonth}
                                         onChange={e => setToMonth(Number(e.target.value))}
-                                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                        className="h-auto pl-2.5 py-1.5 text-xs rounded-md text-slate-700"
                                     >
                                         {Array.from({ length: maxMonthIndex - fromMonth + 1 }, (_, idx) => {
                                             const m = fromMonth + idx;
                                             return <option key={m} value={m}>Tháng {m + 1}</option>;
                                         })}
-                                    </select>
+                                    </Select>
                                 </div>
                             </div>
                         )}
@@ -366,20 +371,22 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                         <div className="flex gap-3">
                             <div className="flex-1">
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Ngày bắt đầu</label>
-                                <input
+                                <Input
+                                    aria-label="Ngày bắt đầu"
                                     type="date"
                                     value={toApiInputValue(customFrom)}
                                     onChange={e => setCustomFrom(fromApiInputValue(e.target.value))}
-                                    className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                    className="block h-auto px-3 py-2 text-sm rounded-md text-slate-700"
                                 />
                             </div>
                             <div className="flex-1">
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Ngày kết thúc</label>
-                                <input
+                                <Input
+                                    aria-label="Ngày kết thúc"
                                     type="date"
                                     value={toApiInputValue(customTo)}
                                     onChange={e => setCustomTo(fromApiInputValue(e.target.value))}
-                                    className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                    className="block h-auto px-3 py-2 text-sm rounded-md text-slate-700"
                                 />
                             </div>
                         </div>

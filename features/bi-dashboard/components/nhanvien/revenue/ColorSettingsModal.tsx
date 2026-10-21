@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { Input } from '../../../../../components/shared/ui/Input';
 
 // Bảng màu chọn nhanh — dùng các mã màu đậm nét, độ tương phản cao, nổi bật
 export const VIVID_COLORS = [
@@ -136,11 +137,14 @@ export const ColorSettingsModal: React.FC<{
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 min-w-[100px]">
                             <span className="text-[11px] font-bold text-slate-400 uppercase">Tốt (≥)</span>
-                            <input 
+                            <Input
+                                dense
+                                fullWidth={false}
+                                aria-label={`${label} — ngưỡng Tốt`}
                                 type="number" inputMode="decimal" 
                                 value={config.good.threshold} 
                                 onChange={e => setTemp({...temp, [key]: {...config, good: {...config.good, threshold: Number(e.target.value)}}})} 
-                                className="w-12 p-1 text-xs border rounded bg-white dark:bg-slate-800" 
+                                className="h-auto w-12 p-1 text-xs rounded-sm"
                             />
                         </div>
                         <CompactColorPicker 
@@ -151,11 +155,14 @@ export const ColorSettingsModal: React.FC<{
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 min-w-[100px]">
                             <span className="text-[11px] font-bold text-slate-400 uppercase">TB (≥)</span>
-                            <input 
+                            <Input
+                                dense
+                                fullWidth={false}
+                                aria-label={`${label} — ngưỡng Trung bình`}
                                 type="number" inputMode="decimal" 
                                 value={config.average.threshold} 
                                 onChange={e => setTemp({...temp, [key]: {...config, average: {...config.average, threshold: Number(e.target.value)}}})} 
-                                className="w-12 p-1 text-xs border rounded bg-white dark:bg-slate-800" 
+                                className="h-auto w-12 p-1 text-xs rounded-sm"
                             />
                         </div>
                         <CompactColorPicker 

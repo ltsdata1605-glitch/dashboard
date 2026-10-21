@@ -301,7 +301,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Bộ lọc hiển thị</span>
                             {(hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0) && (
-                                <button
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     onClick={() => {
                                         setHiddenIndustries([]);
                                         setHiddenSubIndustries([]);
@@ -309,7 +311,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                     className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                 >
                                     Hiện tất cả
-                                </button>
+                                </Button>
                             )}
                         </div>
 
@@ -322,19 +324,23 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                         Ngành hàng ({allIndustries.length - hiddenIndustries.length}/{allIndustries.length})
                                     </p>
                                     <div className="flex items-center gap-1.5 text-[11px]">
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             onClick={() => setHiddenIndustries([])}
                                             className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                         >
                                             Tất cả
-                                        </button>
+                                        </Button>
                                         <span className="text-slate-300 dark:text-slate-600">|</span>
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             onClick={() => setHiddenIndustries([...allIndustries])}
                                             className="text-slate-500 hover:underline cursor-pointer"
                                         >
                                             Bỏ chọn
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                                 <Input
@@ -372,19 +378,23 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             Nhóm hàng ({allSubIndustries.length - hiddenSubIndustries.length}/{allSubIndustries.length})
                                         </p>
                                         <div className="flex items-center gap-1.5 text-[11px]">
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 onClick={() => setHiddenSubIndustries([])}
                                                 className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                                             >
                                                 Tất cả
-                                            </button>
+                                            </Button>
                                             <span className="text-slate-300 dark:text-slate-600">|</span>
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 onClick={() => setHiddenSubIndustries([...allSubIndustries])}
                                                 className="text-slate-500 hover:underline cursor-pointer"
                                             >
                                                 Bỏ chọn
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                     <Input

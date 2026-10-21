@@ -12,6 +12,7 @@ import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
 import { calculateCompetitionCommentary, generateZaloCommentaryMessage } from '../../services/competitionCommentaryCalc';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
+import { Input } from '../../../../components/shared/ui/Input';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { useCheckThuongBonus } from '../../hooks/useCheckThuongBonus';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
@@ -376,13 +377,16 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
                                 {/* Ô tìm kiếm chương trình */}
                                 <div className="relative mb-2">
-                                    <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input
+                                    {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
+                                    <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 text-slate-400" />
+                                    <Input
+                                        dense
+                                        aria-label="Tìm tên chương trình"
                                         type="text"
                                         value={programFilterSearch}
                                         onChange={(e) => setProgramFilterSearch(e.target.value)}
                                         placeholder="Tìm tên chương trình..."
-                                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-sky-500 text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                                        className="h-auto pl-8 pr-3 py-1.5 text-xs bg-slate-50 border-slate-200 rounded-lg text-slate-800 focus-visible:ring-0"
                                     />
                                 </div>
 

@@ -3,6 +3,7 @@ import { Employee, BonusMetrics } from '../../../types/nhanVienTypes';
 import { parseBonusBlock } from '../../../utils/bonusParser';
 import { extractEmployeeId } from '../../../utils/nhanVienHelpers';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { Textarea } from '../../../../../components/shared/ui/Textarea';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { appendBonusHistory } from '../../../utils/bonusHistory';
 import { focusHrmWindow } from './hrmWindow';
@@ -102,7 +103,8 @@ export const BonusDataModal: React.FC<{
         >
             {/* Body Content */}
             <div className="flex-1 w-full">
-                    <textarea
+                    <Textarea
+                        aria-label="Dữ liệu thưởng HRM"
                         ref={textareaRef}
                         value={pastedData}
                         onChange={e => setPastedData(e.target.value)}
@@ -134,7 +136,7 @@ export const BonusDataModal: React.FC<{
                             }
                         }}
                         placeholder="Click vào đây hoặc nhấn tự động dán (Ctrl + V)..."
-                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-colors resize-none placeholder-slate-400"
+                        className="min-h-0 h-48 py-3 px-4 border-dashed rounded-sm bg-slate-50 font-mono text-xs sm:text-sm text-slate-700 transition-colors resize-none"
                     />
                     {error && <p className="mt-2 text-xs font-semibold text-rose-500">{error}</p>}
             </div>

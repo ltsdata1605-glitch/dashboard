@@ -331,7 +331,9 @@ const EmployeeProfileCard: React.FC<{
                     <div className="flex-1 min-w-0">
                         {/* Tên nhân viên: Bấm vào để chọn nhân viên */}
                         <div className="relative inline-block" ref={employeeSelectorRef}>
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)}
                                 className="group/name inline-flex items-center gap-1 sm:gap-2 text-left type-headline sm:text-lg lg:text-xl font-bold text-slate-900 truncate hover:bg-slate-100 px-1.5 sm:px-2 py-0.5 sm:py-1 -ml-1.5 sm:-ml-2 rounded-sm transition-colors cursor-pointer"
@@ -339,7 +341,7 @@ const EmployeeProfileCard: React.FC<{
                             >
                                 <span className="truncate">{selectedEmployee.name}</span>
                                 <AppIcon name="chevronDown" size="sm" className={`text-slate-400 group-hover/name:text-slate-600 transition-transform ${isEmployeeSelectorOpen ? 'rotate-180' : ''}`} />
-                            </button>
+                            </Button>
 
                             {isEmployeeSelectorOpen && createPortal(
                                 <div
@@ -361,7 +363,9 @@ const EmployeeProfileCard: React.FC<{
                                     <div className="overflow-y-auto flex-1 p-1">
                                         {filteredEmployees.length > 0 ? (
                                              filteredEmployees.map(emp => (
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     type="button"
                                                     key={emp.originalName}
                                                     onClick={() => {
@@ -379,7 +383,7 @@ const EmployeeProfileCard: React.FC<{
                                                     {emp.department && (
                                                         <span className="text-[11px] text-slate-400 font-normal ml-1 shrink-0">{emp.department}</span>
                                                     )}
-                                                </button>
+                                                </Button>
                                             ))
                                         ) : (
                                             <div className="p-3 text-center text-xs text-slate-400">Không tìm thấy</div>

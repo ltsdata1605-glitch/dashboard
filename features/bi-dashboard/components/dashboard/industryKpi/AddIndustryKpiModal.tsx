@@ -3,6 +3,7 @@ import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { IndustryItemOption, IndustryKpiCardConfig } from '../../../services/industryKpiCalc';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { Input } from '../../../../../components/shared/ui/Input';
 
 interface AddIndustryKpiModalProps {
     isOpen: boolean;
@@ -68,13 +69,15 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                     <span className="text-slate-500 dark:text-slate-400 font-medium">
                         Đang hiển thị: <strong className="text-slate-800 dark:text-slate-100 font-bold">{currentCards.length}</strong> thẻ KPI
                     </span>
-                    <button
+                    <Button
+                        variant="unstyled"
+                        size="none"
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-1.5 font-bold text-xs bg-sky-600 hover:bg-sky-700 text-white rounded-none transition-colors cursor-pointer"
+                        className="ycx-hit px-4 py-1.5 font-bold text-xs bg-sky-600 hover:bg-sky-700 text-white rounded-none transition-colors cursor-pointer"
                     >
                         Hoàn tất
-                    </button>
+                    </Button>
                 </div>
             }
         >
@@ -85,20 +88,24 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                 <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col gap-2.5">
                     {/* Search */}
                     <div className="relative">
-                        <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
+                        {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
+                        <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 z-10 text-slate-400" />
+                        <Input
+                            aria-label="Tìm ngành hàng hoặc nhóm hàng"
                             type="text"
                             placeholder="Tìm nhanh ngành hàng hoặc nhóm hàng..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-3 py-1.5 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none focus:outline-hidden focus:border-sky-500 text-slate-800 dark:text-slate-100"
+                            className="h-auto pl-9 pr-3 py-1.5 text-xs sm:text-sm border-slate-200 rounded-none text-slate-800 focus-visible:ring-0"
                         />
                     </div>
 
                     {/* Tabs */}
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1 p-0.5 bg-slate-200/70 dark:bg-slate-800 rounded-sm text-xs">
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setActiveTab('subIndustry')}
                                 className={`flex items-center gap-1.5 px-3 py-1 font-bold rounded-xs transition-all ${
@@ -109,8 +116,10 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                             >
                                 <AppIcon name="product" size="sm" />
                                 <span>Nhóm hàng ({availableSubIndustries.length})</span>
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setActiveTab('industry')}
                                 className={`flex items-center gap-1.5 px-3 py-1 font-bold rounded-xs transition-all ${
@@ -121,7 +130,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                             >
                                 <AppIcon name="layers" size="sm" />
                                 <span>Ngành hàng ({availableIndustries.length})</span>
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Reset button */}
@@ -169,21 +178,25 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                     </div>
 
                                     {isSelected ? (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             type="button"
                                             onClick={() => {
                                                 if (activeCard) onRemoveCard(activeCard.id);
                                             }}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300/80 dark:border-emerald-800/80 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 transition-colors group cursor-pointer"
+                                            className="ycx-hit inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300/80 dark:border-emerald-800/80 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 transition-colors group cursor-pointer"
                                             title="Bấm để bỏ thẻ này"
                                         >
                                             <AppIcon name="check" size="xs" className="group-hover:hidden" />
                                             <AppIcon name="close" size="xs" className="hidden group-hover:inline" />
                                             <span className="group-hover:hidden">Đã thêm</span>
                                             <span className="hidden group-hover:inline">Bỏ chọn</span>
-                                        </button>
+                                        </Button>
                                     ) : (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             type="button"
                                             onClick={() => {
                                                 onAddCard({
@@ -192,11 +205,11 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                                     type: item.type,
                                                 });
                                             }}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300/80 dark:border-sky-800/80 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors cursor-pointer"
+                                            className="ycx-hit inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300/80 dark:border-sky-800/80 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors cursor-pointer"
                                         >
                                             <AppIcon name="add" size="xs" />
                                             <span>Thêm</span>
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             );

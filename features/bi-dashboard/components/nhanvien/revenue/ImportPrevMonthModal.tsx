@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { Textarea } from '../../../../../components/shared/ui/Textarea';
 
 export const ImportPrevMonthModal: React.FC<{
     isOpen: boolean;
@@ -25,12 +26,13 @@ export const ImportPrevMonthModal: React.FC<{
             }
         >
             <p className="text-xs text-slate-500 mb-4">{description}</p>
-            <textarea
+            <Textarea
+                aria-label={title}
                 autoFocus
                 value={pastedData}
                 onChange={e => setPastedData(e.target.value)}
                 placeholder="Nhấn Ctrl + V để dán..."
-                className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded font-mono text-[11px] focus:ring-2 focus:ring-sky-500 outline-none"
+                className="min-h-0 h-48 p-4 bg-slate-50 rounded-sm font-mono text-[11px] focus-visible:ring-2"
             />
         </Modal>
     );

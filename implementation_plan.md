@@ -8667,3 +8667,33 @@ có chủ đích). ESLint: cảnh báo nút thô toàn dự án 93 → 22 (còn 
   khe dòng dưới ô kiểu inline-block).
 - Kiểm: `npm run check`; e2e (Chromium) gd7-mini-app, coupon-bang-iphone, gd10-xac-nhan-va-bang, mobile-iphone-6-module (Bot LINE: 0 nút
   < 44px), apple-tuong-thich, chuan-thiet-ke-b: 27 xanh.
+
+## GĐ10 bước 2 — Report BI (2026-10-21)
+
+`features/bi-dashboard`: `<button>` thô **22 → 0** + ô nhập/chọn tự vẽ **19 → 0**. Còn lại có chủ đích: 3 thanh trượt `type="range"`
+(chưa có thành phần trượt dùng chung — thanh màu theo bộ phận là thiết kế riêng), 3 ô chọn tệp ẩn; `components/Slider.tsx` KHÔNG được
+import ở đâu (code chết — để nguyên, không sửa). ESLint: **0 cảnh báo nút thô toàn dự án** (93 → 22 → 0).
+- Nút (giữ mọi lớp, cả viên tròn "chuẩn Hình 2" của chủ dự án): mục trong menu Tuỳ chọn xuất ảnh, ô "Nhập dữ liệu" khi trống, 7 nút hộp
+  Ảnh đại diện (2 tab, 4 lọc loại, ô chọn ảnh), tên nhân viên + danh sách chọn ở Thi đua › Cá nhân, chọn năm ở bảng thưởng theo tháng,
+  5 nút hộp Thẻ KPI Ngành hàng, 5 liên kết "hiện/ẩn tất cả" trong bộ lọc ngành. `ycx-hit` chỉ cho "Hoàn tất" + "Thêm/Đã thêm" từng dòng
+  của hộp Thẻ KPI (đo trên iPhone 440: vùng nới không đè ô/nút nào).
+- Ô → thành phần chung: 2 ô số trong viên "130 %" của Target Doanh thu + 1 ô % Target Thi đua (`Input dense` trong suốt, viên của chủ dự
+  án vẫn tự có vòng focus `focus-within`), ô tick chọn nhân viên ở hộp Tạo/Sửa bộ phận → `Checkbox` (không lồng `<label>`), 2 ô dán dữ
+  liệu trong ô Cập nhật (giữ 48px, không vòng focus như cũ — ô đã đổi màu viền khi ở chế độ dán), hộp dán tháng trước / dán thưởng HRM
+  (giữ viền nét đứt) → `Textarea`; hộp Chọn thời gian đổ thưởng: 3 ô chọn tháng → `Select`, 2 ô ngày → `Input` (`block` giữ icon lịch ở
+  mép phải); viên "Lọc theo nhóm tiêu chí" ở Thi đua › Tổng → `Select dense` (giữ viên tròn 28px, mũi tên dùng mũi tên của Select thay
+  icon tự đặt); 2 ô tìm (hộp Thẻ KPI, bộ lọc chương trình thi đua) → `Input` (+ icon `z-10`, xem Bot LINE). 19 ô có `aria-label`.
+- Khác nhìn thấy: mũi tên ô chọn (trình duyệt → chevron); viền ô ngưỡng ở hộp Cấu hình màu và hộp dán tháng trước từ ĐEN → xám
+  `slate-300` (bản cũ viết `border` không màu — Tailwind 4 lấy `currentColor`, sót từ lúc nâng Tailwind; Tailwind 3 là xám); ô tìm/ô chọn
+  trong hộp cao 44px trên máy cảm ứng.
+- Ảnh trước/sau: (a) trang thử tạm `scratch/bi-harness` (gitignore, không commit) 13 cảnh dữ liệu giả — Thẻ KPI (+ tìm), Ảnh đại diện, Cấu
+  hình màu, dán tháng trước, dán thưởng HRM, Chọn thời gian (5 tab), bảng thưởng theo tháng, menu xuất ảnh; (b) Chế độ Dùng thử + dữ
+  liệu gieo như `report-bi-gd6.spec.ts` — màn trống, Thi đua Nhóm/Tổng/Cá nhân (+ danh sách chọn NV), Siêu thị › Thi đua + bộ lọc chương
+  trình; (c) tài khoản test thật CHỈ ĐỌC — Siêu thị, 4 tab Nhân viên, Cập nhật (+ ô ở chế độ dán), Target Doanh thu (+ hộp bộ phận), Target
+  Thi đua. Mỗi bộ iPhone 440 + laptop, 0 lỗi runtime; khác chỉ ở các điểm nêu trên (tài khoản thật lệch thêm giờ cập nhật/lượt truy cập và
+  chế độ Realtime/Luỹ kế tự chọn theo giờ — dữ liệu, không phải giao diện).
+- Kiểm: `npm run check` (0 cảnh báo nút thô); e2e (Chromium) report-bi-gd6, bi-competition (+ bonus-col, export-fit), bi-bonus-compare,
+  bi-mobile-iphone, bi-chuyen-che-do-khong-sap, mobile-bonus-competition-header, nhom-thi-dua-fit-screen, industry-kpi-size,
+  kpi-card-filter, competition-target-roundup, icon-audit-bi, report-bi-auto-export, apple-tuong-thich, mobile-iphone-6-module,
+  chuan-thiet-ke-b: 33 xanh, 3 bỏ qua có chủ đích, 1 đỏ CÓ TỪ TRƯỚC — `bi-competition-bonus-col` (chờ ô `bonus-cell` ở dòng TC HOMECREDIT)
+  đỏ y hệt trên code TRƯỚC lượt này (đã chạy lại trên bản cất tạm); spec không nằm trong CI.

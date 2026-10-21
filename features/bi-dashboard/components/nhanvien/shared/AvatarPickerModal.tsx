@@ -115,7 +115,9 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                 {/* Sub-bar / Tabs & Filters */}
                 <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/30 dark:bg-slate-800/20">
                     <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold">
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             onClick={() => setSelectedTab('library')}
                             className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
@@ -126,8 +128,10 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                         >
                             <AppIcon name="sparkles" size="sm" className="text-amber-500" />
                             <span>50 Icon Hoạt Hình</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             onClick={() => setSelectedTab('upload')}
                             className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
@@ -138,39 +142,47 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                         >
                             <AppIcon name="upload" size="sm" className="text-sky-500" />
                             <span>Tải Ảnh Từ Máy</span>
-                        </button>
+                        </Button>
                     </div>
 
                     {selectedTab === 'library' && (
                         <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setCategoryFilter('all')}
                                 className={`px-2 py-1 rounded transition-colors ${categoryFilter === 'all' ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             >
                                 Tất cả (50)
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setCategoryFilter('animal')}
                                 className={`px-2 py-1 rounded transition-colors ${categoryFilter === 'animal' ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             >
                                 Thú cưng
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setCategoryFilter('character')}
                                 className={`px-2 py-1 rounded transition-colors ${categoryFilter === 'character' ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             >
                                 Nhân vật
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setCategoryFilter('fun_object')}
                                 className={`px-2 py-1 rounded transition-colors ${categoryFilter === 'fun_object' ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             >
                                 Đồ vật
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -187,7 +199,9 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                 {filteredAvatars.map((avatar) => {
                                     const isSelected = currentAvatarSrc === avatar.dataUrl || (!currentAvatarSrc && defaultAvatar.id === avatar.id);
                                     return (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             key={avatar.id}
                                             type="button"
                                             disabled={isProcessing}
@@ -214,7 +228,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                                     <AppIcon name="success" size="sm" />
                                                 </div>
                                             )}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>

@@ -10,6 +10,7 @@ import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { useDepartments } from '../hooks/useDepartments';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
 import { Input } from '../../../components/shared/ui/Input';
 import type { AnalysisEmployeesPayload } from '../services/analysisEmployeeSyncService';
 
@@ -178,10 +179,14 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                         <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-xl bg-slate-50/30 dark:bg-slate-900/30">
                             {filteredEmps.length > 0 ? filteredEmps.map(emp => (
                                 <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
-                                    <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
-                                        <input type="checkbox" checked={selectedEmps.has(emp.originalName)} onChange={() => toggleEmp(emp.originalName)} className="rounded-md border-slate-300 text-sky-500 focus:ring-sky-500 h-4.5 w-4.5 cursor-pointer bg-white shrink-0" />
-                                        <span className={`text-sm font-medium truncate ${selectedEmps.has(emp.originalName) ? 'text-sky-800 dark:text-sky-300 font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{emp.originalName}</span>
-                                    </label>
+                                    <Checkbox
+                                        checked={selectedEmps.has(emp.originalName)}
+                                        onChange={() => toggleEmp(emp.originalName)}
+                                        className="h-4.5 w-4.5"
+                                        wrapperClassName="flex gap-3 flex-1 min-w-0"
+                                        labelClassName={`font-medium truncate ${selectedEmps.has(emp.originalName) ? 'text-sky-800 font-bold' : 'text-slate-600'}`}
+                                        label={emp.originalName}
+                                    />
                                     <Button
                                         variant="unstyled" size="none"
                                         onClick={() => removeEmp(emp.originalName)}
@@ -273,7 +278,10 @@ const CompactTargetItem: React.FC<{
                     className={`flex-1 h-1.5 ${t.track} rounded-full appearance-none cursor-pointer ${t.thumb} transition-all min-w-0`}
                 />
                 <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shrink-0`}>
-                    <input 
+                    <Input
+                        dense
+                        fullWidth={false}
+                        aria-label={`${label} (%)`}
                         type="number" inputMode="decimal"
                         value={Math.round(ratio).toString()}
                         onFocus={(e) => e.target.select()}
@@ -283,7 +291,7 @@ const CompactTargetItem: React.FC<{
                             const v = parseInt(val, 10); 
                             if (!isNaN(v)) onChange(v); 
                         }}
-                        className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                        className={`w-8 sm:w-10 text-xs sm:text-[13px] ${t.inputText} h-auto p-0 border-0 rounded-none bg-transparent text-center font-black focus-visible:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                     />
                     <span className="text-xs font-bold opacity-75">%</span>
                 </div>
@@ -516,7 +524,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             className={`flex-1 h-1.5 ${t.track} rounded-full appearance-none cursor-pointer ${t.thumb} transition-all min-w-0`}
                                         />
                                         <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm shrink-0`}>
-                                            <input 
+                                            <Input
+                                                dense
+                                                fullWidth={false}
+                                                aria-label={`Tỉ lệ phân bổ ${dept.name} (%)`}
                                                 type="number" inputMode="decimal"
                                                 value={Math.round(weight).toString()}
                                                 onFocus={(e) => e.target.select()}
@@ -526,7 +537,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                     const v = parseInt(val, 10); 
                                                     if (!isNaN(v)) handleDepartmentSliderChange(dept.name)(v); 
                                                 }}
-                                                className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                className={`w-8 sm:w-10 text-xs sm:text-[13px] ${t.inputText} h-auto p-0 border-0 rounded-none bg-transparent text-center font-black focus-visible:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                             />
                                             <span className="text-xs font-bold opacity-75">%</span>
                                         </div>
