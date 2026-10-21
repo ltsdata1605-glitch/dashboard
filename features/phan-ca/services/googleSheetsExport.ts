@@ -235,8 +235,8 @@ export async function exportScheduleToGoogleSheet({
             addCondRule("GH", { red: 254/255, green: 243/255, blue: 199/255 }, { red: 146/255, green: 64/255, blue: 14/255 });
             // KH: emerald #d1fae5 (209, 250, 229) -> fg #065f46 (6, 95, 70)
             addCondRule("KH", { red: 209/255, green: 250/255, blue: 229/255 }, { red: 6/255, green: 95/255, blue: 70/255 });
-            // TN: purple #f3e8ff (243, 232, 255) -> fg #6b21a8 (107, 33, 168)
-            addCondRule("TN", { red: 243/255, green: 232/255, blue: 255/255 }, { red: 107/255, green: 33/255, blue: 168/255 });
+            // TN: sky #e0f2fe (224, 242, 254) -> fg #075985 (7, 89, 133) — cùng họ ô TN trong app (phanca.css --cell-tn-*; trước 2026-10-21 là tím)
+            addCondRule("TN", { red: 224/255, green: 242/255, blue: 254/255 }, { red: 7/255, green: 89/255, blue: 133/255 });
             // OFF: rose #ffe4e6 (255, 228, 230) -> fg #9f1239 (159, 18, 57)
             addCondRule("OFF", { red: 255/255, green: 228/255, blue: 230/255 }, { red: 159/255, green: 18/255, blue: 57/255 });
             // Sunday header text color

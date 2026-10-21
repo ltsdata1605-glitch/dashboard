@@ -8770,7 +8770,7 @@ Ratchet chỉ quét lớp Tailwind nên mã hex (`style={{…'#…'}}`, `bg-[#�
     T7/CN đã tô hồng), yellow → amber.
   - `TopSellerList` vạch nhóm: blue-500 → `bg-sky-500` (dữ liệu thật: 2 vạch, đúng màu sky-500).
 - Ngoài phạm vi, chưa đổi: Xuất Google Sheet của Phân ca (`googleSheetsExport.ts`) vẫn tô ô Thu Ngân tím (`#f3e8ff`) trong khi app là
-  sky — tài liệu bên ngoài người dùng đang quen, cần chủ dự án quyết.
+  sky — tài liệu bên ngoài người dùng đang quen, cần chủ dự án quyết. **→ Chủ dự án chốt đổi, XONG 21/10** (mục "Google Sheet Phân ca" cuối file).
 - Kiểm: ảnh trước/sau Phân ca (Dùng thử + tệp NV giả, tháng 10/2026, laptop 1440 + iPhone 440) đầu bảng/Ghi chú/Hướng dẫn mục 7;
   e2e `gd7-mini-app`, `mobile-iphone-6-module`, `apple-tuong-thich`, `chuan-thiet-ke-b`, `icon-audit-man-goc` — 20 passed.
 
@@ -8905,3 +8905,19 @@ nữa nhưng `setDoc(merge)` giữ mãi). Đây cũng là gốc của lần trà
 
 **Kết quả đo (đã ấm):** resolveSession 3,3 s → 0,5 s; gửi phiên 4,6 s → 1,5 s; đọc tài liệu trên máy chủ 2.200–5.200 ms → 40–100 ms;
 app sau khi về bớt hẳn 1 lượt gọi máy chủ.
+
+### Google Sheet Phân ca: ô Thu ngân tím → sky cho khớp app (2026-10-21, chủ dự án "Muốn")
+
+**Vấn đề:** file Google Sheet xuất từ Phân ca (`features/phan-ca/services/googleSheetsExport.ts`, luật tô có điều kiện theo chữ trong ô
+ngày) tô ô TN nền tím `#f3e8ff` / chữ `#6b21a8`, trong khi ô Thu ngân trong app là sky (`phanca.css --cell-tn-*`). GH / KH / OFF đã cùng họ
+với app (amber / emerald / rose).
+
+**Sửa:** TN → nền sky-100 `#e0f2fe` · chữ sky-800 `#075985` — cùng tầng Sheet đang dùng cho GH/KH/OFF (nền 100 · chữ 800, Sheet không có
+viền nên đậm hơn app 50/300/600 một bậc). Chỉ áp cho file xuất MỚI; Sheet đã tạo trước đó giữ màu cũ (Google Sheet không liên kết ngược).
+
+**Khoá:** `tests/unit/phan-ca-google-sheet-mau-o.test.ts` chạy hàm xuất thật (giả đăng nhập Google + bắt `formattingRequests`), đọc nền ô
+GH/KH/TN/OFF trong `phanca.css`, đối chiếu HỌ màu với luật tô của Sheet. Đã chạy với code cũ: đỏ đúng chỗ (`ô TN … expected
+{ nen: '#f3e8ff', chu: '#6b21a8' }`); code mới: xanh. Sau này đổi màu ô trong app mà quên Sheet là test đỏ.
+
+**Còn lệch, chưa đổi (ngoài phạm vi câu hỏi):** dải tiêu đề Sheet — "Số ngày SBH" fuchsia (app emerald), "Số lần" orange (app amber),
+"Tuần" teal (app tô theo từng tuần: emerald đậm / sky / indigo / amber / emerald). "Giờ công" sky đã khớp.
