@@ -92,7 +92,10 @@ export const pwaHandoffStore = onCall({ region: CLIENT_REGIONS }, async (request
 });
 
 export const pwaHandoffClaim = onCall({ region: CLIENT_REGIONS }, async (request) => {
-  const { verifier } = (request.data ?? {}) as { verifier?: string };
+  const { verifier, warmup } = (request.data ?? {}) as { verifier?: string; warmup?: boolean };
+  // Hâm nóng (2026-10-21): app gọi lúc người dùng BẤM đăng nhập — log 14–21/10 cho thấy gần như mọi lượt nhận phiên thật đều gặp
+  // khởi động nguội (hàm tự tắt khi vắng) đúng lúc người dùng vừa quay về app. Không đọc/ghi gì.
+  if (warmup === true) return { ready: false, warm: true };
   if (typeof verifier !== 'string' || !B64URL.test(verifier)) {
     throw new HttpsError('invalid-argument', 'Mã chuyển phiên không hợp lệ.');
   }

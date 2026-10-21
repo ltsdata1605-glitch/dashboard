@@ -8905,3 +8905,11 @@ nữa nhưng `setDoc(merge)` giữ mãi). Đây cũng là gốc của lần trà
 
 **Kết quả đo (đã ấm):** resolveSession 3,3 s → 0,5 s; gửi phiên 4,6 s → 1,5 s; đọc tài liệu trên máy chủ 2.200–5.200 ms → 40–100 ms;
 app sau khi về bớt hẳn 1 lượt gọi máy chủ.
+
+### Đo lại đăng nhập + đồng bộ (2026-10-21 tối) — hâm nóng hàm nhận phiên
+
+Đo tài khoản thật (CDP, chỉ đọc): đăng nhập xong → resolveSession gọi NGAY (không chờ thừa); mở lại app: giao diện hiện từ bộ nhớ
+đệm, resolveSession + listManagedUsers chạy song song nền. Log 14–21/10: gần như MỌI lượt đăng nhập iPhone thật đều khởi động nguội
+`pwaHandoffClaim` đúng lúc người dùng quay về app (store đã được hâm lúc bấm, claim thì chưa) → `pwaHandoffClaim({warmup:true})` +
+app hâm cả 2 hàm lúc bấm (`warmUpPwaHandoff`). Không tốn bản chạy sẵn. Hồ sơ users/{uid} của tài khoản test vẫn ~1 MB tới khi chủ tài
+khoản mở bản mới (lượt dọn chạy lúc đó — test chặn ghi nên không dọn).

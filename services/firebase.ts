@@ -377,6 +377,8 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
 /** Đánh thức trước Cloud Function nhận phiên trong lúc người dùng còn ở trang Google (đỡ ~5 s khởi động nguội). */
 export const warmUpPwaHandoff = (): void => {
     httpsCallable(functions, 'pwaHandoffStore')({ warmup: true }).catch(() => { /* chỉ là hâm nóng */ });
+    // Hàm NHẬN phiên cũng hâm luôn (2026-10-21): nó chạy đúng lúc người dùng quay về app — trước đây hầu như lần nào cũng khởi động nguội.
+    httpsCallable(functions, 'pwaHandoffClaim')({ warmup: true }).catch(() => { /* chỉ là hâm nóng */ });
 };
 
 export const loginWithGoogleForceConsent = async () => {

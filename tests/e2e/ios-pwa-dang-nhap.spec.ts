@@ -12,9 +12,12 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
         Object.defineProperty(window.navigator, 'standalone', { get: () => true });
     });
     const claims: string[] = [];
+    let claimWarmups = 0;
     let claimReply: object = { result: { ready: false } };
     await context.route('**/pwaHandoffClaim', async route => {
-        claims.push(route.request().postDataJSON()?.data?.verifier);
+        const d = route.request().postDataJSON()?.data;
+        if (d?.warmup) { claimWarmups++; return route.fulfill({ status: 200, contentType: 'application/json', body: '{"result":{"ready":false,"warm":true}}' }); }
+        claims.push(d?.verifier);
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(claimReply) });
     });
     const warmups: unknown[] = [];
@@ -65,6 +68,7 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     expect(ve.searchParams.get('c')).toBe(code);
     // Bấm nút là đánh thức trước Cloud Function nhận phiên (đỡ khởi động nguội khi trang Google xong).
     expect(warmups).toContainEqual({ warmup: true });
+    expect(claimWarmups).toBeGreaterThan(0); // hàm NHẬN phiên cũng được hâm nóng lúc bấm (2026-10-21)
 
     await page.screenshot({ path: 'test-results/ios-pwa-dang-cho.png' });
 
