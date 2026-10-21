@@ -12,10 +12,10 @@
  *  - /assets/*, phông, ảnh khung: ƯU TIÊN BẢN LƯU (tên có mã băm nên không bao giờ cũ); thiếu thì tải rồi lưu.
  *  - Yêu cầu khác origin (Firebase, LINE, Google…) KHÔNG đụng tới — SDK tự xử lý offline.
  */
-const VERSION = '38df62efca9c';
+const VERSION = 'ad68d5d832e1';
 const CACHE = 'ycx-shell-' + VERSION;
-const PRECACHE = ["/assets/AboutView-BJ1I5zJg.js","/assets/AreaAutoExportButton-G_a7XWyb.js","/assets/Badge-iK8vjF0x.js","/assets/Banner-Bq8mRrrC.js","/assets/BiWrapper-CjcSugMa.js","/assets/BiWrapper-DMR52XUc.css","/assets/ChangelogModal-DLb3NFbH.js","/assets/CheckThuongView-Bnx8SLGz.js","/assets/Checkbox-mU1VFn9R.js","/assets/ConfirmDialog-CosMhdv0.js","/assets/CouponConverterView-BJhGejpW.js","/assets/DashboardView-sYpPLJiR.js","/assets/DataUpdater-CCEtSr0r.js","/assets/EmployeeAnalysis-BQ035t3N.js","/assets/EmptyState-CWebuyrG.js","/assets/ExportOptionsModal-CPyKEsRk.js","/assets/ExternalToolView-_ZslFrro.js","/assets/FileHistoryModal-DX9jidte.js","/assets/FileNamingModal-hCJiuiPP.js","/assets/GlobalAutoSyncDock-DGsZnpJT.js","/assets/IndustryGrid-CY3q9A3X.js","/assets/InstallAppHint-CBDIEaLa.js","/assets/KhaiThacView-DBTo3thA.js","/assets/KpiCard-BSEtq5EF.js","/assets/KpiCardConfigModal-MWi69yyX.js","/assets/LineBotView-C_RmZVOe.js","/assets/ListGroup-Dg0ke5ud.js","/assets/LoginView-DjifWchU.js","/assets/MobileMoreSheet-DsVwTeVS.js","/assets/Modal-Dk6Eh9ix.js","/assets/MultiSelectDropdown-BMNTRhew.js","/assets/NhanVien-D5uIDu1k.js","/assets/NotificationDropdown-ChqIpfkR.js","/assets/PendingApprovalView-CZ-5ywUG.js","/assets/PerformanceModal-BWWn_oUA.js","/assets/PhanCaView-CAA0vulx.css","/assets/PhanCaView-D8bTl0IC.js","/assets/PriceComparisonView-BI2eVNH_.js","/assets/SectionCard-Be0uXPGY.js","/assets/SectionHeader-rfDekiro.js","/assets/Select-BsM5tpP_.js","/assets/SettingsView-qPSSOAcW.js","/assets/ShiftWarehouseInputModal-Bxd2-c51.js","/assets/StickerEventApp-BaShmwdH.js","/assets/StickerPrinterView-BAb4jEpB.js","/assets/StringMultiSelect-D-18DCkR.js","/assets/SummaryTable-BmblryNQ.js","/assets/Switch-CIAwWUnR.js","/assets/Tabs-BUyOPtqK.js","/assets/TaxCalculatorView-Q5SqmPm5.js","/assets/Textarea-CKFI_v3I.js","/assets/TouchTitleHint-pfeoifhw.js","/assets/TrendChart-DyhsqnHI.js","/assets/UncollectedOrdersModal-Bt3Hs1SS.js","/assets/UnconfiguredGroupsModal-DMkSe6tQ.js","/assets/UnshippedOrdersModal-CSwCth5O.js","/assets/UploadConflictModal-BeE5a3aV.js","/assets/UploadTypeSelectionModal-CQIdFiHH.js","/assets/UserManagementView-CDhkh4FB.js","/assets/analysisEmployeeSyncService-C1IrOsIh.js","/assets/analytics.worker-BfRBJyQG.js","/assets/analytics.worker-CCAy1kzZ.js","/assets/analytics.worker-CxIdJA8C.js","/assets/autoNavigationService-D1TL6nP0.js","/assets/autoReportExportService-oX1F4m3M.js","/assets/captureEngine-Bx2eMxa4.js","/assets/chartConfig-C-f7hsgo.js","/assets/checkThuongIframeService-C_5KscEd.js","/assets/cloudDataService-D_zVDGCP.js","/assets/configStore-jfv_oEyo.js","/assets/dataService-CTgHR-4_.js","/assets/dataUtils-CCe5thY4.js","/assets/dbService-uTUcdTjI.js","/assets/firebaseProductConfigService-CxgXa7li.js","/assets/googleSheetsService-BGBmW1BJ.js","/assets/googleSheetsService-D0LTBUzq.js","/assets/html2canvas.esm-QH1iLAAe.js","/assets/index-B2MOX-f0.css","/assets/index-BCZIPjIC.js","/assets/index-BIFoWCtc.js","/assets/index-CgJtiJsK.js","/assets/index-DuaGrbqz.js","/assets/index.es-DwB78QME.js","/assets/industryColors-NaMQqhES.js","/assets/jspdf.es.min-DiAJEm3A.js","/assets/khaiThacDb-tgqCnBvb.js","/assets/khoDataService-Dl6aN-DK.js","/assets/lineBot.types-Ch3epGzj.js","/assets/moTaBoLoc-B6sNO7U6.js","/assets/presetBi-Chqz8pjx.js","/assets/salesJsonWriter.worker-BNAYiZX6.js","/assets/salesJsonWriter.worker-iky0iAuj.js","/assets/scheduleHeartbeat.worker-DY9MOOqR.js","/assets/shared-utils-CoyMcgY7.js","/assets/summaryService-VGiQ9GMJ.js","/assets/systemAnnouncementService-DDGKHuyl.js","/assets/useBiAutoSync-CtVjYW7e.js","/assets/useMultiMonthBonusRun-CV7buUbS.js","/assets/vendor-charts-CNaQ3TAb.js","/assets/vendor-excel-BGhuli8m.js","/assets/vendor-firebase-C6cs38PV.js","/assets/vendor-firebase-analytics-BlcBQ8K_.js","/assets/vendor-icons-DmTakvj8.js","/assets/vendor-react-spjDHvdB.js","/assets/worker-C3Ehuode.js","/assets/ycxAutoSyncService--k61RMRm.js","/favicon.svg","/icons/apple-touch-icon-120.png","/icons/apple-touch-icon-152.png","/icons/apple-touch-icon-167.png","/icons/apple-touch-icon-180.png","/icons/icon-192.png","/icons/icon-512.png","/icons/icon-maskable-512.png","/manifest.webmanifest","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js"];
-const CORE = ["/assets/index-BCZIPjIC.js","/assets/vendor-react-spjDHvdB.js","/assets/shared-utils-CoyMcgY7.js","/assets/vendor-icons-DmTakvj8.js","/assets/vendor-firebase-C6cs38PV.js","/assets/index-B2MOX-f0.css","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js","/favicon.svg","/manifest.webmanifest"];
+const PRECACHE = ["/assets/AboutView-DkUI-S8m.js","/assets/AreaAutoExportButton-D064Gz72.js","/assets/Badge-iK8vjF0x.js","/assets/Banner-CNAPW1nz.js","/assets/BiWrapper-DMR52XUc.css","/assets/BiWrapper-U9mrDmRs.js","/assets/ChangelogModal-0FVXal77.js","/assets/CheckThuongView-57YBtlmN.js","/assets/Checkbox-mU1VFn9R.js","/assets/ConfirmDialog-DVLrXgYi.js","/assets/CouponConverterView-CQDG5Kdw.js","/assets/DashboardView-B_9AHDaH.js","/assets/DataUpdater-CZhrVkmm.js","/assets/EmployeeAnalysis-DR0Gq3BH.js","/assets/EmptyState-FWIoleJl.js","/assets/ExportOptionsModal-BlRDlKj-.js","/assets/ExternalToolView-_ZslFrro.js","/assets/FileHistoryModal-BZnFjvok.js","/assets/FileNamingModal-CKBncm7T.js","/assets/GlobalAutoSyncDock-Co-5EDxE.js","/assets/IndustryGrid-DdsRhPVR.js","/assets/InstallAppHint-BqneR-SQ.js","/assets/KhaiThacView-DIMVCwNI.js","/assets/KpiCard-DlrmIZE4.js","/assets/KpiCardConfigModal-CIyrfyGr.js","/assets/LineBotView-ClinK6bT.js","/assets/ListGroup-CDaPV2xH.js","/assets/LoginView-CIj3sUJ6.js","/assets/MobileMoreSheet-CtOykVFr.js","/assets/Modal-CtAUChRR.js","/assets/MultiSelectDropdown-CFJufneg.js","/assets/NhanVien-D2hOIsOa.js","/assets/NotificationDropdown-D6DMqcHG.js","/assets/PendingApprovalView-DX6_ggmx.js","/assets/PerformanceModal-Dh_5DTMf.js","/assets/PhanCaView-C4EAyHyK.js","/assets/PhanCaView-CAA0vulx.css","/assets/PriceComparisonView-DJb7ljjN.js","/assets/SectionCard-Be0uXPGY.js","/assets/SectionHeader-mgkqyx_p.js","/assets/Select-BqP8LJz_.js","/assets/SettingsView-Bn5Qt2SQ.js","/assets/ShiftWarehouseInputModal-Bf-5oLO7.js","/assets/StickerEventApp-DfA2hprF.js","/assets/StickerPrinterView-DNUDp-f-.js","/assets/StringMultiSelect-D1SmMa4u.js","/assets/SummaryTable-B3I48E62.js","/assets/Switch-ByZK1XPM.js","/assets/Tabs-Btauxgu8.js","/assets/TaxCalculatorView-DKo3DcvO.js","/assets/Textarea-CKFI_v3I.js","/assets/TouchTitleHint-pfeoifhw.js","/assets/TrendChart-D5fmzZGt.js","/assets/UncollectedOrdersModal-cO-jUWDz.js","/assets/UnconfiguredGroupsModal-CeK6Km4j.js","/assets/UnshippedOrdersModal-DaeygvxB.js","/assets/UploadConflictModal-or_mLcCl.js","/assets/UploadTypeSelectionModal-Cyqlz-Dr.js","/assets/UserManagementView-DoOsr-X9.js","/assets/analysisEmployeeSyncService-CQYyECYe.js","/assets/analytics.worker-BfRBJyQG.js","/assets/analytics.worker-CCAy1kzZ.js","/assets/analytics.worker-CxIdJA8C.js","/assets/autoNavigationService-CyN2lvXt.js","/assets/autoReportExportService-DR-Gc9Fm.js","/assets/captureEngine-OSZJvrIx.js","/assets/chartConfig-C-f7hsgo.js","/assets/checkThuongIframeService-h8FwKi2H.js","/assets/cloudDataService-BuYaM9nO.js","/assets/configStore-jfv_oEyo.js","/assets/dataService-JyqnE-PS.js","/assets/dataUtils-BgXZevcz.js","/assets/dbService-BTM2zTtK.js","/assets/firebaseProductConfigService-Cn2M6aEh.js","/assets/googleSheetsService-BGBmW1BJ.js","/assets/googleSheetsService-D0LTBUzq.js","/assets/html2canvas.esm-QH1iLAAe.js","/assets/index-B2MOX-f0.css","/assets/index-BIFoWCtc.js","/assets/index-CgJtiJsK.js","/assets/index-CyDwrB1C.js","/assets/index-DuaGrbqz.js","/assets/index.es-CEqH2Jaa.js","/assets/industryColors-NaMQqhES.js","/assets/jspdf.es.min-BL1cqLns.js","/assets/khaiThacDb-CNx3Gqep.js","/assets/khoDataService-CkJ71UDw.js","/assets/lineBot.types-Cx3KoGsp.js","/assets/moTaBoLoc-B6sNO7U6.js","/assets/presetBi-B9tj8Ctc.js","/assets/salesJsonWriter.worker-BNAYiZX6.js","/assets/salesJsonWriter.worker-iky0iAuj.js","/assets/scheduleHeartbeat.worker-DY9MOOqR.js","/assets/shared-utils-CoyMcgY7.js","/assets/summaryService-BIxYIUbV.js","/assets/systemAnnouncementService-DY4iL1Jh.js","/assets/useBiAutoSync-4r8p54gZ.js","/assets/useMultiMonthBonusRun-DM000wkY.js","/assets/vendor-charts-CNaQ3TAb.js","/assets/vendor-excel-BGhuli8m.js","/assets/vendor-firebase-C6cs38PV.js","/assets/vendor-firebase-analytics-BlcBQ8K_.js","/assets/vendor-icons-DmTakvj8.js","/assets/vendor-react-spjDHvdB.js","/assets/worker-C3Ehuode.js","/assets/ycxAutoSyncService--k61RMRm.js","/favicon.svg","/icons/apple-touch-icon-120.png","/icons/apple-touch-icon-152.png","/icons/apple-touch-icon-167.png","/icons/apple-touch-icon-180.png","/icons/icon-192.png","/icons/icon-512.png","/icons/icon-maskable-512.png","/manifest.webmanifest","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js"];
+const CORE = ["/assets/index-CyDwrB1C.js","/assets/vendor-react-spjDHvdB.js","/assets/shared-utils-CoyMcgY7.js","/assets/vendor-icons-DmTakvj8.js","/assets/vendor-firebase-C6cs38PV.js","/assets/index-B2MOX-f0.css","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js","/favicon.svg","/manifest.webmanifest"];
 
 /** File /assets/ có mã băm trong tên: bản ở HTTP cache / cache của bản cũ luôn đúng → không cần ép tải lại. */
 const requestFor = (u) => new Request(u, { cache: u.startsWith('/assets/') ? 'default' : 'reload' });
@@ -71,26 +71,30 @@ self.addEventListener('activate', (event) => {
 const isHashedAsset = (url) => url.pathname.startsWith('/assets/');
 const isStaticFile = (url) => /^\/(fonts|icons|frame|splash|scripts|Tuts)\//.test(url.pathname) || /\.(woff2?|ttf|png|jpe?g|svg|webp|ico|webmanifest)$/.test(url.pathname) || /^\/(prevent-pull-to-refresh|reload-on-chunk-error)\.js$/.test(url.pathname);
 
-async function networkFirstNavigation(request) {
+async function networkFirstNavigation(event) {
+  const request = event.request;
   const cache = await caches.open(CACHE);
+  const pathname = new URL(request.url).pathname;
+  // SPA: mọi đường dẫn không có đuôi file dùng chung index.html.
+  const isShell = !/\.[a-z0-9]+$/i.test(pathname);
+  // Tải mạng chạy TIẾP kể cả khi đã quá 4 giây và trang đã nhận bản lưu: về tới thì vẫn LƯU bản mới (2026-10-21). Trước
+  // đây quá giờ là bỏ luôn bản mới → mạng chậm thì mãi nhận app shell cũ; bản cũ đòi file /assets/ đã bị xoá sau lượt đăng
+  // bản mới → 404 → reload-on-chunk-error.js tải lại → lại quá 4 giây → lại bản cũ: vòng tải lại mỗi 10 giây (log 21/10:
+  // resolveSession bị gọi dồn 4 phút, tràn bộ nhớ 2 lần).
+  const network = fetch(request).then((fresh) => {
+    if (fresh && fresh.ok) return cache.put(isShell ? '/index.html' : request, fresh.clone()).then(() => fresh);
+    return fresh;
+  });
+  event.waitUntil(network.catch(() => {}));
   try {
-    const fresh = await Promise.race([
-      fetch(request),
+    return await Promise.race([
+      network,
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
     ]);
-    if (fresh && fresh.ok) {
-      // Lưu bản mới của app shell (SPA: mọi đường dẫn không có đuôi file dùng chung index.html).
-      const isShell = !/\.[a-z0-9]+$/i.test(new URL(request.url).pathname);
-      if (isShell) cache.put('/index.html', fresh.clone());
-      else cache.put(request, fresh.clone());
-    }
-    return fresh;
   } catch (e) {
-    const pathname = new URL(request.url).pathname;
-    const isShell = !/\.[a-z0-9]+$/i.test(pathname);
     const cached = (isShell ? await cache.match('/index.html') : await cache.match(request));
     if (cached) return cached;
-    throw e;
+    return network; // không có bản lưu: chờ mạng tới cùng (thay vì báo lỗi sau 4 giây)
   }
 }
 
@@ -108,6 +112,6 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (request.mode === 'navigate') { event.respondWith(networkFirstNavigation(request)); return; }
+  if (request.mode === 'navigate') { event.respondWith(networkFirstNavigation(event)); return; }
   if (isHashedAsset(url) || isStaticFile(url)) { event.respondWith(cacheFirst(request)); return; }
 });
