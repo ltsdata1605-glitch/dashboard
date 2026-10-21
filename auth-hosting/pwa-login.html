@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Đăng nhập Dashboard YCX</title>
-<!-- Tải song song 2 thư viện Firebase ngay khi nhận HTML (trước đây tải nối đuôi theo import) — tới trang Google sớm hơn. -->
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js" crossorigin>
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js" crossorigin>
+<!-- 2026-10-21: KHÔNG tải sẵn thư viện Firebase nữa — app đi thẳng tới /__/auth/handler, trang này chỉ còn nhận kết quả (REST);
+     thư viện chỉ nạp khi phải tự mở lại Google (nút "Tiếp tục với Google", hoặc app bản cũ mở #c=…). -->
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://asia-southeast1-dashboa-7e20b.cloudfunctions.net" crossorigin>
 <!--
   Trang đăng nhập cho app ở MÀN HÌNH CHÍNH iPhone (PWA Standalone).
   Phục vụ tại: https://auth.dashboard.pro.vn/pwa-login.html
@@ -76,10 +76,6 @@
    *    pwaHandoffStore kèm Bearer ID token Firebase.
    * Test: tests/e2e/pwa-login-khong-gapi.spec.ts.
    */
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
-  import { initializeAuth, inMemoryPersistence, browserPopupRedirectResolver, GoogleAuthProvider, signInWithRedirect }
-    from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
-
   // Cấu hình Firebase công khai
   const API_KEY = 'AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4';
   const STORE_URL = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net/pwaHandoffStore';
@@ -113,27 +109,27 @@
   };
   const diag = (stage, extra) => callStore({ warmup: true, diag: { stage, ms: Date.now() - t0, ua: navigator.userAgent.slice(0, 160), ...extra } }).catch(() => {});
 
-  // Mã chuyển phiên: trong #c=… lúc app mở trang; lưu sessionStorage để giữ qua bước redirect
+  // Mã chuyển phiên. App mới (2026-10-21) đi THẲNG tới /__/auth/handler rồi Firebase đưa về đây với ?c=…&m=pwa&h=… (đã qua
+  // Google). App bản cũ mở #c=… (chưa qua Google → trang này tự sang Google). Lưu sessionStorage để giữ qua bước redirect.
   const KEY = 'ycxPwaHandoffCode';
-  const fromHash = new URLSearchParams(location.hash.slice(1)).get('c');
-  if (fromHash && fromHash !== sessionStorage.getItem(KEY)) {
-    sessionStorage.setItem(KEY, fromHash);
-    sessionStorage.removeItem(KEY + ':returning');
+  const hashQ = new URLSearchParams(location.hash.slice(1));
+  const searchQ = new URLSearchParams(location.search);
+  const fromHash = hashQ.get('c');
+  const fromQuery = searchQ.get('c');
+  const moi = fromQuery || fromHash;
+  if (moi) {
+    if (moi !== sessionStorage.getItem(KEY)) sessionStorage.removeItem(KEY + ':returning');
+    sessionStorage.setItem(KEY, moi);
+    // Mở từ app ở MÀN HÌNH CHÍNH (m=pwa): trang này nằm trong khung trình duyệt nổi của iPhone. Xong thì ĐÓNG khung (app tự
+    // nhận phiên) — không chuyển tới dashboard.pro.vn (sẽ tải nguyên app TRONG khung nổi). Safari thường thì vẫn về app.
+    const q = fromQuery ? searchQ : hashQ;
+    if (q.get('m') === 'pwa') sessionStorage.setItem(KEY + ':pwa', '1'); else sessionStorage.removeItem(KEY + ':pwa');
+    if (q.get('h')) sessionStorage.setItem(KEY + ':h', q.get('h')); else sessionStorage.removeItem(KEY + ':h');
   }
-  const code = fromHash || sessionStorage.getItem(KEY);
-
-  const provider = new GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/spreadsheets');
-  provider.addScope('https://www.googleapis.com/auth/drive.file');
-  provider.setCustomParameters({ prompt: 'select_account' });
-
-  let auth = null;
-  const getAuthFast = () => auth || (auth = initializeAuth(initializeApp({
-    apiKey: API_KEY,
-    authDomain: 'auth.dashboard.pro.vn',
-    projectId: 'dashboa-7e20b',
-    appId: '1:388853115750:web:33759964955d77a04df6a7',
-  }), { persistence: inMemoryPersistence }));
+  if (fromQuery) sessionStorage.setItem(KEY + ':returning', '1'); // ?c= = Firebase vừa đưa về sau Google
+  const code = moi || sessionStorage.getItem(KEY);
+  const fromPwa = sessionStorage.getItem(KEY + ':pwa') === '1';
+  const goiY = sessionStorage.getItem(KEY + ':h'); // tài khoản app đã nhớ → Google chọn sẵn
 
   let failsafe = 0;
   function showButton(text, kind = '') {
@@ -143,6 +139,20 @@
     $('go').disabled = false;
     if (text) say(text, kind);
   }
+  let sdk = null; // nạp + khởi tạo đúng 1 lần (bấm lại nút không initializeApp lần 2)
+  const napSdk = async () => {
+    const [{ initializeApp }, fa] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js'),
+    ]);
+    const auth = fa.initializeAuth(initializeApp({
+      apiKey: API_KEY,
+      authDomain: 'auth.dashboard.pro.vn',
+      projectId: 'dashboa-7e20b',
+      appId: '1:388853115750:web:33759964955d77a04df6a7',
+    }), { persistence: fa.inMemoryPersistence });
+    return { fa, auth };
+  };
   async function goGoogle() {
     $('go').disabled = true;
     show('go', false);
@@ -154,8 +164,16 @@
       showButton('Trang Google chưa mở? Bấm nút bên dưới.', 'err');
     }, 8000);
     try {
-      await signInWithRedirect(getAuthFast(), provider, browserPopupRedirectResolver);
+      // Nạp thư viện chỉ khi cần. initializeAuth bộ nhớ RAM, KHÔNG gắn resolver lúc khởi tạo → không tải khung ẩn gapi
+      // (apis.google.com) / IndexedDB — 2 bước từng treo trên iPhone; resolver chỉ dùng để dựng URL + chuyển trang.
+      const { fa, auth } = await (sdk ||= napSdk());
+      const provider = new fa.GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/spreadsheets');
+      provider.addScope('https://www.googleapis.com/auth/drive.file');
+      provider.setCustomParameters(goiY ? { login_hint: goiY } : { prompt: 'select_account' });
+      await fa.signInWithRedirect(auth, provider, fa.browserPopupRedirectResolver);
     } catch (e) {
+      sdk = null;
       diag('step1-error', { err: String(e.code || e.message).slice(0, 120) });
       showButton('Không thể mở trang Google (' + (e.code || e.message) + '). Vui lòng bấm thử lại.', 'err');
     }
@@ -240,10 +258,17 @@
     }
     sessionStorage.removeItem(KEY);
     sessionStorage.removeItem(KEY + ':returning');
-
-    // Về app NGAY. Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
+    sessionStorage.removeItem(KEY + ':pwa');
     show('busy', false);
     show('go', false);
+
+    if (fromPwa) {
+      $('lead').textContent = 'Đã đăng nhập ' + (idp.email || '');
+      say('Đăng nhập thành công! Bấm "Xong" ở góc trên để quay lại ứng dụng.', 'ok');
+      try { window.close(); } catch { /* khung không cho tự đóng: người dùng bấm "Xong" */ }
+      return;
+    }
+    // Về app NGAY. Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
     show('back', true);
     say('Đăng nhập thành công! Đang về ứng dụng…', 'ok');
     location.replace('https://dashboard.pro.vn/');

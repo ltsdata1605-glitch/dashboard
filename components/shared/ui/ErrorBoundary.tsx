@@ -2,7 +2,7 @@
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AppIcon } from './icon/AppIcon';
 import { Button } from './Button';
-import { taiLaiKhiLoiChunk } from './taiLaiKhiLoiChunk';
+import { taiLaiKhiLoiChunk, dangRoiTrang, duocTuTaiLai } from './taiLaiKhiLoiChunk';
 
 interface Props {
   children: ReactNode;
@@ -42,12 +42,9 @@ export class ErrorBoundary extends React.Component<Props, State> {
       errMsg.includes('reading "default"') ||
       errMsg.includes('failed to load or has no default export')
     ) {
-      const now = Date.now();
-      const lastReload = sessionStorage.getItem('last_module_import_reload');
-      if (!lastReload || now - Number(lastReload) > 10000) {
-        // Chờ một nhịp và BỎ QUA khi trang đang rời đi — WebKit huỷ import dở dang lúc điều hướng (taiLaiKhiLoiChunk.ts)
-        taiLaiKhiLoiChunk(() => sessionStorage.setItem('last_module_import_reload', String(Date.now())));
-      }
+      // Chờ một nhịp và BỎ QUA khi trang đang rời đi — WebKit huỷ import dở dang lúc điều hướng (taiLaiKhiLoiChunk.ts).
+      // Giới hạn 2 lần / 5 phút (duocTuTaiLai) — hết lượt thì để màn lỗi bên dưới hiện nút "Tải lại".
+      if (!dangRoiTrang() && duocTuTaiLai()) taiLaiKhiLoiChunk();
     }
   }
 

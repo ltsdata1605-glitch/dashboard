@@ -80,3 +80,32 @@ describe('taiLaiKhiLoiChunk', () => {
         expect(reload).toHaveBeenCalledTimes(1);
     });
 });
+
+describe('duocTuTaiLai — chặn vòng tự tải lại (2026-10-21)', () => {
+    beforeEach(() => {
+        const m = new Map<string, string>();
+        (globalThis as unknown as { sessionStorage: Pick<Storage, 'getItem' | 'setItem'> }).sessionStorage = {
+            getItem: (k) => m.get(k) ?? null, setItem: (k, v) => { m.set(k, String(v)); },
+        };
+    });
+    afterEach(() => { delete (globalThis as { sessionStorage?: unknown }).sessionStorage; });
+
+    it('tối đa 2 lần trong 5 phút, cách nhau ≥ 10 giây', async () => {
+        const { duocTuTaiLai } = await import('./taiLaiKhiLoiChunk');
+        const t = 1_000_000_000;
+        expect(duocTuTaiLai(t)).toBe(true);
+        expect(duocTuTaiLai(t + 5_000)).toBe(false);   // chưa đủ 10 giây
+        expect(duocTuTaiLai(t + 11_000)).toBe(true);
+        expect(duocTuTaiLai(t + 22_000)).toBe(false);  // hết 2 lượt — trước đây cứ mỗi 10 giây lại tải lại
+        expect(duocTuTaiLai(t + 120_000)).toBe(false);
+        expect(duocTuTaiLai(t + 301_000)).toBe(true);  // qua 5 phút: lượt đầu đã hết hạn
+    });
+
+    it('khớp đúng khoá với public/reload-on-chunk-error.js', async () => {
+        const fs = await import('node:fs');
+        const src = fs.readFileSync('public/reload-on-chunk-error.js', 'utf8');
+        expect(src).toContain("'ycx_chunk_reloads'");
+        expect(src).toContain('ds.length >= 2');
+        expect(src).not.toMatch(/now - Number\(lastReload\) > 10000\)\s*\{\s*sessionStorage/);
+    });
+});

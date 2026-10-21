@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, SDK_VERSION } from 'firebase/app';
 import {
     getAuth, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence, browserPopupRedirectResolver,
     GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
@@ -65,6 +65,30 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+// ─── Nhớ tài khoản đã dùng trên máy (2026-10-21, chủ dự án yêu cầu) ──────────────────────────────────────────────
+// Lần sau Google chọn sẵn tài khoản đó (login_hint) thay vì hiện danh sách chọn — bớt một bước. Chỉ lưu email/tên để
+// hiện trên màn đăng nhập, KHÔNG lưu token. "Dùng tài khoản khác" xoá đi và hỏi chọn tài khoản như cũ.
+const TAI_KHOAN_GAN_NHAT_KEY = 'ycxTaiKhoanGanNhat';
+export interface TaiKhoanGanNhat { email: string; ten?: string | null }
+export const layTaiKhoanGanNhat = (): TaiKhoanGanNhat | null => {
+    try {
+        const v = JSON.parse(localStorage.getItem(TAI_KHOAN_GAN_NHAT_KEY) || 'null') as TaiKhoanGanNhat | null;
+        return v && typeof v.email === 'string' && v.email.includes('@') ? v : null;
+    } catch { return null; }
+};
+export const nhoTaiKhoan = (email: string | null | undefined, ten?: string | null): void => {
+    if (!email) return;
+    try { localStorage.setItem(TAI_KHOAN_GAN_NHAT_KEY, JSON.stringify({ email, ten: ten ?? null })); } catch { /* bộ nhớ bị chặn */ }
+};
+export const quenTaiKhoan = (): void => {
+    try { localStorage.removeItem(TAI_KHOAN_GAN_NHAT_KEY); } catch { /* bỏ qua */ }
+};
+/** Tham số gửi Google: có tài khoản đã nhớ → login_hint (chọn sẵn); chưa có → hiện danh sách chọn tài khoản. */
+const thamSoGoogle = (): Record<string, string> => {
+    const tk = layTaiKhoanGanNhat();
+    return tk ? { login_hint: tk.email } : { prompt: 'select_account' };
+};
+
 export const isSafariBrowser = (): boolean => {
     if (typeof navigator === 'undefined') return false;
     const ua = navigator.userAgent || '';
@@ -109,6 +133,7 @@ export const loginWithGoogle = async () => {
 
     try {
         // Cho người dùng đủ thời gian (180s = 3 phút) để chọn tài khoản, nhập mật khẩu và hoàn tất xác thực 2 bước (2FA) trên thiết bị mới
+        googleProvider.setCustomParameters(thamSoGoogle());
         const popupPromise = signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
         const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => {
@@ -144,6 +169,7 @@ export const loginWithGoogle = async () => {
 
 export const loginWithGoogleRedirect = async () => {
     try {
+        googleProvider.setCustomParameters(thamSoGoogle());
         await signInWithRedirect(auth, googleProvider, browserPopupRedirectResolver);
     } catch (error) {
         console.error("Lỗi đăng nhập Google redirect:", error);
@@ -182,13 +208,38 @@ const PWA_LOGIN_URL = 'https://auth.dashboard.pro.vn/pwa-login.html';
 const toBase64Url = (bytes: Uint8Array): string =>
     btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-export interface PreparedPwaHandoff { verifier: string; url: string; }
+export interface PreparedPwaHandoff { verifier: string; code: string; }
 
 /** Sinh sẵn mã (băm SHA-256 là bất đồng bộ) để lúc bấm nút mở cửa sổ được NGAY trong cử chỉ chạm. */
 export const preparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
     const verifier = toBase64Url(crypto.getRandomValues(new Uint8Array(32)));
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
-    return { verifier, url: `${PWA_LOGIN_URL}#c=${toBase64Url(new Uint8Array(digest))}` };
+    return { verifier, code: toBase64Url(new Uint8Array(digest)) };
+};
+
+/**
+ * Đường dẫn đăng nhập: ĐI THẲNG tới trang xử lý của Firebase (/__/auth/handler — chính URL mà signInWithRedirect dựng), trang
+ * đó chuyển sang Google, xong quay về pwa-login.html?c=… để gửi phiên (2026-10-21). Trước đây đi qua pwa-login.html trước để
+ * nạp thư viện Firebase (~1–3 s, chậm hơn nhiều trên 4G) chỉ để dựng đúng URL này. `m=pwa`: mở từ app Màn hình chính → trang
+ * kia xong thì đóng khung nổi. Có tài khoản đã nhớ → login_hint (Google chọn sẵn).
+ */
+export const taoUrlDangNhapHandoff = (code: string, laPwa: boolean): string => {
+    const ve = new URL(PWA_LOGIN_URL);
+    ve.searchParams.set('c', code);
+    if (laPwa) ve.searchParams.set('m', 'pwa');
+    const tk = layTaiKhoanGanNhat();
+    if (tk) ve.searchParams.set('h', tk.email); // trang kia phải tự mở lại Google (nút thử lại) thì vẫn chọn sẵn tài khoản
+    const q = new URLSearchParams({
+        apiKey: firebaseConfig.apiKey,
+        appName: '[DEFAULT]',
+        authType: 'signInViaRedirect',
+        redirectUrl: ve.toString(),
+        v: SDK_VERSION,
+        providerId: 'google.com',
+        customParameters: JSON.stringify(thamSoGoogle()),
+        scopes: ['profile', 'https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file'].join(','),
+    });
+    return `https://${firebaseConfig.authDomain}/__/auth/handler?${q.toString()}`;
 };
 
 /** Gọi ĐỒNG BỘ trong onClick. */
@@ -198,11 +249,12 @@ export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff): void => {
     } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
     warmUpPwaHandoff();
     if (isStandaloneMode()) {
-        const win = window.open(prepared.url, '_blank');
-        if (!win) window.location.assign(prepared.url);
+        // m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi → xong thì đóng khung, KHÔNG tải app vào khung đó.
+        const win = window.open(taoUrlDangNhapHandoff(prepared.code, true), '_blank');
+        if (!win) window.location.assign(taoUrlDangNhapHandoff(prepared.code, false)); // không mở được khung nổi: đi cùng tab
     } else {
         // Trong trình duyệt thông thường (Safari/Chrome trên iPhone): chuyển hướng mượt mà trong cùng tab
-        window.location.assign(prepared.url);
+        window.location.assign(taoUrlDangNhapHandoff(prepared.code, false));
     }
 };
 

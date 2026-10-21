@@ -178,6 +178,9 @@ export const clearAllLocalAppData = async (opts?: {
         const keys: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
+            // Tài khoản Google đã dùng trên máy (services/firebase.ts, 2026-10-21) chỉ là email để lần sau Google chọn sẵn — GIỮ qua
+            // đăng xuất/đổi tài khoản (đúng lúc cần nó), chỉ "Xoá tất cả dữ liệu" mới xoá.
+            if (key === 'ycxTaiKhoanGanNhat' && !opts?.xoaKhaiThacRiengHienTai) continue;
             if (key && LOCAL_STORAGE_PREFIXES.some(p => key.startsWith(p))) {
                 keys.push(key);
             }

@@ -3,7 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
 import { clearAllLocalAppData, ensureLocalDataBelongsTo, setLocalDataOwner } from '../services/localDataOwner';
-import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider } from '../services/firebase';
+import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider, nhoTaiKhoan } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService/core';
 import { initSyncListeners, locCaiDatDongBoCu } from '../services/syncService';
 import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
@@ -142,6 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } catch (err) {
                     console.warn('[Auth] Không dọn được dữ liệu cục bộ của tài khoản trước:', err);
                 }
+                // Nhớ tài khoản cho lần đăng nhập sau (Google chọn sẵn — services/firebase.ts thamSoGoogle). SAU bước dọn ở trên.
+                nhoTaiKhoan(currentUser.email, currentUser.displayName);
                 // Đăng nhập MỚI ngay trong phiên trang (vừa đăng xuất rồi đăng nhập lại, hoặc mở
                 // app không có cache): isLoading lúc này đã là false (nhánh else bên dưới tắt từ
                 // trước) trong khi role/status/departmentId còn rỗng → App.tsx render NGAY
