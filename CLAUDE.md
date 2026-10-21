@@ -40,6 +40,9 @@ một câu báo trước rẻ hơn nhiều so với khôi phục. Mọi việc k
 và đã kiểm (`npm run check` + test liên quan) thì agent TỰ làm luôn, không chờ được nhắc: commit → push nhánh làm việc →
 fast-forward/merge vào `main` và push → `npm run build` → `./node_modules/.bin/gh-pages -d dist -m "<mô tả>"` → curl
 `https://dashboard.pro.vn` xác nhận `assets/index-*.js` (và `@version` userscript nếu có đổi) đã là bản mới. Bản build còn sinh `dist/sw.js` (service worker offline, 2026-10-08) — kiểm `curl https://dashboard.pro.vn/sw.js` có `ycx-shell-<VERSION>` mới.
+🔴 **Chỉ build + deploy khi HEAD = `origin/main`** (2026-10-21): nhiều phiên cùng deploy `gh-pages` — nối các bước bằng `&&` (hoặc
+`git fetch origin main && [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]` ngay trước `gh-pages`). Bước đưa lên `main` hỏng
+(phiên khác vừa đẩy) mà vẫn deploy là ghi đè mất bản sửa của phiên kia — đã xảy ra 21/10 07:09 UTC (mất bản sửa đăng nhập iPhone 4 phút).
 
 **Đồng bộ cloud → máy Mac của chủ dự án (bổ sung 2026-09-29):** máy Mac chạy
 `scripts/dong-bo-may-tinh/` (launchd, mỗi 5 phút) tự `git pull --ff-only` nhánh `main` khi máy sạch. Nghĩa
