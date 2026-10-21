@@ -67,11 +67,13 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   // Cờ kiểm tra nếu đang xuất từng nhân viên (chỉ có 1 NV trong danh sách)
   const isIndividualExport = staffList.length === 1;
 
+  // Màu đầu bảng theo tuần — chỉ trong bảng màu chuẩn (GĐ10 b3): teal → emerald tầng đậm (tuần 1 vốn đã gần như trùng tuần 5),
+  // fuchsia → indigo (giữ sắc tím, KHÔNG dùng rose vì cột T7/CN đã tô hồng), yellow → amber.
   const weekThemes = [
-    { bg: '#f0fdfa', text: '#0f766e', border: '#ccfbf1' }, // Teal
+    { bg: '#ecfdf5', text: '#065f46', border: '#d1fae5' }, // Emerald (tầng đậm)
     { bg: '#f0f9ff', text: '#0369a1', border: '#e0f2fe' }, // Sky
-    { bg: '#fdf4ff', text: '#a21caf', border: '#fae8ff' }, // Fuchsia
-    { bg: '#fefce8', text: '#a16207', border: '#fef08a' }, // Yellow
+    { bg: '#eef2ff', text: '#4338ca', border: '#e0e7ff' }, // Indigo
+    { bg: '#fffbeb', text: '#b45309', border: '#fde68a' }, // Amber
     { bg: '#ecfdf5', text: '#047857', border: '#d1fae5' }, // Emerald
   ];
 

@@ -165,7 +165,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             <div key={dept}>
                                 {showHeader && (
                                     <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-slate-800/50 px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2">
-                                        <span className="w-1 sm:w-1.5 h-3 sm:h-4 rounded-full flex-shrink-0" style={{background: '#3b82f6'}} />
+                                        <span className="w-1 sm:w-1.5 h-3 sm:h-4 rounded-full flex-shrink-0 bg-sky-500" />
                                         <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest leading-none">
                                             {dept} <span className="opacity-60 ml-1 sm:ml-2 font-medium bg-slate-200/50 dark:bg-slate-700 px-1.5 sm:px-2 py-0.5 rounded-full">{groupedSellers[dept].length} NS</span>
                                         </span>

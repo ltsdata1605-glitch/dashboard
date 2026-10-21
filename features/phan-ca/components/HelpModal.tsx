@@ -175,18 +175,19 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   <div>
                       <h4 className="font-bold text-slate-700 dark:text-slate-300">Màu ô lịch:</h4>
                       <ul className="list-none space-y-1 pl-2">
-                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#fef9c3', border: '1px solid #facc15' }}></span> Giao Hàng (GH)</li>
-                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#dcfce7', border: '1px solid #4ade80' }}></span> Kho</li>
-                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#f3e8ff', border: '1px solid #c084fc' }}></span> Thu Ngân (TN)</li>
-                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#fee2e2', border: '1px solid #fca5a5' }}></span> OFF (Nghỉ)</li>
+                          {/* Cùng màu ô thật (phanca.css --cell-*) và dải Ghi chú — bản cũ còn màu trước khi đổi bảng màu (Thu Ngân tím). */}
+                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded bg-amber-50 border border-amber-200"></span> Giao Hàng (GH)</li>
+                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded bg-emerald-50 border border-emerald-200"></span> Kho</li>
+                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded bg-sky-50 border border-sky-200"></span> Thu Ngân (TN)</li>
+                          <li className="flex items-center"><span className="w-4 h-4 mr-2 rounded bg-rose-50 border border-rose-200"></span> OFF (Nghỉ)</li>
                       </ul>
                   </div>
                   <div>
                       <h4 className="font-bold text-slate-700 dark:text-slate-300">Dấu chấm trạng thái (Góc trên ô):</h4>
                        <ul className="list-none space-y-1 pl-2 text-xs">
-                          <li className="flex items-center"><span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: '#22c55e' }}></span> Sửa trực tiếp (Nhập tay)</li>
-                          <li className="flex items-center"><span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: '#ef4444' }}></span> Chủ động đổi (Người xin nghỉ)</li>
-                          <li className="flex items-center"><span className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: '#3b82f6' }}></span> Người đổi cùng (Người làm thay)</li>
+                          <li className="flex items-center"><span className="w-2.5 h-2.5 rounded-full mr-2 bg-emerald-500"></span> Sửa trực tiếp (Nhập tay)</li>
+                          <li className="flex items-center"><span className="w-2.5 h-2.5 rounded-full mr-2 bg-rose-500"></span> Chủ động đổi (Người xin nghỉ)</li>
+                          <li className="flex items-center"><span className="w-2.5 h-2.5 rounded-full mr-2 bg-sky-500"></span> Người đổi cùng (Người làm thay)</li>
                       </ul>
                   </div>
               </div>

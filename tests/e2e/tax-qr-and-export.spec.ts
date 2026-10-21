@@ -105,7 +105,8 @@ test('thẻ QR chỉ còn chế độ "Đồng nghiệp trả thuế" và nói r
     await expect(page.getByText('Thực chuyển đồng nghiệp')).toHaveCount(0);
 
     // "Số tiền cần chuyển" = đúng phần thuế phát sinh do nhận thay (khối "Thuế nhận thay giữ lại")
-    const taxHero = await page.locator('[data-testid="tax-result-panel"] .text-2xl').first().innerText();
+    // Số chính của thẻ kết quả — tìm theo data-testid, KHÔNG theo lớp cỡ chữ (GĐ10 b3 đổi text-2xl → text-[25px] làm test này đỏ)
+    const taxHero = await page.getByTestId('tax-result-panel').getByTestId('tax-hero-amount').first().innerText();
     const transferAmount = await page.getByTestId('qr-transfer-amount').innerText();
     console.log('THUẾ NHẬN THAY:', taxHero.trim(), '| SỐ TIỀN CẦN CHUYỂN:', transferAmount.trim());
     expect(transferAmount.trim()).toBe(taxHero.trim());
