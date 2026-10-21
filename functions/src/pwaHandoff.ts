@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { Timestamp } from 'firebase-admin/firestore';
 import { db, auth as adminAuth } from './firebaseAdmin';
 import { CLIENT_REGIONS } from './region';
+import { giaiQuyetPhien, type SessionProfile } from './session';
 
 /**
  * Chuyển phiên đăng nhập Google vào app ở MÀN HÌNH CHÍNH iPhone (PWA standalone) — 2026-10-12.
@@ -41,10 +42,12 @@ export const pwaHandoffStore = onCall({ region: CLIENT_REGIONS }, async (request
     return { ok: true, warm: true };
   }
   let uid = request.auth?.uid;
+  let tokenInfo: { email?: string | null; name?: string | null; picture?: string | null } | undefined = request.auth?.token;
   if (!uid && typeof idToken === 'string' && idToken.length >= 20) {
     try {
       const decoded = await adminAuth.verifyIdToken(idToken);
       uid = decoded.uid;
+      tokenInfo = decoded;
     } catch (err) {
       console.warn('[pwaHandoffStore] verifyIdToken fallback failed:', err);
     }
@@ -60,6 +63,12 @@ export const pwaHandoffStore = onCall({ region: CLIENT_REGIONS }, async (request
   }
   const ref = db.collection('pwaHandoff').doc(code);
   const now = Date.now();
+  // Tính SẴN phiên (quyền/Kho/claims — y hệt resolveSession) SONG SONG với lưu phiên (2026-10-21): app nhận kèm qua
+  // pwaHandoffClaim nên khỏi gọi resolveSession sau khi vào. Lỗi thì bỏ qua — app tự gọi resolveSession như cũ.
+  const hoSoP: Promise<SessionProfile | null> = giaiQuyetPhien(uid, tokenInfo ?? {}).catch((err) => {
+    console.warn('[pwaHandoffStore] Tính sẵn phiên lỗi (app sẽ tự gọi resolveSession):', err);
+    return null;
+  });
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     // Không cho ghi đè mã của người khác còn hạn.
@@ -77,6 +86,8 @@ export const pwaHandoffStore = onCall({ region: CLIENT_REGIONS }, async (request
       expiresAt: Timestamp.fromMillis(now + TTL_MS),
     });
   });
+  const hoSo = await hoSoP;
+  if (hoSo) await ref.update({ profile: hoSo }).catch(() => { /* thiếu hồ sơ: app tự gọi resolveSession */ });
   return { ok: true };
 });
 
@@ -97,5 +108,12 @@ export const pwaHandoffClaim = onCall({ region: CLIENT_REGIONS }, async (request
   if ((data.expiresAt as Timestamp).toMillis() < Date.now()) {
     throw new HttpsError('deadline-exceeded', 'Phiên đăng nhập đã quá 5 phút. Vui lòng đăng nhập lại.');
   }
-  return { ready: true, idToken: data.idToken as string, accessToken: (data.accessToken as string | null) ?? null };
+  return {
+    ready: true,
+    idToken: data.idToken as string,
+    accessToken: (data.accessToken as string | null) ?? null,
+    // Phiên đã tính sẵn lúc gửi (pwaHandoffStore) — kèm uid để app chỉ dùng cho ĐÚNG tài khoản vừa vào.
+    uid: data.uid as string,
+    profile: (data.profile as SessionProfile | undefined) ?? null,
+  };
 });

@@ -172,6 +172,9 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
   trên iOS (popup/redirect truyền `browserPopupRedirectResolver` tường minh); `auth-hosting/pwa-login.html` tự đọc kết quả handler
   + REST `signInWithIdp`, KHÔNG `getRedirectResult`. Test: `pwa-login-khong-gapi`, `iphone-gapi-treo-dang-nhap`. Bản giả
   `firebase/auth` trong test phải có `initializeAuth`. Log chẩn đoán: `[pwa-login diag]` của hàm `pwaHandoffStore`.
+  *(2026-10-21)* `resolveSession` đọc `users/{uid}` bằng `fieldMask` (tài liệu có thể gần 1 MB) — ĐỪNG đổi lại `get()` nguyên khối;
+  `pwaHandoffClaim` trả kèm phiên tính sẵn → app không gọi `resolveSession` sau đăng nhập iPhone. Đừng nhét dữ liệu lớn vào
+  `users/{uid}.settings` (`setDoc(merge)` giữ khoá mãi).
 - 🔵 **Lỗi tải mảnh code (2026-10-20):** tự tải lại khi lỗi chunk PHẢI qua `components/shared/ui/taiLaiKhiLoiChunk.ts` (chờ 800 ms, bỏ
   qua khi trang đang rời đi) — CẤM `location.reload()` trần trong đường lỗi chunk: WebKit huỷ `import()` dở dang lúc điều hướng, tải lại
   khi đó giành mất lượt chuyển trang của người dùng (CI WebKit "Frame load interrupted").

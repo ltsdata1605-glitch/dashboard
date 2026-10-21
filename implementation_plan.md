@@ -8887,3 +8887,21 @@ Tái hiện bằng Playwright giả iPhone + chặn treo `apis.google.com`: tran
     thoại qua harness, lịch Phân ca có dữ liệu — >23.000 phần tử, 0 lệch (chỗ lệch ban đầu ở Phân tích iPhone là 1 bên còn khung chờ — đo
     lại chờ 25 s: 0). (3) `npm run check`; e2e 67/67.
   - Công cụ (scratchpad, không commit): `bo-goc.cjs` (`phan-tich` / `doi` / `so-sanh` với `GOC=<ref>`), `go-rounded-chet.cjs`.
+
+### Đăng nhập: gộp kiểm tra quyền vào lượt nhận phiên + tài liệu users/{uid} 1 MB (2026-10-21)
+
+**Đo (máy chủ Singapore, log `[giaiQuyetPhien]`):** `resolveSession` mất 2,2–5,8 s — gần hết là ĐỌC `users/{uid}` (msDoc 2.200–5.200 ms):
+tài liệu gần 1 MB vì `settings` còn sót 5–7 khoá `khoDataCache_*` (bản sao dữ liệu Kho của app bản cũ; bản hiện tại không đẩy/đọc
+nữa nhưng `setDoc(merge)` giữ mãi). Đây cũng là gốc của lần tràn bộ nhớ sáng 21/10. Điện thoại cũng tải nguyên khối lúc đăng nhập.
+
+**Sửa:**
+1. `giaiQuyetPhien()` (lõi tách từ resolveSession, functions/src/session.ts): đọc 5 trường bằng `db.getAll(ref, { fieldMask })`; bỏ
+   `getUser + setCustomUserClaims` khi claims trong ID token người gọi ĐÃ trùng claims cần cấp (hạ quyền/hết hạn thì token cũ khác →
+   vẫn ghi; test `audit-gd1a-claims`).
+2. `pwaHandoffStore` chạy `giaiQuyetPhien` SONG SONG với lưu phiên, cất `profile`; `pwaHandoffClaim` trả kèm `uid` + `profile`. App cất
+   (globalThis, < 2 phút, đúng uid) trước `signInWithCredential` → `resolveSession(uid)` dùng luôn, KHÔNG gọi máy chủ (test
+   `dang-nhap-ho-so-tinh-san`: đúng uid → 0 lượt; uid khác → 1 lượt). Claims đặt trước khi đăng nhập nên token mới mang sẵn quyền.
+3. `AuthContext` (bước đọc settings chạy nền): xoá `settings.khoDataCache_*` / `khoDataAppliedSnapshot::*` khỏi hồ sơ cloud.
+
+**Kết quả đo (đã ấm):** resolveSession 3,3 s → 0,5 s; gửi phiên 4,6 s → 1,5 s; đọc tài liệu trên máy chủ 2.200–5.200 ms → 40–100 ms;
+app sau khi về bớt hẳn 1 lượt gọi máy chủ.

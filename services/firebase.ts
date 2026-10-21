@@ -315,15 +315,35 @@ export const claimPwaHandoff = (retries = 3): Promise<boolean> => {
     return claimInFlight;
 };
 
+interface KetQuaNhanPhien {
+    ready: boolean;
+    idToken?: string;
+    accessToken?: string | null;
+    uid?: string;
+    /** Phiên (quyền/Kho/claims) máy chủ tính sẵn lúc pwaHandoffStore — cùng kiểu kết quả resolveSession. */
+    profile?: Record<string, unknown> | null;
+}
+
+// Trên globalThis (không phải biến module): bundler từng tách module thành 2 bản (contexts/AuthContext.tsx).
+const G_HO_SO = globalThis as unknown as { __ycxHoSoDaTinhSan?: { uid: string; profile: Record<string, unknown>; at: number } };
+const cat_hoSoDaTinhSan = (uid: string, profile: Record<string, unknown>) => {
+    G_HO_SO.__ycxHoSoDaTinhSan = { uid, profile, at: Date.now() };
+};
+/** Lấy (1 lần) phiên máy chủ tính sẵn cho ĐÚNG tài khoản này, còn mới (< 2 phút). Không có → null (gọi resolveSession như thường). */
+export const layHoSoDaTinhSan = (uid: string): Record<string, unknown> | null => {
+    const v = G_HO_SO.__ycxHoSoDaTinhSan;
+    delete G_HO_SO.__ycxHoSoDaTinhSan;
+    return v && v.uid === uid && Date.now() - v.at < 120_000 ? v.profile : null;
+};
+
 const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
     const verifier = readPendingHandoff();
     if (!verifier) return false;
 
     for (let attempt = 0; attempt < retries; attempt++) {
-        let data: { ready: boolean; idToken?: string; accessToken?: string | null } | null = null;
+        let data: KetQuaNhanPhien | null = null;
         try {
-            const res = await httpsCallable<{ verifier: string }, { ready: boolean; idToken?: string; accessToken?: string | null }>(
-                functions, 'pwaHandoffClaim')({ verifier });
+            const res = await httpsCallable<{ verifier: string }, KetQuaNhanPhien>(functions, 'pwaHandoffClaim')({ verifier });
             data = res.data;
         } catch (err) {
             // Phiên đã quá 5 phút trên máy chủ: thử lại vô ích, báo để người dùng bấm lại.
@@ -337,6 +357,9 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
         if (data?.ready && data.idToken) {
             // Máy chủ đã xoá phiên khi trả về (dùng 1 lần) → không thử lại được nữa, phải báo lỗi rõ.
             clearPendingPwaHandoff();
+            // Phiên máy chủ đã tính sẵn lúc trang đăng nhập gửi về → cất lại TRƯỚC khi đăng nhập (onAuthStateChanged chạy ngay
+            // trong signInWithCredential) để AuthContext khỏi gọi resolveSession — bớt 1 lượt gọi máy chủ (2026-10-21).
+            if (data.uid && data.profile) cat_hoSoDaTinhSan(data.uid, data.profile);
             try {
                 await signInWithCredential(auth, GoogleAuthProvider.credential(data.idToken, data.accessToken ?? undefined));
             } catch (err) {

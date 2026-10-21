@@ -1,5 +1,5 @@
 import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase';
+import { functions, layHoSoDaTinhSan } from './firebase';
 
 export type UserRole = 'admin' | 'manager' | 'employee' | 'pending';
 export type UserStatus = 'pending' | 'approved' | 'rejected' | 'new' | 'expired';
@@ -37,7 +37,12 @@ const requestAccessFn = httpsCallable<RequestAccessInput, RequestAccessResult>(f
 // Gọi Cloud Function resolveSession (functions/src/session.ts) — thay cho việc
 // client tự đọc/ghi field role/status/departmentId/expiresAt trực tiếp vào
 // Firestore. Phải gọi ngay sau khi Firebase Auth xác nhận đăng nhập.
-export const resolveSession = async (): Promise<SessionProfile> => {
+//
+// `uid`: vừa đăng nhập iPhone qua trang auth.dashboard.pro.vn thì máy chủ đã tính sẵn phiên lúc trang đó gửi phiên về
+// (functions/src/pwaHandoff.ts) — dùng luôn, khỏi gọi máy chủ thêm 1 lượt (2026-10-21). Chỉ dùng cho ĐÚNG uid đó, 1 lần.
+export const resolveSession = async (uid?: string): Promise<SessionProfile> => {
+    const san = uid ? layHoSoDaTinhSan(uid) : null;
+    if (san && typeof san.role === 'string' && typeof san.status === 'string') return san as unknown as SessionProfile;
     const result = await resolveSessionFn({});
     return result.data;
 };

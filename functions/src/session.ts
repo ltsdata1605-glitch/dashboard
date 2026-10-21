@@ -14,7 +14,7 @@ const SUPER_ADMIN_EMAIL = 'lts.truongson@gmail.com';
 type Role = 'admin' | 'manager' | 'employee' | 'pending';
 type Status = 'pending' | 'approved' | 'rejected' | 'new' | 'expired';
 
-interface SessionProfile {
+export interface SessionProfile {
   role: Role;
   status: Status;
   departmentId: string | null;
@@ -26,28 +26,22 @@ interface SessionProfile {
   claimDepartmentId: string | null;
 }
 
-// Thay thế toàn bộ khối đọc/ghi Firestore trực tiếp trong
-// contexts/AuthContext.tsx (onAuthStateChanged). Client gọi hàm này 1 lần
-// sau khi Firebase Auth xác nhận đăng nhập, rồi force-refresh ID token để
-// nhận custom claims mới (user.getIdToken(true)).
-//
-// minInstances: 1 — hàm này chạy trên MỌI lần mở app (chặn màn hình loading cho tới khi
-// xong), nên cold-start (Cloud Functions v2 mặc định scale-to-zero khi không có traffic,
-// có thể mất thêm 1-5s khởi động instance mới) ảnh hưởng trực tiếp tới cảm nhận "lúc nhanh
-// lúc chậm". Giữ 1 instance luôn chạy sẵn để loại bỏ hẳn cold-start cho hàm quan trọng nhất
-// trong đường găng khởi động (implementation_plan.md mục 40) — đánh đổi lấy chi phí Cloud
-// Run chạy liên tục, đã được người dùng đồng ý.
-// memory 512MiB (2026-10-21): 256 MiB bị tràn 2 lần (276/260 MiB) trong đợt gọi dồn 4 phút sáng 21/10 — sập giữa chừng
-// là ai đang đăng nhập lúc đó nhận lỗi. Đây là hàm của MỌI lượt mở app nên đáng giữ dư.
-export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1, memory: '512MiB' }, async (request) => {
-  const uid = request.auth?.uid;
-  const email = request.auth?.token.email ?? null;
-  if (!uid) {
-    throw new HttpsError('unauthenticated', 'Cần đăng nhập trước khi gọi resolveSession.');
-  }
-
+/**
+ * Lõi của resolveSession — tách ra (2026-10-21) để `pwaHandoffStore` (đăng nhập iPhone qua auth.dashboard.pro.vn) chạy SẴN lúc
+ * trang đăng nhập gửi phiên, trả kèm qua `pwaHandoffClaim` → app khỏi gọi resolveSession sau khi vào (bớt 1 lượt gọi máy chủ
+ * nối tiếp trên đường găng). Claims được đặt TRƯỚC khi app signInWithCredential → ID token mới mang sẵn claims đúng.
+ */
+export async function giaiQuyetPhien(
+  uid: string,
+  token: { email?: string | null; name?: string | null; picture?: string | null; role?: unknown; departmentId?: unknown },
+): Promise<SessionProfile> {
+  const t0 = Date.now();
+  const email = token.email ?? null;
   const userRef = db.collection('users').doc(uid);
-  const snap = await userRef.get();
+  // CHỈ đọc 5 trường cần (fieldMask) — tài liệu users/{uid} có thể gần 1 MB vì `settings` còn sót bản sao dữ liệu Kho
+  // (khoDataCache_*) của bản app cũ: đọc nguyên khối mất 2–5 s mỗi lượt đăng nhập và từng làm tràn bộ nhớ (đo 2026-10-21).
+  const [snap] = await db.getAll(userRef, { fieldMask: ['role', 'status', 'departmentId', 'employeeName', 'expiresAt'] });
+  const tDoc = Date.now() - t0;
 
   let role: Role;
   let status: Status;
@@ -65,8 +59,8 @@ export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1, 
     writePromise = userRef.set({
       uid,
       email,
-      displayName: request.auth?.token.name ?? null,
-      photoURL: request.auth?.token.picture ?? null,
+      displayName: token.name ?? null,
+      photoURL: token.picture ?? null,
       role,
       status,
       departmentId: departmentId ?? '',
@@ -113,7 +107,11 @@ export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1, 
   // đường găng mà CLIENT phải chờ trước khi thấy dashboard (resolveSession chạy trên MỌI
   // lần mở app, xem implementation_plan.md mục 40).
   const claims = effectiveRootClaims(role, status, departmentId);
-  await Promise.all([writePromise, mergeCustomClaims(uid, claims)]);
+  // Quyền trong ID token người gọi (vừa ký từ bản ghi Auth) ĐÃ đúng → khỏi getUser + setCustomUserClaims (2 lượt gọi máy chủ
+  // Auth toàn cầu, phần chậm nhất của hàm — đo 2026-10-21). Chỉ bỏ qua khi TRÙNG: bị hạ quyền/hết hạn thì token cũ khác → vẫn ghi.
+  const claimsDaDung = token.role === claims.role && ((token.departmentId as string | null | undefined) ?? null) === claims.departmentId;
+  await Promise.all([writePromise, claimsDaDung ? Promise.resolve() : mergeCustomClaims(uid, claims)]);
+  console.log('[giaiQuyetPhien]', JSON.stringify({ msDoc: tDoc, msTong: Date.now() - t0, boQuaClaims: claimsDaDung }));
 
   const profile: SessionProfile = {
     role,
@@ -125,6 +123,27 @@ export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1, 
     claimDepartmentId: claims.departmentId,
   };
   return profile;
+}
+
+// Thay thế toàn bộ khối đọc/ghi Firestore trực tiếp trong
+// contexts/AuthContext.tsx (onAuthStateChanged). Client gọi hàm này 1 lần
+// sau khi Firebase Auth xác nhận đăng nhập, rồi force-refresh ID token để
+// nhận custom claims mới (user.getIdToken(true)).
+//
+// minInstances: 1 — hàm này chạy trên MỌI lần mở app (chặn màn hình loading cho tới khi
+// xong), nên cold-start (Cloud Functions v2 mặc định scale-to-zero khi không có traffic,
+// có thể mất thêm 1-5s khởi động instance mới) ảnh hưởng trực tiếp tới cảm nhận "lúc nhanh
+// lúc chậm". Giữ 1 instance luôn chạy sẵn để loại bỏ hẳn cold-start cho hàm quan trọng nhất
+// trong đường găng khởi động (implementation_plan.md mục 40) — đánh đổi lấy chi phí Cloud
+// Run chạy liên tục, đã được người dùng đồng ý.
+// memory 512MiB (2026-10-21): 256 MiB bị tràn 2 lần (276/260 MiB) trong đợt gọi dồn 4 phút sáng 21/10 — sập giữa chừng
+// là ai đang đăng nhập lúc đó nhận lỗi. Đây là hàm của MỌI lượt mở app nên đáng giữ dư.
+export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1, memory: '512MiB' }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError('unauthenticated', 'Cần đăng nhập trước khi gọi resolveSession.');
+  }
+  return giaiQuyetPhien(uid, request.auth!.token);
 });
 
 import { getApprovalConfigFromDb } from './approvalSettings';

@@ -24,7 +24,11 @@ const docApi = (store: Map<string, Doc>, id: string) => ({
 const emptyQuery: any = { where: () => emptyQuery, limit: () => emptyQuery, get: async () => ({ empty: true, docs: [] }) };
 
 vi.mock('../../functions/src/firebaseAdmin', () => {
-    const mk = (store: Map<string, Doc>) => ({ collection: () => ({ doc: (id: string) => docApi(store, id), where: () => emptyQuery }) });
+    const mk = (store: Map<string, Doc>) => ({
+        collection: () => ({ doc: (id: string) => docApi(store, id), where: () => emptyQuery }),
+        // resolveSession chỉ đọc vài trường qua getAll(ref, { fieldMask }) (2026-10-21) — bản giả trả nguyên tài liệu.
+        getAll: async (ref: { get: () => Promise<unknown> }) => [await ref.get()],
+    });
     return {
         db: mk(users),
         stickerDb: mk(stickerUsers),
@@ -85,5 +89,24 @@ describe('S05 — 2 app không xoá claims của nhau', () => {
 
         await run(stickerResolveSession, asUser('dual'));
         expect(claims.get('dual')).toEqual({ stickerRole: 'admin', stickerStoreId: 'K1', role: 'manager', departmentId: '910' });
+    });
+});
+
+describe('Bỏ ghi claims khi token đã đúng (2026-10-21) — không được nới quyền', () => {
+    it('token cũ còn manager + Kho nhưng hồ sơ đã hết hạn → VẪN ghi claims về pending', async () => {
+        users.set('u-het-han', { role: 'manager', status: 'expired', departmentId: '910' });
+        claims.set('u-het-han', { role: 'manager', departmentId: '910' });
+        const p = await run(resolveSession, asUser('u-het-han', { role: 'manager', departmentId: '910' }));
+        expect(p.claimRole).toBe('pending');
+        expect(claims.get('u-het-han')).toMatchObject({ role: 'pending', departmentId: null });
+    });
+    it('token đã mang đúng claims → không gọi setCustomUserClaims', async () => {
+        users.set('u-dung', { role: 'manager', status: 'approved', departmentId: '910' });
+        claims.set('u-dung', { role: 'manager', departmentId: '910', stickerRole: 'staff' });
+        const truoc = JSON.stringify(claims.get('u-dung'));
+        claims.set('u-dung', JSON.parse(truoc));
+        const ref = claims.get('u-dung');
+        await run(resolveSession, asUser('u-dung', { role: 'manager', departmentId: '910' }));
+        expect(claims.get('u-dung')).toBe(ref); // cùng object = không ghi lại
     });
 });

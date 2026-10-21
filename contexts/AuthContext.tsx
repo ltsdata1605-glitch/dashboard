@@ -156,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // Toàn bộ logic phân quyền (role/status/departmentId/expiresAt, cấp Super
                     // Admin, tự demote khi hết hạn) giờ chạy ở server — functions/src/session.ts.
                     // Client không còn tự updateDoc() field nhạy cảm (bị firestore.rules chặn).
-                    const profile = await resolveSession();
+                    const profile = await resolveSession(currentUser.uid);
                     // Chỉ force-refresh ID token khi claims HIỆN TẠI (role/departmentId) khác với
                     // profile vừa nhận — getIdTokenResult(false) đọc token đã cache cục bộ (KHÔNG
                     // gọi mạng nếu token còn hạn, thường 1 giờ), rẻ hơn hẳn getIdToken(true) (luôn
@@ -195,10 +195,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // đây chỉ cộng thêm 1 round-trip Firestore không cần thiết vào thời gian
                     // tới lúc thấy dashboard (đặc biệt nặng trên mobile mạng yếu). Chạy nền,
                     // tự merge khi xong, không chặn setIsLoading(false) ở finally bên dưới.
-                    import('firebase/firestore').then(async ({ doc, getDoc }) => {
+                    import('firebase/firestore').then(async ({ doc, getDoc, updateDoc, deleteField, FieldPath }) => {
                         try {
                             const settingsSnap = await getDoc(doc(db, 'users', currentUser.uid));
                             const settings = settingsSnap.exists() ? settingsSnap.data().settings : undefined;
+                            // Dọn bản sao dữ liệu Kho bản app CŨ còn sót trong users/{uid}.settings (2026-10-21): không còn ai đọc (lọc
+                            // bỏ ngay dưới đây) nhưng setDoc(merge) giữ chúng mãi → tài liệu gần 1 MB, mọi lượt đăng nhập (máy chủ lẫn
+                            // điện thoại) phải tải nguyên khối. Dữ liệu Kho thật nằm ở IndexedDB + đồng bộ Kho riêng, không ở đây.
+                            const rac = settings ? Object.keys(settings).filter(k => k.startsWith('khoDataCache_') || k.startsWith('khoDataAppliedSnapshot::')) : [];
+                            if (rac.length) {
+                                console.info(`[Auth] Dọn ${rac.length} khoá dữ liệu Kho cũ khỏi hồ sơ cloud…`);
+                                const cap: unknown[] = [];
+                                for (const k of rac) cap.push(new FieldPath('settings', k), deleteField());
+                                (updateDoc as (...a: unknown[]) => Promise<void>)(doc(db, 'users', currentUser.uid), ...cap)
+                                    .then(() => console.info(`[Auth] Đã dọn ${rac.length} khoá dữ liệu Kho cũ khỏi hồ sơ cloud.`))
+                                    .catch(e => console.warn('[Auth] Không dọn được khoá dữ liệu Kho cũ:', e));
+                            }
                             // Chỉ các khoá đường cũ còn quản — cấu hình nhẹ/nặng đã có đường mới so mốc từng khoá;
                             // ghi đè nguyên bộ ở đây từng làm bản cũ của máy khác đè bản mới (2026-10-14).
                             const conLai = settings ? locCaiDatDongBoCu(settings) : {};
