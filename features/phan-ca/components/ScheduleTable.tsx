@@ -5,6 +5,7 @@ import {
     calculateTotalHours, calculateSpecialHours, calculateNormalHours,
     calculateGhHours, calculateKhoHours, calculateTnHours
 } from '../utils/scheduleUtils';
+import { weekThemes, splitCalendarWeeks } from '../utils/weekUtils';
 import { ScheduleRow } from './ScheduleRow';
 
 interface ScheduleTableProps {
@@ -67,31 +68,14 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   // Cờ kiểm tra nếu đang xuất từng nhân viên (chỉ có 1 NV trong danh sách)
   const isIndividualExport = staffList.length === 1;
 
-  // Màu đầu bảng theo tuần — chỉ trong bảng màu chuẩn (GĐ10 b3): teal → emerald tầng đậm (tuần 1 vốn đã gần như trùng tuần 5),
-  // fuchsia → indigo (giữ sắc tím, KHÔNG dùng rose vì cột T7/CN đã tô hồng), yellow → amber.
-  const weekThemes = [
-    { bg: '#ecfdf5', text: '#065f46', border: '#d1fae5' }, // Emerald (tầng đậm)
-    { bg: '#f0f9ff', text: '#0369a1', border: '#e0f2fe' }, // Sky
-    { bg: '#eef2ff', text: '#4338ca', border: '#e0e7ff' }, // Indigo
-    { bg: '#fffbeb', text: '#b45309', border: '#fde68a' }, // Amber
-    { bg: '#ecfdf5', text: '#047857', border: '#d1fae5' }, // Emerald
-  ];
+  // Tuần theo lịch Thứ 2 → CN + màu từng tuần: utils/weekUtils (dùng chung với "Xuất theo tuần" và file Google Sheet).
+  const calendarWeeks = useMemo(() => splitCalendarWeeks(year, month, startDay, duration), [year, month, startDay, duration]);
 
   const dayToWeekMap = useMemo(() => {
     const map: { [dayIndex: number]: number } = {};
-    let dayCursor = 1;
-    let weekNumber = 1;
-    while (dayCursor <= duration) {
-        const date = new Date(year, month - 1, startDay + dayCursor - 1);
-        const dayOfWeek = (date.getDay() + 6) % 7; // 0=Mon
-        const daysRemainingInWeek = 7 - dayOfWeek;
-        const daysInThisWeek = Math.min(daysRemainingInWeek, duration - dayCursor + 1);
-        for(let i=0; i < daysInThisWeek; i++) map[dayCursor + i] = weekNumber;
-        dayCursor += daysInThisWeek;
-        weekNumber++;
-    }
+    calendarWeeks.forEach((w, i) => { for (let d = w.start; d <= w.end; d++) map[d] = i + 1; });
     return map;
-  }, [year, month, startDay, duration]);
+  }, [calendarWeeks]);
 
   const renderBody = () => {
     const rows: React.ReactNode[] = [];
@@ -181,23 +165,16 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
   const weekHeaders = useMemo(() => {
     const headers = [];
-    let day = 1;
-    while (day <= duration) {
-        const date = new Date(year, month - 1, startDay + day - 1);
-        const dow = (date.getDay() + 6) % 7;
-        const len = Math.min(7 - dow, duration - day + 1);
-        const weekNum = dayToWeekMap[day] || 1;
-        const theme = weekThemes[(weekNum - 1) % weekThemes.length];
-        
-        if (!weekRange || (day === weekRange.start)) {
-            const headerLen = weekRange ? (weekRange.end - weekRange.start + 1) : len;
-            headers.push(<th key={day} colSpan={headerLen} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b-2 border-r-2 border-slate-400 text-base py-3 font-black uppercase tracking-widest shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tuần {weekNum}</th>);
+    for (const [i, w] of calendarWeeks.entries()) {
+        const weekNum = i + 1;
+        const theme = weekThemes[i % weekThemes.length];
+        if (!weekRange || (w.start === weekRange.start)) {
+            const headerLen = weekRange ? (weekRange.end - weekRange.start + 1) : (w.end - w.start + 1);
+            headers.push(<th key={w.start} colSpan={headerLen} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b-2 border-r-2 border-slate-400 text-base py-3 font-black uppercase tracking-widest shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tuần {weekNum}</th>);
         }
-        
-        day += len;
     }
     return headers;
-  }, [duration, year, month, startDay, dayToWeekMap, weekRange]);
+  }, [calendarWeeks, weekRange]);
 
   return (
     <div className={`overflow-x-auto custom-scroll rounded-none ${isIndividualExport ? 'flex justify-center' : ''}`}>
@@ -230,9 +207,8 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 const date = new Date(year, month - 1, startDay + i);
                 const isWeekendDay = date.getDay() === 0 || date.getDay() === 6;
                 
-                // Get the theme for this specific day based on the week it belongs to
-                const day = startDay + i;
-                const weekNum = dayToWeekMap[day] || 1;
+                // Màu tuần của ngày này — khoá là ngày thứ mấy trong kỳ (trước tra bằng startDay + i: "Bắt đầu" ≠ 1 là lệch tuần)
+                const weekNum = dayToWeekMap[dayIndex] || 1;
                 const theme = weekThemes[(weekNum - 1) % weekThemes.length];
                 
                 return (

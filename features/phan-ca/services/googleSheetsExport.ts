@@ -1,5 +1,6 @@
 import { getErrorMessage } from '../../../utils/dataUtils';
 import { calculateSpecialHours, calculateNormalHours, calculateTotalHours } from '../utils/scheduleUtils';
+import { weekThemes, splitCalendarWeeks } from '../utils/weekUtils';
 import { loginWithGoogleForceConsent } from './firebase';
 import type { GoogleSheetsRequest, RgbColor } from './googleSheetsService';
 import type { StaffMember } from '../types';
@@ -31,15 +32,16 @@ export async function exportScheduleToGoogleSheet({
         const { exportToGoogleSheet } = await import('./googleSheetsService');
         const sortedList = getSortedStaffForExport();
         const [yearVal, monthVal] = monthYear.split('-').map(Number);
+        // Tuần theo lịch Thứ 2 → CN, y như đầu bảng trong app (trước 2026-10-21 chia cứng 7 ngày: "TUẦN 1" của Sheet ≠ "Tuần 1" của app)
+        const weeks = splitCalendarWeeks(yearVal, monthVal, startDay, duration);
         // --- Build Rows ---
         const rows: (string | number)[][] = [];
         // Row 0: Top Headers
         const row0 = ['STT', 'HỌ VÀ TÊN', 'GIỜ CÔNG', '', '', 'SỐ NGÀY SBH', '', '', 'SỐ LẦN', ''];
-        for (let w = 0; w < Math.ceil(duration / 7); w++) {
-             row0.push(`TUẦN ${w+1}`);
-             for (let j = 0; j < 6; j++) row0.push('');
-        }
-        row0.length = 10 + duration; // Cut off to exact duration
+        weeks.forEach((w, i) => {
+             row0.push(`TUẦN ${i + 1}`);
+             for (let d = w.start; d < w.end; d++) row0.push('');
+        });
         rows.push(row0);
         // Row 1: Sub Headers
         const row1 = ['', '', 'SBH', 'TV', 'TỔNG', 'GH', 'KH', 'TN', 'ĐỔI', 'OFF'];
@@ -103,11 +105,10 @@ export async function exportScheduleToGoogleSheet({
                 { startRowIndex: 0, endRowIndex: 1, startColumnIndex: 5, endColumnIndex: 8 }, // Ngay sbh
                 { startRowIndex: 0, endRowIndex: 1, startColumnIndex: 8, endColumnIndex: 10 }, // So lan
             ];
-            for (let w = 0; w < Math.ceil(duration / 7); w++) {
-                const s = 10 + w * 7;
-                const e = Math.min(s + 7, 10 + duration);
-                if (e > s) merges.push({ startRowIndex: 0, endRowIndex: 1, startColumnIndex: s, endColumnIndex: e });
-            }
+            // Tuần (cột ngày d là 9 + d) — tuần chỉ 1 ngày thì không gộp
+            weeks.forEach(w => {
+                if (w.end > w.start) merges.push({ startRowIndex: 0, endRowIndex: 1, startColumnIndex: 9 + w.start, endColumnIndex: 10 + w.end });
+            });
             merges.forEach(m => {
                 reqs.push({
                     mergeCells: { range: { sheetId, ...m }, mergeType: "MERGE_ALL" }
@@ -128,21 +129,17 @@ export async function exportScheduleToGoogleSheet({
                     fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment,backgroundColorStyle)'
                 }
             });
-            // Header block group colors
-            const headerBlockFormats = [
-                { sCol: 2, eCol: 5, bg: { red: 240/255, green: 249/255, blue: 255/255 }, fg: { red: 7/255, green: 89/255, blue: 133/255 } }, // Gio cong (sky)
-                { sCol: 5, eCol: 8, bg: { red: 253/255, green: 244/255, blue: 255/255 }, fg: { red: 134/255, green: 25/255, blue: 143/255 } }, // Ngay SBH (fuchsia)
-                { sCol: 8, eCol: 10, bg: { red: 255/255, green: 247/255, blue: 237/255 }, fg: { red: 154/255, green: 52/255, blue: 18/255 } }, // So lan (orange)
-                { sCol: 10, eCol: 10 + duration, bg: { red: 240/255, green: 253/255, blue: 250/255 }, fg: { red: 17/255, green: 94/255, blue: 89/255 } }, // Tuan (teal)
-            ];
-            headerBlockFormats.forEach(h => {
+            // Header colors — Y NHƯ đầu bảng lịch trong app (2026-10-21; test tests/unit/phan-ca-google-sheet-mau-o.test.ts so từng ô với
+            // lớp bg-*/text-* của ô cùng tên trong ScheduleTable + weekThemes). Trước: Số ngày SBH fuchsia, Số lần orange, Tuần một màu teal.
+            const rgb = (hex: string): RgbColor => ({ red: parseInt(hex.slice(1, 3), 16) / 255, green: parseInt(hex.slice(3, 5), 16) / 255, blue: parseInt(hex.slice(5, 7), 16) / 255 });
+            const headerCell = (startRowIndex: number, endRowIndex: number, startColumnIndex: number, endColumnIndex: number, bg: string, fg: string) => {
                 reqs.push({
                     repeatCell: {
-                        range: { sheetId, startRowIndex: 0, endRowIndex: 2, startColumnIndex: h.sCol, endColumnIndex: h.eCol },
+                        range: { sheetId, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex },
                         cell: {
                             userEnteredFormat: {
-                                backgroundColorStyle: { rgbColor: h.bg },
-                                textFormat: { bold: true, fontSize: 10, foregroundColorStyle: { rgbColor: h.fg } },
+                                backgroundColorStyle: { rgbColor: rgb(bg) },
+                                textFormat: { bold: true, fontSize: 10, foregroundColorStyle: { rgbColor: rgb(fg) } },
                                 horizontalAlignment: 'CENTER',
                                 verticalAlignment: 'MIDDLE'
                             }
@@ -150,6 +147,21 @@ export async function exportScheduleToGoogleSheet({
                         fields: 'userEnteredFormat(backgroundColorStyle,textFormat,horizontalAlignment,verticalAlignment)'
                     }
                 });
+            };
+            headerCell(0, 2, 0, 2, '#ecfdf5', '#047857'); // STT, Họ và tên: emerald-50 · emerald-700
+            headerCell(0, 2, 2, 5, '#f0f9ff', '#0369a1'); // Giờ công + SBH, TV: sky-50 · sky-700
+            headerCell(1, 2, 4, 5, '#f0f9ff', '#075985'); //   TỔNG: sky-800
+            headerCell(0, 2, 5, 8, '#ecfdf5', '#047857'); // Số ngày SBH + GH, KH: emerald-50 · emerald-700
+            headerCell(1, 2, 7, 8, '#ecfdf5', '#065f46'); //   TN: emerald-800
+            headerCell(0, 2, 8, 10, '#fffbeb', '#b45309'); // Số lần + ĐỔI, OFF: amber-50 · amber-700
+            weeks.forEach((w, i) => {
+                const theme = weekThemes[i % weekThemes.length];
+                headerCell(0, 1, 9 + w.start, 10 + w.end, theme.bg, theme.text); // TUẦN n
+                for (let d = w.start; d <= w.end; d++) {
+                    const dow = new Date(yearVal, monthVal - 1, startDay + d - 1).getDay();
+                    const weekend = dow === 0 || dow === 6;
+                    headerCell(1, 2, 9 + d, 10 + d, weekend ? '#fff1f2' : theme.bg, weekend ? '#be123c' : theme.text); // T7/CN: rose-50 · rose-700
+                }
             });
             // (Frozen properties moved to the top)
             // Column widths
@@ -239,19 +251,6 @@ export async function exportScheduleToGoogleSheet({
             addCondRule("TN", { red: 224/255, green: 242/255, blue: 254/255 }, { red: 7/255, green: 89/255, blue: 133/255 });
             // OFF: rose #ffe4e6 (255, 228, 230) -> fg #9f1239 (159, 18, 57)
             addCondRule("OFF", { red: 255/255, green: 228/255, blue: 230/255 }, { red: 159/255, green: 18/255, blue: 57/255 });
-            // Sunday header text color
-            for (let d = 1; d <= duration; d++) {
-                 const date = new Date(yearVal, monthVal - 1, startDay + d - 1);
-                 if (date.getDay() === 0) { // Sunday
-                     reqs.push({
-                         repeatCell: {
-                             range: { sheetId, startRowIndex: 1, endRowIndex: 2, startColumnIndex: 9 + d, endColumnIndex: 10 + d },
-                             cell: { userEnteredFormat: { textFormat: { foregroundColorStyle: { rgbColor: { red: 225/255, green: 29/255, blue: 72/255 } }, bold: true } } },
-                             fields: 'userEnteredFormat.textFormat'
-                         }
-                     });
-                 }
-            }
             return reqs;
         };
         viec.buoc(`Đang ghi ${sortedList.length} nhân viên…`);

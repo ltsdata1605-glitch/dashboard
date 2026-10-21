@@ -5,6 +5,7 @@ import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
 import { startExportJob } from '../../components/shared/export';
 import { recalculateStatsForStaff, calculateTotalHours, calculateSpecialHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
 import { parseStaffFromExcelBuffer } from './utils/excelImport';
+import { splitCalendarWeeks } from './utils/weekUtils';
 import * as idb from './db/idb';
 import Controls from './components/Controls';
 import Legend from './components/Legend';
@@ -290,15 +291,7 @@ const App: React.FC = () => {
     setIsExportingImage(true);
     setStaffListForExport(list);
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
-    const weeks: { start: number, end: number }[] = [];
-    let day = 1;
-    while (day <= duration) {
-        const date = new Date(yearVal, monthVal - 1, startDay + day - 1);
-        const dow = (date.getDay() + 6) % 7; 
-        const len = Math.min(7 - dow, duration - day + 1);
-        weeks.push({ start: day, end: day + len - 1 });
-        day += len;
-    }
+    const weeks = splitCalendarWeeks(yearVal, monthVal, startDay, duration);
     // Bảng tiến trình chung (components/shared/export): thanh %, Huỷ, tổng kết tuần lỗi
     const job = startExportJob({ title: 'Xuất lịch theo tuần', total: weeks.length });
     try {

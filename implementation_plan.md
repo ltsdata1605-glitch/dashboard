@@ -8928,3 +8928,36 @@ GH/KH/TN/OFF trong `phanca.css`, đối chiếu HỌ màu với luật tô của
 
 **Còn lệch, chưa đổi (ngoài phạm vi câu hỏi):** dải tiêu đề Sheet — "Số ngày SBH" fuchsia (app emerald), "Số lần" orange (app amber),
 "Tuần" teal (app tô theo từng tuần: emerald đậm / sky / indigo / amber / emerald). "Giờ công" sky đã khớp.
+
+### Google Sheet Phân ca: đầu bảng khớp app — 3 dải + tuần theo lịch (2026-10-21, chủ dự án "Muốn")
+
+**Hiện trạng (đo bằng ảnh app Dùng thử + ảnh dựng lại Sheet từ đúng lệnh định dạng gửi Google):**
+- Dải "Số ngày SBH" Sheet fuchsia (app emerald) · "Số lần" orange (app amber) · "Tuần" 1 màu teal (app mỗi tuần một màu `weekThemes`,
+  ô ngày T7/CN hồng). "Giờ công" cùng họ sky nhưng chữ sky-800 (app sky-700, riêng TỔNG sky-800). STT/Họ tên: Sheet nền slate-50 chữ đen,
+  app khai `bg-emerald-50 text-emerald-700` (ảnh xuất lịch ra đúng vậy; riêng trên màn hình `phanca.css .sticky-col` phủ nền trắng).
+- **Tuần lệch ngày:** app chia tuần THEO LỊCH Thứ 2 → CN (tháng 10/2026: Tuần 1 = 01–04), Sheet chia cứng 7 ngày từ ngày bắt đầu (TUẦN 1 =
+  01–07) → tô màu từng tuần như app thì phải chia tuần như app trước.
+- **Lỗi app thấy khi đo:** hàng ô ngày ở đầu bảng tra tuần bằng `dayToWeekMap[startDay + i]` (khoá đúng là ngày thứ mấy trong kỳ, `i + 1`) →
+  "Bắt đầu" ≠ 1 thì ô ngày mang màu tuần khác tuần ghi phía trên (ảnh: Bắt đầu 15 → cột dưới "Tuần 1" màu tuần 3).
+
+**Sửa:**
+1. `features/phan-ca/utils/weekUtils.ts` (mới): `weekThemes` + `splitCalendarWeeks()` — 3 bản chép cách chia tuần (ScheduleTable ×2,
+   PhanCaView "Xuất theo tuần") về một chỗ; Sheet dùng chung → cùng tuần, cùng màu với app.
+2. `ScheduleTable.tsx`: dùng module chung; sửa khoá tra tuần của ô ngày (`dayIndex`).
+3. `googleSheetsExport.ts`: TUẦN n theo lịch (gộp ô chỉ khi tuần > 1 ngày); mỗi ô đầu bảng tô y màu ô đó trong app; bỏ vòng tô chữ CN.
+4. Test `tests/unit/phan-ca-google-sheet-mau-o.test.ts`: thêm bài đầu bảng — mô phỏng thứ tự lệnh định dạng, so từng ô với lớp màu
+   của ô cùng tên trong `ScheduleTable.tsx` + `weekThemes`; test `splitCalendarWeeks`.
+
+**Kết quả (21/10):**
+- Sheet: mọi ô đầu bảng y màu ô cùng tên trong app — STT/Họ tên emerald-50 · emerald-700 (theo lớp khai báo = màu ảnh xuất lịch), Giờ công
+  sky-50 · sky-700 (TỔNG sky-800), Số ngày SBH emerald-50 · emerald-700 (TN emerald-800), Số lần amber-50 · amber-700; TUẦN n chia Thứ 2 → CN,
+  ô tuần + ô ngày tô `weekThemes`, T7/CN rose-50 · rose-700. Ô ngày GH/KH/TN/OFF giữ như bản trước (cùng họ app, tầng 100/800).
+- App: hàng ô ngày tô đúng tuần khi "Bắt đầu" ≠ 1 (ảnh trước/sau, kỳ 15/10–13/11). "Bắt đầu" = 1 không đổi gì.
+- Đo: `tests/unit/phan-ca-google-sheet-mau-o.test.ts` 5 bài (3 kỳ: 10/2026 từ ngày 1 · từ ngày 15 vắt tháng · 11/2026 bắt đầu Chủ nhật → tuần 1
+  chỉ 1 ngày, không gộp ô) — chạy với `googleSheetsExport.ts` cũ: đỏ ngay ô STT. Ảnh dựng lại Sheet từ đúng lệnh định dạng (mô phỏng
+  merge / repeatCell theo mặt nạ fields / luật tô) trước–sau + ảnh đầu bảng app. E2E tạm (Dùng thử, kỳ từ 15/10): độ rộng tuần 4/7/7/7/5,
+  màu ô ngày = ô tuần phía trên, "Ảnh lịch theo tuần" ra đủ 5 ảnh, ảnh tuần 1 / tuần 3 đúng màu.
+- Ghi chú cho bài e2e xuất HÀNG LOẠT trên máy tính: bộ xuất ảnh chép từng ảnh vào clipboard sau khi tải; Chromium chạy test không cấp quyền
+  clipboard thì `navigator.clipboard.write` treo → job kẹt ở ảnh 1 (code cũ y hệt). Bài test phải `context.grantPermissions(['clipboard-read',
+  'clipboard-write'])`.
+- Chưa tạo được Sheet thật (cần đăng nhập Google của chủ dự án): cách kiểm — Phân ca → Xuất → Sheet, so đầu bảng với lịch trong app.
