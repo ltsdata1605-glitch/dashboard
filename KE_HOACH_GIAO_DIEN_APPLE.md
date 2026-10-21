@@ -470,6 +470,10 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
    - **Report BI — XONG 21/10** (22 nút + 19 ô → 0; giữ viên tròn "chuẩn Hình 2"; còn 3 thanh trượt `range` — chưa có thành phần chung). Toàn dự án 0 nút thô.
    - **`<button>` thô: cảnh báo → CHẶN — XONG 21/10** (ESLint `error`; `tests/unit/eslint-cam-nut-tho.test.ts` khoá — hạ về `warn` là đỏ).
 3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
+   - **Ngoài thẻ KPI — XONG 21/10** (127 chỗ / 63 file về cỡ gần nhất trong thang, giữ chiều cao dòng; `offScaleText` 198 → 71;
+     màn đăng nhập blue → sky, `nonSemanticColor` 26 → 24).
+   - **Thẻ KPI — CHỜ DUYỆT ẢNH** (71 cỡ chữ + 24 màu còn lại đều ở đây): đề xuất ở nhánh `claude/gd10-b3-the-kpi` — A: số chính 34px ·
+     B: thêm bậc 44px cho màn ≥ xl · hoặc giữ nguyên.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.
 
 ---

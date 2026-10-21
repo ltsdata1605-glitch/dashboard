@@ -80,7 +80,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                 className="w-full h-full rounded-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 flex items-center justify-center text-3xl font-bold uppercase">
+                            <div className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 flex items-center justify-center text-[28px] font-bold uppercase leading-9">
                                 {user?.email ? user.email[0] : '?'}
                             </div>
                         )}
@@ -89,7 +89,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                         </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 font-display text-center">
+                    <h2 className="text-[25px] font-bold text-slate-800 dark:text-white mb-2 font-display text-center leading-8">
                         {forceDeptUpdate ? 'Cập Nhật Mã Kho' : status === 'pending' ? 'Đang Chờ Phê Duyệt' : 'Đăng Ký Quyền Truy Cập'}
                     </h2>
                     

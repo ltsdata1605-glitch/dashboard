@@ -915,7 +915,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             ) : (
                                 <div className="space-y-8" ref={groupViewRef}>
                                     <div className="mb-4 text-center py-1.5 sm:py-2 px-4 bg-sky-600 shadow-sm">
-                                        <h3 className="text-lg sm:text-xl font-black uppercase text-white leading-tight drop-shadow-sm">
+                                        <h3 className="text-[17px] sm:text-xl font-black uppercase text-white leading-tight drop-shadow-sm">
                                             {exportTitleOverride || `NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`}
                                         </h3>
                                     </div>

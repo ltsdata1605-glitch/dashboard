@@ -83,7 +83,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
                         <AppIcon name="quick" size="xs" />
                     </div>
                     <div>
-                        <h2 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100">
+                        <h2 className="text-base sm:text-[17px] font-black text-slate-800 dark:text-slate-100 sm:leading-7">
                             So Sánh Trực Diện Hai Siêu Thị
                         </h2>
                         <p className="text-xs text-slate-500 dark:text-slate-400">

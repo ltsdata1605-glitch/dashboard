@@ -23,7 +23,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
             <div className="debug-panel-header">
                 <div className="flex items-center gap-3">
                     <AppIcon name="bug" size="lg" className="text-sky-500" />
-                    <h3 className="font-bold text-lg">Bảng Gỡ Lỗi Giao Diện</h3>
+                    <h3 className="font-bold text-[17px] leading-7">Bảng Gỡ Lỗi Giao Diện</h3>
                 </div>
                 <div className="flex items-center gap-4">
                     <Button

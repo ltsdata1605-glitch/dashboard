@@ -97,8 +97,8 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
             <div className="flex flex-row justify-between items-center gap-2 mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
-                        <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Top Nhân Viên</h3>
-                        <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
+                        <h3 className="text-sm lg:text-[17px] font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Top Nhân Viên</h3>
+                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export shrink-0">
@@ -166,7 +166,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                 {showHeader && (
                                     <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-slate-800/50 px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2">
                                         <span className="w-1 sm:w-1.5 h-3 sm:h-4 rounded-full flex-shrink-0" style={{background: '#3b82f6'}} />
-                                        <span className="text-[11px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest leading-none">
+                                        <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest leading-none">
                                             {dept} <span className="opacity-60 ml-1 sm:ml-2 font-medium bg-slate-200/50 dark:bg-slate-700 px-1.5 sm:px-2 py-0.5 rounded-full">{groupedSellers[dept].length} NS</span>
                                         </span>
                                     </div>
@@ -195,7 +195,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
                                                         <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
-                                                        <p className="font-bold text-sm sm:text-lg text-sky-700 dark:text-sky-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
+                                                        <p className="font-bold text-sm sm:text-[17px] text-sky-700 dark:text-sky-400 sm:leading-7">{formatCurrency(seller.doanhThuQD, 0)}</p>
                                                     </div>
                                                 </div>
                                             </div>

@@ -364,7 +364,7 @@ export const SettingsAccountTab: React.FC = () => {
                             <AppIcon name="settings" size="lg" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Khai Báo Cấu Hình Ngành Hàng</h2>
+                            <h2 className="text-[17px] font-bold text-slate-800 dark:text-white tracking-tight leading-7">Khai Báo Cấu Hình Ngành Hàng</h2>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Xem định nghĩa nhóm hàng, hệ số quy đổi và tải file Excel cấu hình toàn hệ thống</p>
                         </div>
                     </div>

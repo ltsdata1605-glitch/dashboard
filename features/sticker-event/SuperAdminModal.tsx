@@ -99,7 +99,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
       isOpen={isOpen}
       onClose={onClose}
       title={
-        <span className="flex items-center gap-2 text-lg">
+        <span className="flex items-center gap-2 text-[17px] leading-7">
           <AppIcon name="securityAlert" size="lg" />
           Công cụ Super Admin
         </span>

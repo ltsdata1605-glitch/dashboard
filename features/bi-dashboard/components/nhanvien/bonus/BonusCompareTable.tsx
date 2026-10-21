@@ -300,7 +300,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                                             <td className={`${tdFoot} ${deltaColor(deptBothRows.reduce((s, r) => s + (r.dTnong || 0), 0))}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptBothRows.reduce((s, r) => s + (r.dTnong || 0), 0)) : '—'}</td>
                                             <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, deptCurTong)}</td>
                                             <td className={tdFoot}>{fmtK(f, deptPrevTong)}</td>
-                                            <td className={`${tdFoot} text-[13.5px] ${deltaColor(deptDTong)}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptDTong) : '—'}</td>
+                                            <td className={`${tdFoot} text-[13px] ${deltaColor(deptDTong)}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptDTong) : '—'}</td>
                                             <td className={`${tdFoot} border-r-0 ${deltaColor(deptDPct)}`}>{deptBothRows.length > 0 ? fmtPct(deptDPct) : '—'}</td>
                                         </tr>
                                     )}
@@ -320,7 +320,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                         <td className={`${tdFoot} ${deltaColor(totals.dTnong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTnong) : '—'}</td>
                         <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, totals.curTong)}</td>
                         <td className={tdFoot}>{fmtK(f, totals.prevTong)}</td>
-                        <td className={`${tdFoot} text-[13.5px] ${deltaColor(totals.dTong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTong) : '—'}</td>
+                        <td className={`${tdFoot} text-[13px] ${deltaColor(totals.dTong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTong) : '—'}</td>
                         <td className={`${tdFoot} border-r-0 ${deltaColor(totals.dPct)}`}>{totals.bothCount > 0 ? fmtPct(totals.dPct) : '—'}</td>
                     </tr>
                 </tfoot>

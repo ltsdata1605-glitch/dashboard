@@ -50,7 +50,7 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                             <option value="*">*</option>
                             <option value="/">/</option>
                         </select>
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-medium text-lg pointer-events-none transition-colors">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-medium text-[17px] pointer-events-none transition-colors leading-7">
                             {operation === '*' ? '×' : operation === '/' ? '÷' : operation}
                         </div>
                     </div>

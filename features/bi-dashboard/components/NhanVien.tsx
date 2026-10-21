@@ -441,7 +441,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
+                            <h2 className="text-[17px] lg:text-[25px] font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                                 Nhân Viên
                             </h2>
                         </div>
@@ -499,7 +499,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         <AppIcon name="users" size="state" />
                     </div>
                     <div className="max-w-md mx-auto space-y-2">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                        <h3 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 leading-7">
                             Chưa có danh sách nhân viên từ chức năng Phân Tích
                         </h3>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">

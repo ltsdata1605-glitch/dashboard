@@ -92,12 +92,12 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-500 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
                         </span>
-                        <span className="text-[11px] sm:text-[11px] font-bold uppercase tracking-widest text-sky-700 dark:text-sky-300">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-sky-700 dark:text-sky-300">
                             AI Engine Processing
                         </span>
                     </div>
 
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 leading-snug px-2 min-h-[48px] flex items-center justify-center">
+                    <h3 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100 leading-snug px-2 min-h-[48px] flex items-center justify-center">
                         {displayMessage}
                     </h3>
                 </div>

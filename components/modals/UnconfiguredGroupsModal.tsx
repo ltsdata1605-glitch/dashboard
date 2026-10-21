@@ -71,7 +71,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         <AppIcon name="warning" size="lg" className="animate-bounce" />
                     </div>
                     <div>
-                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-amber-800 dark:text-amber-400 uppercase">
+                        <h2 className="text-base sm:text-[17px] font-bold tracking-tight text-amber-800 dark:text-amber-400 uppercase sm:leading-7">
                             Nhóm hàng chưa cấu hình ({unconfiguredGroups.length})
                         </h2>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">

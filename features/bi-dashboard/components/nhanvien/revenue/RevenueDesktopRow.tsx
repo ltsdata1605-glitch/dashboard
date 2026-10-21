@@ -75,7 +75,7 @@ export const RevenueDesktopRow = React.memo(({
                 className="export-col-revenue px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 bg-sky-50/70 dark:bg-sky-950/30" 
                 style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}
             >
-                <div className="font-bold text-[13.5px] tracking-tight">{f.format(roundUp(row.dtqd))}</div>
+                <div className="font-bold text-[13px] tracking-tight">{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
             {!isRealtimeMode && (

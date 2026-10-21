@@ -39,12 +39,12 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
       <div className="text-slate-800 dark:text-slate-300 text-sm leading-relaxed">
 
           <div className="mb-6">
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">1. TỔNG QUAN</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">1. TỔNG QUAN</h3>
               <p>Phần mềm này giúp tự động tạo lịch làm việc cho nhân viên dựa trên cơ chế <strong>luân phiên (rolling)</strong> để đảm bảo tính công bằng. Hệ thống ưu tiên các vị trí đặc biệt (Giao Hàng, Kho, Thu Ngân) trước, sau đó lấp đầy bằng các ca thường theo mẫu (Pattern) của từng bộ phận.</p>
           </div>
 
           <div className="mb-6">
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">2. THANH CÔNG CỤ (TOP BAR)</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">2. THANH CÔNG CỤ (TOP BAR)</h3>
               <p className="mb-2 italic text-slate-600 dark:text-slate-400">Khu vực trên cùng chứa các tính năng quản lý dữ liệu đầu vào và đầu ra.</p>
 
               <h4 className="font-bold text-slate-700 dark:text-slate-300 mt-3">A. Nhóm Import (Nhập liệu)</h4>
@@ -103,7 +103,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </div>
 
           <div className="mb-6">
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">3. KHU VỰC CẤU HÌNH & TẠO LỊCH (CONTROLS)</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">3. KHU VỰC CẤU HÌNH & TẠO LỊCH (CONTROLS)</h3>
               <ul className="list-disc pl-5 space-y-1">
                   <li><strong>Tháng/Năm:</strong> Chọn tháng cần xếp lịch. <em>Lưu ý: Thuật toán xoay ca dựa vào tháng, nên tháng 2 sẽ có lịch xoay khác tháng 3 để đảm bảo công bằng.</em></li>
                   <li><strong>Ngày bắt đầu:</strong> Thường là ngày 1.</li>
@@ -119,7 +119,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </div>
 
           <div className="mb-6">
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">4. QUẢN LÝ MỤC TIÊU (LEGEND)</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">4. QUẢN LÝ MỤC TIÊU (LEGEND)</h3>
               <p className="mb-2">Nằm ngay dưới tiêu đề, hiển thị các định mức ca đặc biệt.</p>
               <ul className="list-disc pl-5 space-y-1">
                   <li><strong>Các nút Kho / Thu Ngân / GH:</strong>
@@ -139,7 +139,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </div>
 
           <div className="mb-6">
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">5. BẢNG THỐNG KÊ NGÀY (DAILY STATS)</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">5. BẢNG THỐNG KÊ NGÀY (DAILY STATS)</h3>
               <p className="mb-2">Bảng màu xám nằm trên lịch chính.</p>
                <ul className="list-disc pl-5 space-y-1">
                   <li>Hiển thị tổng số nhân viên đang làm việc tại các khung giờ (Ca 1 đến Ca 6).</li>
@@ -150,7 +150,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </div>
 
           <div className="mb-6">
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">6. THAO TÁC TRÊN LỊCH (CHỈNH SỬA & ĐỔI CA)</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">6. THAO TÁC TRÊN LỊCH (CHỈNH SỬA & ĐỔI CA)</h3>
               <p className="mb-2">Đây là tính năng mạnh mẽ nhất. Bấm vào bất kỳ ô nào trên lịch để mở hộp thoại chỉnh sửa.</p>
 
               <h4 className="font-bold text-slate-700 dark:text-slate-300 mt-2">A. Đổi ca thông thường</h4>
@@ -170,7 +170,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </div>
 
           <div>
-              <h3 className="text-lg font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3">7. CÁCH ĐỌC MÀU SẮC TRÊN LỊCH</h3>
+              <h3 className="text-[17px] font-bold text-sky-700 dark:text-sky-400 border-b-2 border-sky-100 dark:border-sky-900/40 pb-1 mb-3 leading-7">7. CÁCH ĐỌC MÀU SẮC TRÊN LỊCH</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                       <h4 className="font-bold text-slate-700 dark:text-slate-300">Màu ô lịch:</h4>

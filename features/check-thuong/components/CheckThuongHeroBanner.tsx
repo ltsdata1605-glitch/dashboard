@@ -57,7 +57,7 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
             </div>
 
             {/* Store Title */}
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-tight drop-shadow-sm truncate">
+            <h2 className="text-xl sm:text-[25px] md:text-[28px] font-black tracking-tight leading-tight drop-shadow-sm truncate">
                 {storeName || 'Siêu thị'}
             </h2>
 
@@ -67,7 +67,7 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
                     <p className="text-[11px] font-bold uppercase tracking-wider text-sky-200/80">
                         Tổng tiền thưởng dự kiến
                     </p>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-none mt-0.5 sm:mt-1 drop-shadow-md text-amber-300 truncate">
+                    <p className="text-xl sm:text-[25px] md:text-[28px] font-black tracking-tight leading-none mt-0.5 sm:mt-1 drop-shadow-md text-amber-300 truncate">
                         {formatCurrencyFull(totalBonus)}
                         <span className="text-[11px] sm:text-xs font-bold text-amber-200/80 ml-1">đ</span>
                     </p>
@@ -83,7 +83,7 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
                         </span>
                     </div>
                     <div className="flex items-baseline gap-1.5 sm:gap-2">
-                        <span className="text-base sm:text-xl md:text-2xl font-black text-white leading-none">
+                        <span className="text-base sm:text-xl md:text-[25px] font-black text-white leading-none">
                             {pctAchieved100Formatted}
                         </span>
                         <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-white/20 text-white border border-white/20">

@@ -28,7 +28,7 @@ const LayoutOptionButton: React.FC<{
         className="justify-start w-full text-left p-4 rounded-card bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 transition-all duration-200"
     >
         <div>
-            <p className="font-bold text-lg text-slate-800">{label}</p>
+            <p className="font-bold text-[17px] text-slate-800 leading-7">{label}</p>
             <p className="text-sm text-slate-600">{description}</p>
         </div>
     </Button>

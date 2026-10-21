@@ -8714,3 +8714,33 @@ size="none" …>` giữ nguyên lớp (có sẵn vòng focus bàn phím, `disabl
 - `functions/src/region.ts`: `CLIENT_REGIONS = ['asia-southeast1']`; deploy `--force` 14 hàm → 14 bản `us-central1` đã xoá.
 - Kiểm: `firebase functions:list` chỉ còn `demoteExpiredUsers` ở us-central1; `tests/e2e/ham-may-chu-singapore.spec.ts` (đăng nhập
   tài khoản thật, chỉ đọc) xanh — gọi `resolveSession`/`listManagedUsers` ở Singapore, 0 lỗi.
+
+## GĐ10 bước 3 — cỡ chữ ngoài thang (ngoài thẻ KPI) + màu màn đăng nhập (2026-10-21)
+
+Thang chữ (`DESIGN_SYSTEM.md` mục 7, đo bằng `offScaleText` của `scripts/lint-ratchet.cjs`): 11 · 12 · 13 · 14 · 15 · 16 · 17 · 20 · 25 ·
+26 · 28 · 34 px. Cỡ ngoài thang về giá trị GẦN NHẤT, **giữ chiều cao dòng**: cỡ có tên của Tailwind (`text-lg`…) tự mang line-height,
+`text-[Npx]` thì không — nên chuỗi lớp nào chưa có `leading-*` được thêm `leading-*` cùng biến thể, dòng cao như cũ, chỉ chữ đổi 1–2px.
+
+| Cũ | Mới |
+|---|---|
+| `text-lg` (18/28) | `text-[17px]` + `leading-7` |
+| `text-2xl` (24/32) · `text-3xl` (30/36) · `text-4xl` (36/40) | `text-[25px]` + `leading-8` · `text-[28px]` + `leading-9` · `text-[34px]` + `leading-10` |
+| `text-6xl` (60/60) — chỉ chữ "VS" ở So sánh thi đua | `text-[34px]` + `leading-none` |
+| `text-[11.5px]` · `[12.5px]` · `[13.5px]` | 12 · 13 · 13 |
+| `text-[18px]` · `[22px]` · `[24px]` · `[30px]` · `[32/36/38px]` | 17 · 20 · 25 · 28 · 34 |
+
+- Dọn dải cỡ đáp ứng: bỏ `xs:text-…` (dự án KHÔNG khai biến thể `xs` — lớp chết, không sinh CSS) và bậc sau trùng giá trị bậc trước.
+- **127 chỗ / 63 file** (Phân tích, Report BI, Check thưởng, Khai thác, Phân ca, In Sticker, Bot LINE, Tính thuế, đăng nhập/chờ duyệt/
+  cài đặt, `Modal`/`ConfirmDialog` dùng chung). `offScaleText` **198 → 71**; 71 còn lại toàn ở 5 file thẻ KPI (KpiOverview 36, KpiCards 21,
+  Khai thác DashboardTab 9, CompetitionKpiCards 3, StatCard 2) — thẻ KPI ảnh hưởng toàn app nên CHỜ chủ dự án duyệt ảnh: đề xuất ở nhánh
+  `claude/gd10-b3-the-kpi` (phương án A: số chính 34px; B: thêm bậc 44px cho màn ≥ xl — phải khai thêm 44 vào `TYPE_SCALE_PX`).
+- Tiêu đề `Modal` dùng chung: 17px ở mọi màn (trước lên 18px từ `sm`).
+- `BonusGroupListTable`: giữ phân biệt dòng tổng 13px / dòng thường 12px (trước 13,5 / 12,5 — đổi thẳng thì cả hai ra 13).
+- Màn đăng nhập: `bg-blue-500/10` → `bg-sky-500/10`, gradient logo `to-blue-600` → `to-sky-700` (cùng họ primary). `nonSemanticColor`
+  **26 → 24**; 24 còn lại ở KpiCard (10) + PerformanceModal (14) — nằm trong đề xuất thẻ KPI.
+- Không đổi: `FeatureLandingLayout` `lg:text-[2.8rem]` (rem, ngoài phép đo); chú thích ở RevenueTab viết lại "chữ cỡ 2xl" để công cụ đếm
+  không đếm nhầm chú thích.
+- Kiểm: script soát diff — không chuỗi lớp nào mất line-height, không `leading-*` mới nào đè sai cỡ có tên ở bậc lớn hơn; tour ảnh tài
+  khoản thật (chỉ đọc) trước/sau mọi tab ở iPhone 440 + laptop 1440/1280 — khác biệt chỉ là dữ liệu/giờ; e2e `apple-tuong-thich`,
+  `mobile-iphone-6-module`, `chuan-thiet-ke-b`, `report-bi-gd6`, `khung-app-gd4`, `gd7-mini-app`, `gd10-xac-nhan-va-bang`,
+  `icon-audit-man-goc`, `icon-audit-bi`, `bi-competition` — 46 passed.

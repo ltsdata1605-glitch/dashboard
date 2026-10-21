@@ -336,7 +336,7 @@ const EmployeeProfileCard: React.FC<{
                                 size="none"
                                 type="button"
                                 onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)}
-                                className="group/name inline-flex items-center gap-1 sm:gap-2 text-left type-headline sm:text-lg lg:text-xl font-bold text-slate-900 truncate hover:bg-slate-100 px-1.5 sm:px-2 py-0.5 sm:py-1 -ml-1.5 sm:-ml-2 rounded-sm transition-colors cursor-pointer"
+                                className="group/name inline-flex items-center gap-1 sm:gap-2 text-left type-headline sm:text-[17px] lg:text-xl font-bold text-slate-900 truncate hover:bg-slate-100 px-1.5 sm:px-2 py-0.5 sm:py-1 -ml-1.5 sm:-ml-2 rounded-sm transition-colors cursor-pointer sm:leading-7"
                                 title="Bấm vào tên để chọn nhân viên khác"
                             >
                                 <span className="truncate">{selectedEmployee.name}</span>
@@ -428,7 +428,7 @@ const EmployeeProfileCard: React.FC<{
             <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.2fr 0.9fr 1.3fr' }}>
                 <div className="js-kpi-cell min-w-0 p-1.5 sm:p-2.5 space-y-0.5">
                     <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="money" size="xs" />DTQĐ</p>
-                    <span className="js-kpi-value text-base sm:text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
+                    <span className="js-kpi-value text-base sm:text-[17px] font-black text-slate-800 dark:text-white block sm:leading-7">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
                     <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DTLK: <strong className="text-sky-700">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
@@ -437,7 +437,7 @@ const EmployeeProfileCard: React.FC<{
                 </div>
                 <div className="js-kpi-cell min-w-0 p-1.5 sm:p-2.5 space-y-0.5">
                     <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="card" size="xs" />Trả Chậm</p>
-                    <span className={`js-kpi-value text-base sm:text-lg font-black block ${(empInstallment?.totalPercent || 0) >= targetTraGop ? "text-slate-800 dark:text-white" : "text-rose-700 dark:text-rose-400"}`} title={`Target Trả chậm: ${targetTraGop}%`}>{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
+                    <span className={`js-kpi-value text-base sm:text-[17px] font-black block ${(empInstallment?.totalPercent || 0) >= targetTraGop ? "text-slate-800 dark:text-white" : "text-rose-700 dark:text-rose-400"} sm:leading-7`} title={`Target Trả chậm: ${targetTraGop}%`}>{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
                     <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DT: <strong className="text-sky-700">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
@@ -445,7 +445,7 @@ const EmployeeProfileCard: React.FC<{
                 </div>
                 <div className="js-kpi-cell min-w-0 p-1.5 sm:p-2.5 space-y-0.5">
                     <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="trophy" size="xs" />Thưởng</p>
-                    <span className="js-kpi-value text-base sm:text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
+                    <span className="js-kpi-value text-base sm:text-[17px] font-black text-slate-800 dark:text-white block sm:leading-7">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
                     <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[11px] text-slate-500 mt-1">
                         <span>ERP: <strong className="text-sky-700">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
                         <span>T.Nóng: <strong className="text-emerald-700">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>

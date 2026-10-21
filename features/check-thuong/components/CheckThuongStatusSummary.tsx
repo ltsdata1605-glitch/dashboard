@@ -64,7 +64,7 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                                 {group.shortTitle || group.title}
                             </p>
                             <div className="flex items-baseline justify-between mt-auto">
-                                <span className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">
+                                <span className="text-[17px] sm:text-[25px] font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">
                                     {group.data.length}
                                 </span>
                                 <span className={`text-[11px] font-bold ${styling.text} opacity-0 group-hover:opacity-100 transition-opacity`}>

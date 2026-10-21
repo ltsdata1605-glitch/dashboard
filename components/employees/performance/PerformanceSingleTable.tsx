@@ -259,8 +259,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 mr-2">
                     <div className="min-w-0">
-                        <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{theme.title}</h3>
-                        <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
+                        <h3 className="text-sm lg:text-[17px] font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{theme.title}</h3>
+                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
                     </div>
                 </div>
 
@@ -355,7 +355,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* Thead */}
                     <thead className="sticky top-0 z-20">
                         {/* Group Headers */}
-                        <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="text-[11px] font-bold uppercase tracking-wider">
                             <th 
                                 colSpan={2} 
                                 rowSpan={2} 
@@ -389,7 +389,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             ))}
                         </tr>
                         {/* Sub Headers */}
-                        <tr className="bg-white dark:bg-slate-900 text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <tr className="bg-white dark:bg-slate-900 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             {/* Data cols */}
                             {headers.map(h => {
                                 if (h.noSubHeader) return null;
@@ -470,7 +470,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             <td colSpan={2 + headers.length} className={`px-2 sm:px-4 py-1 sm:py-1.5 ${dc.strip} border-y border-slate-200 dark:border-slate-700`}>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
                                                     <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${dc.badge} flex-shrink-0`} />
-                                                    <span className={`text-[11px] sm:text-[11px] font-black uppercase tracking-widest ${dc.text}`}>
+                                                    <span className={`text-[11px] font-black uppercase tracking-widest ${dc.text}`}>
                                                         {dept || 'Không Phân Ca'} — {employees.length} người
                                                     </span>
                                                 </div>

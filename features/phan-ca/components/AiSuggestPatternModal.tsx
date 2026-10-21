@@ -409,7 +409,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
 
                 {(isLoading || error || suggestion) && (
                     <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <h3 className="font-bold text-lg text-center mb-2 text-slate-800 dark:text-slate-200">Kết quả từ AI</h3>
+                        <h3 className="font-bold text-[17px] text-center mb-2 text-slate-800 dark:text-slate-200 leading-7">Kết quả từ AI</h3>
                         {isLoading && <div className="flex justify-center items-center p-4"><div className="spinner !w-8 !h-8 !border-4"></div></div>}
                         {error && <div className="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded text-center">{error}</div>}
                         {suggestion && (

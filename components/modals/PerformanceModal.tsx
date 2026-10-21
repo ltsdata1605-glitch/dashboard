@@ -74,14 +74,14 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
                         <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
                             <AppIcon name={resolveIconName(icon) ?? 'help'} size="xs" />
                         </div>
-                        <p className="text-[11px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title={label}>{label}</p>
+                        <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title={label}>{label}</p>
                     </div>
                 </div>
                 <div className={`w-full text-center flex items-center justify-center my-1 text-sm sm:text-base lg:text-xl font-black ${c.valText} leading-none tabular-nums truncate`}>
                     {value}
                 </div>
                 {children ? (
-                    <div className="mt-auto text-[11px] sm:text-[11px] leading-none border-t border-slate-100 dark:border-slate-800/70 pt-1.5 w-full flex items-center justify-center">
+                    <div className="mt-auto text-[11px] leading-none border-t border-slate-100 dark:border-slate-800/70 pt-1.5 w-full flex items-center justify-center">
                         {children}
                     </div>
                 ) : (
@@ -569,7 +569,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Phân Tích Hiệu Quả Cá Nhân</p>
-                        <h3 className="text-2xl font-bold text-sky-700 dark:text-sky-400">{employeeName}</h3>
+                        <h3 className="text-[25px] font-bold text-sky-700 dark:text-sky-400 leading-8">{employeeName}</h3>
                     </div>
                 </div>
                 <div className="p-6 bg-slate-100 dark:bg-slate-950">

@@ -222,7 +222,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                     onClose={() => setConfirmAction(null)}
                     maxWidth="sm"
                     title={
-                        <span className="flex items-center gap-3 text-lg">
+                        <span className="flex items-center gap-3 text-[17px] leading-7">
                             {confirmAction.type === 'error' ? (
                                 <AppIcon name="securityAlert" size="xl" className="text-rose-600" />
                             ) : confirmAction.type === 'info' ? (

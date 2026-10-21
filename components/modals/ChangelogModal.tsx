@@ -46,7 +46,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 {/* v3.1.0 */}
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-primary-500 pb-5 sm:pb-8">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-500 border-4 border-white dark:border-slate-900"></div>
-                    <h3 className="text-sm sm:text-lg font-bold text-slate-800 dark:text-white mb-1">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</h3>
+                    <h3 className="text-sm sm:text-[17px] font-bold text-slate-800 dark:text-white mb-1 sm:leading-7">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</h3>
                     <p className="text-[11px] sm:text-xs text-primary-600 dark:text-primary-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Cập nhật lớn - Cuối Tháng 03/2026</p>
                     <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                         <li className="flex gap-2">
@@ -71,7 +71,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 {/* v3.0.0 */}
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-slate-700 pb-5 sm:pb-8">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-600 border-4 border-white dark:border-slate-900"></div>
-                    <h3 className="text-sm sm:text-lg font-bold text-slate-800 dark:text-white mb-1">Phiên bản 3.0.0 (High Performance & Core Update)</h3>
+                    <h3 className="text-sm sm:text-[17px] font-bold text-slate-800 dark:text-white mb-1 sm:leading-7">Phiên bản 3.0.0 (High Performance & Core Update)</h3>
                     <p className="text-[11px] sm:text-xs text-primary-600 dark:text-primary-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Cập nhật lớn - Tháng 03/2026</p>
                     <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
                         <li className="flex gap-2">
@@ -96,7 +96,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 {/* v2.1.0 */}
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-slate-200 dark:border-slate-700 pb-2">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-600 border-4 border-white dark:border-slate-900"></div>
-                    <h3 className="text-sm sm:text-lg font-bold text-slate-800 dark:text-white mb-1 opacity-70">Phiên bản 2.1.0 (Intelligence Hub 2.0)</h3>
+                    <h3 className="text-sm sm:text-[17px] font-bold text-slate-800 dark:text-white mb-1 opacity-70 sm:leading-7">Phiên bản 2.1.0 (Intelligence Hub 2.0)</h3>
                     <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold mb-2 sm:mb-4 uppercase tracking-wider">Tháng 02/2026</p>
                     <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                         <li className="flex gap-2">

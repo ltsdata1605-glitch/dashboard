@@ -10,7 +10,7 @@ const ExportLoader: React.FC = () => {
                 <div className="pong-paddle left"></div>
                 <div className="pong-paddle right"></div>
             </div>
-            <p className="mt-8 text-lg font-semibold">Đang xử lý ảnh, vui lòng chờ...</p>
+            <p className="mt-8 text-[17px] font-semibold leading-7">Đang xử lý ảnh, vui lòng chờ...</p>
         </Overlay>
     );
 };
