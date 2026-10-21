@@ -54,20 +54,6 @@
     "iconEmoji": 3,
     "offScaleText": 0
   },
-  "components/kpis/KpiCards.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 21
-  },
   "components/layout/Sidebar.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -93,7 +79,7 @@
     "iconEmoji": 1
   },
   "components/modals/PerformanceModal.tsx": {
-    "nonSemanticColor": 14,
+    "nonSemanticColor": 0,
     "indigoAlias": 10,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
@@ -107,8 +93,8 @@
     "offScaleText": 0
   },
   "components/shared/ui/KpiCard.tsx": {
-    "nonSemanticColor": 10,
-    "indigoAlias": 15,
+    "nonSemanticColor": 0,
+    "indigoAlias": 17,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
     "iconNumericSize": 0,
@@ -116,20 +102,6 @@
     "iconEmoji": 0,
     "tinyText": 0,
     "offScaleRadius": 1
-  },
-  "components/shared/ui/StatCard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 2
   },
   "components/views/LoginView.tsx": {
     "nonSemanticColor": 0,
@@ -167,20 +139,6 @@
     "offScaleRadius": 0,
     "iconRawSvg": 0
   },
-  "features/bi-dashboard/components/dashboard/competition/CompetitionKpiCards.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 3
-  },
   "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 16,
@@ -199,7 +157,7 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0,
-    "offScaleText": 36
+    "offScaleText": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
     "nonSemanticColor": 0,
@@ -242,20 +200,6 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0
-  },
-  "features/khai-thac/components/DashboardTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 9
   },
   "features/line-bot/components/AdminDeclarationTab.tsx": {
     "nonSemanticColor": 0,

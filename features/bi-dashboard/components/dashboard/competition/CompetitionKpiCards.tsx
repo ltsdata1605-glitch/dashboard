@@ -169,7 +169,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                         }
                     >
                         <div className="flex items-baseline justify-center gap-1 w-full overflow-hidden">
-                            <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums truncate ${u.tone}`} title={v.big}>
+                            <span className={`text-[20px] sm:text-[28px] md:text-[34px] font-black leading-tight tracking-tight tabular-nums truncate ${u.tone}`} title={v.big}>
                                 {v.big}
                             </span>
                         </div>
