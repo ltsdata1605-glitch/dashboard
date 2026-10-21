@@ -23,4 +23,6 @@ test('iPhone, apis.google.com treo: đăng nhập vẫn xong trong vài giây', 
     console.log('DANG_NHAP_MS', msDangNhap, 'GAPI', gapi.length);
     expect(msDangNhap).toBeLessThan(20_000);
     expect(gapi).toEqual([]);
+    // Đăng nhập xong thì nhớ tài khoản cho lần sau (Google chọn sẵn).
+    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ycxTaiKhoanGanNhat') || 'null')?.email ?? ''), { timeout: 10_000 }).toContain('@');
 });

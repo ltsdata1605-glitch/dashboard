@@ -8848,3 +8848,17 @@ Tái hiện bằng Playwright giả iPhone + chặn treo `apis.google.com`: tran
    trang với `#m=pwa` → xong thì `window.close()` + nhắc bấm "Xong"; Safari thường vẫn tự về app. Test: `pwa-login-khong-gapi`,
    `ios-pwa-dang-nhap`.
 4. Màn chờ nhận phiên hỏi máy chủ mỗi 1,5 s suốt 6 phút (~240 lượt gọi hàm) → 1,5 s trong 30 s đầu rồi 4 s; quay lại app thì hỏi ngay.
+
+### Nhớ tài khoản + đăng nhập đi thẳng trang Firebase (2026-10-21, chủ dự án yêu cầu)
+
+- **Nhớ tài khoản:** đăng nhập xong `AuthContext` ghi `localStorage.ycxTaiKhoanGanNhat = {email, ten}` (SAU bước dọn dữ liệu đổi tài
+  khoản). Lần sau `thamSoGoogle()` (services/firebase.ts) gửi `login_hint` → Google chọn sẵn tài khoản đó; chưa có thì `prompt:
+  select_account`. Màn đăng nhập hiện email + nút "Dùng tài khoản khác" (quên đi). `clearAllLocalAppData` GIỮ khoá này qua đăng
+  xuất/đổi tài khoản, chỉ "Xoá tất cả dữ liệu" mới xoá. Chỉ lưu email/tên, không token.
+- **Đi thẳng trang Firebase:** app dựng sẵn URL `/__/auth/handler?…` (`taoUrlDangNhapHandoff`, đúng tham số signInWithRedirect dựng)
+  với `redirectUrl = pwa-login.html?c=<mã>&m=pwa&h=<email>`. Bỏ chặng mở pwa-login.html + nạp thư viện Firebase (~64 KB nén / 257 KB
+  mã + 1 lượt kiểm tên miền) trước khi sang Google. pwa-login.html chỉ còn nhận kết quả bằng REST; thư viện nạp động khi phải tự mở
+  lại Google (nút thử lại, hoặc app bản cũ mở `#c=…` — vẫn chạy).
+- Test: `nho-tai-khoan-dang-nhap` (hiện email, login_hint, "Dùng tài khoản khác", giữ qua đăng xuất), `pwa-login-khong-gapi` (luồng
+  đi thẳng: không nạp `/firebasejs/`, đóng khung m=pwa, nút thử lại vẫn chọn sẵn tài khoản), `ios-pwa-dang-nhap` (URL đi thẳng),
+  `iphone-gapi-treo-dang-nhap` (đăng nhập thật → nhớ email).

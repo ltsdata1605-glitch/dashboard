@@ -7,6 +7,7 @@ import {
     isStandaloneMode, isInAppBrowser, isIOSDevice,
     preparePwaHandoff, startPwaHandoffLogin, claimPwaHandoff, hasPendingPwaHandoff, clearPendingPwaHandoff,
     isPwaHandoffClaiming, takePwaHandoffError, PwaHandoffSignInError,
+    layTaiKhoanGanNhat, quenTaiKhoan,
     type PreparedPwaHandoff,
 } from '../../services/firebase';
 
@@ -19,6 +20,8 @@ const LoginView: React.FC = () => {
     const [isInAppWebView] = useState(() => isInAppBrowser());
     const [isStandalone] = useState(() => isStandaloneMode());
     const [isIOS] = useState(() => isIOSDevice());
+    // Tài khoản đã dùng trên máy này (2026-10-21): Google chọn sẵn, bỏ bước chọn tài khoản.
+    const [taiKhoanNho, setTaiKhoanNho] = useState(() => layTaiKhoanGanNhat());
 
     // Trên toàn bộ thiết bị iOS (iPhone/iPad dù là Safari, Chrome iOS hay PWA Màn hình chính)
     // hoặc In-App Webview (Zalo/FB): dùng cơ chế Handoff an toàn qua auth.dashboard.pro.vn
@@ -308,6 +311,24 @@ const LoginView: React.FC = () => {
                             )}
                             <span>Tiếp tục với Cổng Google</span>
                         </Button>
+
+                        {taiKhoanNho && (
+                            <div data-testid="login-tai-khoan-nho" className="flex items-center justify-center gap-1.5 pt-2 text-xs text-slate-600 min-w-0">
+                                <AppIcon name="user" size="xs" className="text-slate-400 shrink-0" />
+                                <span className="truncate font-semibold" title={taiKhoanNho.email}>{taiKhoanNho.email}</span>
+                                <span className="text-slate-300">·</span>
+                                <Button
+                                    type="button"
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={() => { quenTaiKhoan(); setTaiKhoanNho(null); }}
+                                    disabled={isLoggingIn}
+                                    className="ycx-hit shrink-0 font-semibold text-sky-700 hover:underline cursor-pointer disabled:opacity-50"
+                                >
+                                    Dùng tài khoản khác
+                                </Button>
+                            </div>
+                        )}
 
                         {useHandoff ? (
                             <div className="text-center pt-2 text-[11px] text-slate-500 leading-relaxed">

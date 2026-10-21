@@ -36,7 +36,18 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     await btn.click();
     const popup = await popupP;
     const url = popup.url();
-    expect(url).toMatch(/^https:\/\/auth\.dashboard\.pro\.vn\/pwa-login\.html#c=[A-Za-z0-9_-]{43}&m=pwa$/); // app Màn hình chính: trang đăng nhập tự đóng khung khi xong
+    // 2026-10-21: app đi THẲNG tới trang xử lý của Firebase (bỏ chặng nạp thư viện ở pwa-login.html); xong Firebase đưa về
+    // pwa-login.html?c=<mã>&m=pwa (m=pwa: app Màn hình chính → trang đó tự đóng khung khi xong).
+    const u = new URL(url);
+    expect(u.origin + u.pathname).toBe('https://auth.dashboard.pro.vn/__/auth/handler');
+    expect(u.searchParams.get('authType')).toBe('signInViaRedirect');
+    expect(u.searchParams.get('providerId')).toBe('google.com');
+    expect(u.searchParams.get('scopes')).toContain('https://www.googleapis.com/auth/spreadsheets');
+    expect(JSON.parse(u.searchParams.get('customParameters') || '{}')).toEqual({ prompt: 'select_account' }); // máy mới: chưa nhớ tài khoản
+    const ve = new URL(u.searchParams.get('redirectUrl') || '');
+    expect(ve.origin + ve.pathname).toBe('https://auth.dashboard.pro.vn/pwa-login.html');
+    expect(ve.searchParams.get('c')).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(ve.searchParams.get('m')).toBe('pwa');
     // Trong lúc chờ: màn "Đang hoàn tất đăng nhập…" thay hẳn form (2026-10-13 — form hiện lại làm người dùng tưởng lỗi).
     const waiting = page.getByTestId('login-handoff-waiting');
     await expect(waiting).toBeVisible();
@@ -51,7 +62,7 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
         const d = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
         return btoa(String.fromCharCode(...d)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }, verifier);
-    expect(url.endsWith('#c=' + code + '&m=pwa')).toBe(true);
+    expect(ve.searchParams.get('c')).toBe(code);
     // Bấm nút là đánh thức trước Cloud Function nhận phiên (đỡ khởi động nguội khi trang Google xong).
     expect(warmups).toContainEqual({ warmup: true });
 
