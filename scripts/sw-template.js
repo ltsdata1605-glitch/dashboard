@@ -71,26 +71,30 @@ self.addEventListener('activate', (event) => {
 const isHashedAsset = (url) => url.pathname.startsWith('/assets/');
 const isStaticFile = (url) => /^\/(fonts|icons|frame|splash|scripts|Tuts)\//.test(url.pathname) || /\.(woff2?|ttf|png|jpe?g|svg|webp|ico|webmanifest)$/.test(url.pathname) || /^\/(prevent-pull-to-refresh|reload-on-chunk-error)\.js$/.test(url.pathname);
 
-async function networkFirstNavigation(request) {
+async function networkFirstNavigation(event) {
+  const request = event.request;
   const cache = await caches.open(CACHE);
+  const pathname = new URL(request.url).pathname;
+  // SPA: mọi đường dẫn không có đuôi file dùng chung index.html.
+  const isShell = !/\.[a-z0-9]+$/i.test(pathname);
+  // Tải mạng chạy TIẾP kể cả khi đã quá 4 giây và trang đã nhận bản lưu: về tới thì vẫn LƯU bản mới (2026-10-21). Trước
+  // đây quá giờ là bỏ luôn bản mới → mạng chậm thì mãi nhận app shell cũ; bản cũ đòi file /assets/ đã bị xoá sau lượt đăng
+  // bản mới → 404 → reload-on-chunk-error.js tải lại → lại quá 4 giây → lại bản cũ: vòng tải lại mỗi 10 giây (log 21/10:
+  // resolveSession bị gọi dồn 4 phút, tràn bộ nhớ 2 lần).
+  const network = fetch(request).then((fresh) => {
+    if (fresh && fresh.ok) return cache.put(isShell ? '/index.html' : request, fresh.clone()).then(() => fresh);
+    return fresh;
+  });
+  event.waitUntil(network.catch(() => {}));
   try {
-    const fresh = await Promise.race([
-      fetch(request),
+    return await Promise.race([
+      network,
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
     ]);
-    if (fresh && fresh.ok) {
-      // Lưu bản mới của app shell (SPA: mọi đường dẫn không có đuôi file dùng chung index.html).
-      const isShell = !/\.[a-z0-9]+$/i.test(new URL(request.url).pathname);
-      if (isShell) cache.put('/index.html', fresh.clone());
-      else cache.put(request, fresh.clone());
-    }
-    return fresh;
   } catch (e) {
-    const pathname = new URL(request.url).pathname;
-    const isShell = !/\.[a-z0-9]+$/i.test(pathname);
     const cached = (isShell ? await cache.match('/index.html') : await cache.match(request));
     if (cached) return cached;
-    throw e;
+    return network; // không có bản lưu: chờ mạng tới cùng (thay vì báo lỗi sau 4 giây)
   }
 }
 
@@ -108,6 +112,6 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (request.mode === 'navigate') { event.respondWith(networkFirstNavigation(request)); return; }
+  if (request.mode === 'navigate') { event.respondWith(networkFirstNavigation(event)); return; }
   if (isHashedAsset(url) || isStaticFile(url)) { event.respondWith(cacheFirst(request)); return; }
 });

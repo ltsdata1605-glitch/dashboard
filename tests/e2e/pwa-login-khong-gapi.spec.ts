@@ -23,9 +23,9 @@ async function chuanBi(context: BrowserContext) {
     return gapi;
 }
 
-async function sangGoogleRoiHuy(page: Page) {
+async function sangGoogleRoiHuy(page: Page, duoi = '') {
     const t0 = Date.now();
-    await page.goto('https://auth.dashboard.pro.vn/pwa-login.html#c=' + CODE);
+    await page.goto('https://auth.dashboard.pro.vn/pwa-login.html#c=' + CODE + duoi);
     await page.waitForURL(/accounts\.google\.com/, { timeout: 15_000 });
     const msSangGoogle = Date.now() - t0;
     const u = new URL(page.url());
@@ -48,6 +48,39 @@ test('apis.google.com treo: vẫn sang Google, bấm Huỷ ở Google thì báo 
     expect(gapi).toEqual([]);
     // Kết quả cũ đã bị xoá: tải lại trang không dùng lại mã.
     expect(await page.evaluate(() => Object.keys(sessionStorage).filter(k => k.startsWith('firebase:')))).toEqual([]);
+});
+
+async function giaThanhCong(context: BrowserContext) {
+    let idpBody: Record<string, unknown> | null = null;
+    await context.route('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp**', async r => {
+        idpBody = r.request().postDataJSON();
+        await r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
+            body: JSON.stringify({ idToken: 'firebase-id-token-gia', oauthIdToken: 'google-id-token-gia', oauthAccessToken: 'google-access-gia', email: 'a@b.vn' }) });
+    });
+    const stores: { auth: string | null; data: Record<string, unknown> }[] = [];
+    await context.route('**/pwaHandoffStore', async r => {
+        if (r.request().method() === 'OPTIONS') {
+            return r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST' } });
+        }
+        stores.push({ auth: r.request().headers()['authorization'] ?? null, data: r.request().postDataJSON().data });
+        await r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"result":{"ok":true}}' });
+    });
+    return { stores, idp: () => idpBody };
+}
+
+test('mở từ app Màn hình chính (#m=pwa): xong thì nhắc bấm "Xong", KHÔNG tải app vào khung nổi', async ({ page, context }) => {
+    test.setTimeout(60_000);
+    await chuanBi(context);
+    const { stores } = await giaThanhCong(context);
+    let moApp = false;
+    await context.route('https://dashboard.pro.vn/**', r => { moApp = true; return r.fulfill({ status: 200, contentType: 'text/html', body: '<p>app</p>' }); });
+    await sangGoogleRoiHuy(page, '&m=pwa');
+    await expect(page.locator('#msg')).toContainText('Bấm "Xong"', { timeout: 15_000 });
+    expect(stores.find(s => s.data.code)?.data.code).toBe(CODE);
+    await page.waitForTimeout(1500);
+    expect(moApp).toBe(false);
+    expect(page.url()).toContain('pwa-login.html');
+    await expect(page.locator('#back')).toBeHidden();
 });
 
 test('về từ Google thành công: gửi phiên kèm Bearer rồi về app', async ({ page, context }) => {

@@ -37,8 +37,14 @@ const LoginView: React.FC = () => {
         if (!waitingHandoff) return;
         let stopped = false;
         let busy = false;
-        const tick = async () => {
+        // Hỏi máy chủ dày (1,5 s) trong 30 giây đầu, sau đó thưa dần 4 s — mỗi lượt hỏi là 1 lần gọi hàm + 1 giao dịch Firestore,
+        // người dùng để màn chờ mở 6 phút từng tốn ~240 lượt (2026-10-21). Quay lại app (focus/visibility) thì hỏi ngay.
+        const batDau = Date.now();
+        let lanCuoi = 0;
+        const tick = async (ngay?: unknown) => {
             if (stopped || busy || document.visibilityState !== 'visible') return;
+            if (ngay === 'dinh-ky' && Date.now() - batDau > 30_000 && Date.now() - lanCuoi < 4_000) return;
+            lanCuoi = Date.now();
             if (!hasPendingPwaHandoff() && !isPwaHandoffClaiming()) {
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
@@ -61,7 +67,7 @@ const LoginView: React.FC = () => {
             }
         };
         tick();
-        const timer = setInterval(tick, 1500);
+        const timer = setInterval(() => tick('dinh-ky'), 1500);
         document.addEventListener('visibilitychange', tick);
         window.addEventListener('focus', tick);
         return () => {

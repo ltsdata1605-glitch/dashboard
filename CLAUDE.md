@@ -175,6 +175,8 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 - 🔵 **Lỗi tải mảnh code (2026-10-20):** tự tải lại khi lỗi chunk PHẢI qua `components/shared/ui/taiLaiKhiLoiChunk.ts` (chờ 800 ms, bỏ
   qua khi trang đang rời đi) — CẤM `location.reload()` trần trong đường lỗi chunk: WebKit huỷ `import()` dở dang lúc điều hướng, tải lại
   khi đó giành mất lượt chuyển trang của người dùng (CI WebKit "Frame load interrupted").
+  *(2026-10-21)* Tự tải lại tối đa 2 lần / 5 phút (`duocTuTaiLai()`, cùng khoá với `public/reload-on-chunk-error.js`) — chỉ chặn "cách
+  10 giây" từng thành vòng tải lại vô hạn khi service worker trả app shell cũ (mạng chậm > 4 s). SW nay vẫn LƯU bản mới về trễ.
 - 🔵 **Offline (2026-10-08):** build sinh `dist/sw.js` (plugin `ycx-offline-sw` ở `vite.config.ts`, mẫu `scripts/sw-template.js`): tải sẵn app shell, điều hướng ưu tiên mạng
   (không kẹt bản cũ), `/assets/*` ưu tiên bản lưu. Offline chỉ dùng được dữ liệu đã lưu trên máy; đăng nhập/đồng bộ/gửi LINE cần mạng. Test: `tests/e2e/offline-app-shell.spec.ts`.
 - 🔵 **Phân quyền theo siêu thị ở Report BI** (bổ sung 2026-08-31): dữ liệu Thi đua/Summary Luỹ kế dùng chung theo siêu thị lưu ở `biData/{maKho}/…` — dùng LẠI đúng field `departmentId`/hàm `myKhos()` đã có (1 Kho = 1 Siêu thị trong thực tế công ty, xác nhận với user), KHÔNG có custom claim `allowedSupermarkets` riêng. Chỉ manager/admin được ghi (`isManager()`), mọi user cùng Kho đọc được. Xem `implementation_plan.md` mục "Đợt 4" để biết đầy đủ thiết kế + bảng map "tên siêu thị trong báo cáo" → "Mã Kho".

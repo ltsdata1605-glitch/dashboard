@@ -55,3 +55,47 @@ test('có mạng lại: trang mới vẫn lấy từ mạng (không kẹt bản 
   expect(res?.ok()).toBeTruthy();
   await expect(page.locator('body')).toContainText(/dashboard ycx/i, { timeout: 30_000 });
 });
+
+test('mạng chậm quá 4 giây: dùng bản lưu nhưng bản mới về trễ VẪN được lưu (không kẹt bản cũ → vòng tải lại 2026-10-21)', async ({ page }) => {
+  test.setTimeout(90_000);
+  // Máy chủ tĩnh riêng có công tắc "mạng chậm" — page.route không chặn được yêu cầu do service worker tự gửi.
+  const http = await import('node:http');
+  const path = await import('node:path');
+  let cham = false;
+  let banMoi = false;
+  const loai: Record<string, string> = { '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.json': 'application/json',
+    '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' };
+  const sv = http.createServer((req, res) => {
+    const p = decodeURIComponent((req.url || '/').split('?')[0]);
+    let f = path.join('dist', p);
+    if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join('dist', 'index.html');
+    const gui = () => {
+      let body: Buffer | string = fs.readFileSync(f);
+      if (f.endsWith('index.html') && banMoi) body = body.toString().replace('</body>', '<!--BAN-MOI-VE-TRE--></body>');
+      res.writeHead(200, { 'content-type': loai[path.extname(f)] || 'application/octet-stream' });
+      res.end(body);
+    };
+    if (cham && f.endsWith('index.html')) setTimeout(gui, 6000); else gui();
+  });
+  await new Promise<void>((r) => sv.listen(4180, '127.0.0.1', () => r()));
+  try {
+    const goc = 'http://127.0.0.1:4180';
+    await page.goto(goc);
+    await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+    await page.reload();
+    await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller), { timeout: 15_000 }).toBe(true);
+    cham = true; banMoi = true;
+    const t0 = Date.now();
+    await page.reload();
+    const ms = Date.now() - t0;
+    console.log('RELOAD_MS', ms);
+    expect(ms).toBeLessThan(5_900); // trả bản lưu sau ~4 giây, không chờ mạng 6 giây
+    await expect.poll(() => page.evaluate(async () => {
+      const k = (await caches.keys()).find((x) => x.startsWith('ycx-shell-'));
+      const res = k ? await (await caches.open(k)).match('/index.html') : undefined;
+      return res ? (await res.text()).includes('BAN-MOI-VE-TRE') : false;
+    }), { timeout: 15_000 }).toBe(true);
+  } finally {
+    sv.close();
+  }
+});

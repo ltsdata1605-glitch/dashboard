@@ -36,7 +36,7 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     await btn.click();
     const popup = await popupP;
     const url = popup.url();
-    expect(url).toMatch(/^https:\/\/auth\.dashboard\.pro\.vn\/pwa-login\.html#c=[A-Za-z0-9_-]{43}$/);
+    expect(url).toMatch(/^https:\/\/auth\.dashboard\.pro\.vn\/pwa-login\.html#c=[A-Za-z0-9_-]{43}&m=pwa$/); // app Màn hình chính: trang đăng nhập tự đóng khung khi xong
     // Trong lúc chờ: màn "Đang hoàn tất đăng nhập…" thay hẳn form (2026-10-13 — form hiện lại làm người dùng tưởng lỗi).
     const waiting = page.getByTestId('login-handoff-waiting');
     await expect(waiting).toBeVisible();
@@ -51,7 +51,7 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
         const d = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
         return btoa(String.fromCharCode(...d)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }, verifier);
-    expect(url.endsWith('#c=' + code)).toBe(true);
+    expect(url.endsWith('#c=' + code + '&m=pwa')).toBe(true);
     // Bấm nút là đánh thức trước Cloud Function nhận phiên (đỡ khởi động nguội khi trang Google xong).
     expect(warmups).toContainEqual({ warmup: true });
 

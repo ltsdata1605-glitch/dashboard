@@ -37,7 +37,9 @@ interface SessionProfile {
 // lúc chậm". Giữ 1 instance luôn chạy sẵn để loại bỏ hẳn cold-start cho hàm quan trọng nhất
 // trong đường găng khởi động (implementation_plan.md mục 40) — đánh đổi lấy chi phí Cloud
 // Run chạy liên tục, đã được người dùng đồng ý.
-export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1 }, async (request) => {
+// memory 512MiB (2026-10-21): 256 MiB bị tràn 2 lần (276/260 MiB) trong đợt gọi dồn 4 phút sáng 21/10 — sập giữa chừng
+// là ai đang đăng nhập lúc đó nhận lỗi. Đây là hàm của MỌI lượt mở app nên đáng giữ dư.
+export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1, memory: '512MiB' }, async (request) => {
   const uid = request.auth?.uid;
   const email = request.auth?.token.email ?? null;
   if (!uid) {

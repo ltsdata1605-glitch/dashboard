@@ -121,6 +121,14 @@
     sessionStorage.removeItem(KEY + ':returning');
   }
   const code = fromHash || sessionStorage.getItem(KEY);
+  // Mở từ app ở MÀN HÌNH CHÍNH (app gắn #m=pwa, 2026-10-21): trang này nằm trong khung trình duyệt nổi của iPhone. Xong thì
+  // ĐÓNG khung (app tự nhận phiên) — trước đây chuyển tới dashboard.pro.vn làm tải nguyên app TRONG khung nổi, người dùng tưởng
+  // phải đăng nhập lại ở đó. Mở trong Safari thường (cùng tab với app) thì vẫn chuyển về app như cũ.
+  if (fromHash) {
+    if (new URLSearchParams(location.hash.slice(1)).get('m') === 'pwa') sessionStorage.setItem(KEY + ':pwa', '1');
+    else sessionStorage.removeItem(KEY + ':pwa');
+  }
+  const fromPwa = sessionStorage.getItem(KEY + ':pwa') === '1';
 
   const provider = new GoogleAuthProvider();
   provider.addScope('https://www.googleapis.com/auth/spreadsheets');
@@ -240,10 +248,17 @@
     }
     sessionStorage.removeItem(KEY);
     sessionStorage.removeItem(KEY + ':returning');
-
-    // Về app NGAY. Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
+    sessionStorage.removeItem(KEY + ':pwa');
     show('busy', false);
     show('go', false);
+
+    if (fromPwa) {
+      $('lead').textContent = 'Đã đăng nhập ' + (idp.email || '');
+      say('Đăng nhập thành công! Bấm "Xong" ở góc trên để quay lại ứng dụng.', 'ok');
+      try { window.close(); } catch { /* khung không cho tự đóng: người dùng bấm "Xong" */ }
+      return;
+    }
+    // Về app NGAY. Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
     show('back', true);
     say('Đăng nhập thành công! Đang về ứng dụng…', 'ok');
     location.replace('https://dashboard.pro.vn/');

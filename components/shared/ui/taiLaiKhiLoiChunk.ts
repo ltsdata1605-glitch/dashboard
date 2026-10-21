@@ -13,6 +13,26 @@ const G = globalThis as unknown as { __ycxDangRoiTrang?: boolean; __ycxNgheRoiTr
 
 export const dangRoiTrang = (): boolean => Boolean(G.__ycxDangRoiTrang);
 
+/**
+ * Còn được TỰ tải lại không: tối đa 2 lần / 5 phút và cách nhau ≥ 10 giây — dùng CHUNG khoá sessionStorage với
+ * public/reload-on-chunk-error.js (2026-10-21). Trước chỉ chặn "cách nhau 10 giây": tệp hỏng mãi là tải lại mỗi 10 giây vô
+ * hạn (log 21/10: resolveSession bị gọi dồn 4 phút, tràn bộ nhớ). Gọi hàm này = ghi nhận một lượt (trả true) hoặc từ chối.
+ */
+export function duocTuTaiLai(now = Date.now()): boolean {
+    try {
+        const raw = sessionStorage.getItem('ycx_chunk_reloads');
+        const ds = (raw ? (JSON.parse(raw) as number[]) : []).filter(t => now - t < 300_000);
+        const last = Number(sessionStorage.getItem('last_module_import_reload') || 0);
+        if (ds.length >= 2 || now - last < 10_000) return false;
+        ds.push(now);
+        sessionStorage.setItem('ycx_chunk_reloads', JSON.stringify(ds));
+        sessionStorage.setItem('last_module_import_reload', String(now));
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 /** Gắn bộ nghe rời trang (một lần). Tự chạy khi module được nạp trên trình duyệt. */
 export function ngheRoiTrang(): void {
     if (G.__ycxNgheRoiTrang || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;

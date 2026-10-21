@@ -8827,3 +8827,24 @@ Tái hiện bằng Playwright giả iPhone + chặn treo `apis.google.com`: tran
 - `pwaHandoffStore({warmup, diag})`: trang đăng nhập báo bước kẹt/lỗi vào log (`[pwa-login diag]`, không có token).
 - Test: `tests/e2e/pwa-login-khong-gapi.spec.ts`, `tests/e2e/iphone-gapi-treo-dang-nhap.spec.ts` (tài khoản thật, chỉ đọc).
   Bản giả `firebase/auth` trong 8 spec thêm `initializeAuth`.
+
+### Rà sâu đăng nhập sau bản sửa gapi (2026-10-21 chiều)
+
+Đọc log máy chủ sau bản sửa: 07:15 có lượt đăng nhập iPhone đi trọn (gửi phiên → nhận phiên → resolveSession). Nhưng 07:29–07:33
+`resolveSession` bị gọi dồn mỗi ~10 giây (2 lượt/lần), tràn bộ nhớ 256 MiB 2 lần (sập giữa chừng → ai đăng nhập lúc đó nhận lỗi).
+
+**Lỗi ngầm tìm ra + sửa:**
+1. Vòng TỰ TẢI LẠI vô hạn: `public/reload-on-chunk-error.js` và `ErrorBoundary` chỉ chặn "cách nhau 10 giây". Cơ chế thật: service worker
+   mở trang "ưu tiên mạng, quá 4 giây dùng bản lưu" — mạng chậm → app shell CŨ → file /assets/ của bản cũ đã bị xoá sau lượt đăng
+   bản mới → 404 → tự tải lại → lại chậm → lại bản cũ; và bản mới về trễ bị BỎ (không lưu) nên không tự thoát được.
+   - `scripts/sw-template.js`: tải mạng chạy tiếp sau mốc 4 giây (`event.waitUntil`), về tới thì lưu bản mới; không có bản lưu thì chờ
+     mạng tới cùng thay vì báo lỗi.
+   - Giới hạn tự tải lại: tối đa 2 lần / 5 phút (`duocTuTaiLai()` ở `components/shared/ui/taiLaiKhiLoiChunk.ts`, cùng khoá sessionStorage
+     với `public/reload-on-chunk-error.js`); hết lượt thì màn lỗi hiện nút "Tải lại".
+   - Test: `tests/e2e/offline-app-shell.spec.ts` (máy chủ tĩnh có công tắc mạng chậm — bản SW cũ trượt, bản mới đạt),
+     `components/shared/ui/taiLaiKhiLoiChunk.test.ts`.
+2. `resolveSession` memory 512MiB (hàm của mọi lượt mở app).
+3. App ở Màn hình chính: đăng nhập xong trang phụ chuyển tới dashboard.pro.vn → tải NGUYÊN app trong khung trình duyệt nổi. Nay app mở
+   trang với `#m=pwa` → xong thì `window.close()` + nhắc bấm "Xong"; Safari thường vẫn tự về app. Test: `pwa-login-khong-gapi`,
+   `ios-pwa-dang-nhap`.
+4. Màn chờ nhận phiên hỏi máy chủ mỗi 1,5 s suốt 6 phút (~240 lượt gọi hàm) → 1,5 s trong 30 s đầu rồi 4 s; quay lại app thì hỏi ngay.

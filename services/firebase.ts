@@ -198,8 +198,9 @@ export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff): void => {
     } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
     warmUpPwaHandoff();
     if (isStandaloneMode()) {
-        const win = window.open(prepared.url, '_blank');
-        if (!win) window.location.assign(prepared.url);
+        // #m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi → xong thì đóng khung, KHÔNG tải app vào khung đó.
+        const win = window.open(prepared.url + '&m=pwa', '_blank');
+        if (!win) window.location.assign(prepared.url); // không mở được khung nổi: đi cùng tab, xong thì về app như Safari
     } else {
         // Trong trình duyệt thông thường (Safari/Chrome trên iPhone): chuyển hướng mượt mà trong cùng tab
         window.location.assign(prepared.url);
