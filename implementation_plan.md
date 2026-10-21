@@ -8744,3 +8744,36 @@ Thang chữ (`DESIGN_SYSTEM.md` mục 7, đo bằng `offScaleText` của `script
   khoản thật (chỉ đọc) trước/sau mọi tab ở iPhone 440 + laptop 1440/1280 — khác biệt chỉ là dữ liệu/giờ; e2e `apple-tuong-thich`,
   `mobile-iphone-6-module`, `chuan-thiet-ke-b`, `report-bi-gd6`, `khung-app-gd4`, `gd7-mini-app`, `gd10-xac-nhan-va-bang`,
   `icon-audit-man-goc`, `icon-audit-bi`, `bi-competition` — 46 passed.
+
+### GĐ10 bước 3 — mã hex ngoài bảng màu (2026-10-21)
+
+Ratchet chỉ quét lớp Tailwind nên mã hex (`style={{…'#…'}}`, `bg-[#…]`) lọt — đo riêng bằng script phân loại theo họ màu Tailwind gần nhất
+(OKLab): 295 mã hex trong `.tsx`, **108** ngoài 6 họ (sky/slate/emerald/amber/rose/indigo) + trắng/đen.
+
+- **Giữ, có lý do (76):** bảng màu NGƯỜI DÙNG tự chọn (`ColorSettingsModal` 27, `HeadToHeadConfigModal` 11, `ColumnConfigModal` 7) · LINE mô
+  phỏng `IPhoneChatPreview` 15 (như ngoại lệ tinyText/offScaleRadius) · thương hiệu: logo Google 3 (LoginView), nút xanh LINE 2
+  (PendingApprovalView) · lớp `dark:` 4 (dark mode tắt, bản build tự bỏ) · chú thích 7.
+- **Giữ — hệ màu "đậm nét" của Report BI (6, chủ đích):** đỏ `#dc2626` / cam `#ea580c` ở `getDkhtColor`, `getHtColor`, vạch dòng
+  Doanh thu/Thưởng, `BonusCompareTable`. Đây là hệ màu có tên trong bảng chọn ("Cam đậm (Cảnh báo)", "Đỏ đậm (Xấu)"), là MẶC ĐỊNH của cài
+  đặt màu người dùng (đã lưu trên cloud) và `toBoldVividColor` cố ý đổi amber/rose cũ SANG cam/đỏ để tương phản cao — đổi về amber/rose là
+  đi ngược quyết định đó và lệch với màu người dùng đã lưu.
+- **Sửa (22):**
+  - Phân ca `Legend` (dải Ghi chú dưới lịch): chấm "Xin nghỉ" TÍM không tồn tại trên lịch (`off-request` chỉ khai trong `types.ts`, không
+    nơi nào gán) và thiếu chấm XANH của người đổi cùng → 3 chấm đúng màu `.cell-*::after` ở `phanca.css`: Sửa trực tiếp (emerald) · Chủ
+    động đổi (rose) · Đổi cùng (sky).
+  - Phân ca `HelpModal` mục 7: chú giải còn màu cũ (Thu Ngân TÍM, ô thật là sky) → cùng màu ô thật/dải Ghi chú. Lưu ý: hộp này đang
+    KHÔNG có nút mở trong app (chỉ được import) — sửa để khi nối lại không sai.
+  - Phân ca đầu bảng theo tuần: teal → emerald tầng đậm (tuần 1 vốn gần như trùng tuần 5), fuchsia → indigo (không dùng rose vì cột
+    T7/CN đã tô hồng), yellow → amber.
+  - `TopSellerList` vạch nhóm: blue-500 → `bg-sky-500` (dữ liệu thật: 2 vạch, đúng màu sky-500).
+  - Thẻ KPI (4 — `KpiCard`, `IndustryKpiCard`): viền theme emerald đang là `#86efac` (green-300) → nằm trong đề xuất thẻ KPI chờ duyệt.
+- Ngoài phạm vi, chưa đổi: Xuất Google Sheet của Phân ca (`googleSheetsExport.ts`) vẫn tô ô Thu Ngân tím (`#f3e8ff`) trong khi app là
+  sky — tài liệu bên ngoài người dùng đang quen, cần chủ dự án quyết.
+- Kiểm: ảnh trước/sau Phân ca (Dùng thử + tệp NV giả, tháng 10/2026, laptop 1440 + iPhone 440) đầu bảng/Ghi chú/Hướng dẫn mục 7;
+  e2e `gd7-mini-app`, `mobile-iphone-6-module`, `apple-tuong-thich`, `chuan-thiet-ke-b`, `icon-audit-man-goc` — 20 passed.
+
+### Test Tính thuế bám lớp cỡ chữ (2026-10-21)
+
+CI `main` lượt 411 đỏ ở `tax-qr-and-export`: test tìm số thuế bằng `[data-testid=tax-result-panel] .text-2xl`, lượt cỡ chữ ở trên đổi
+`text-2xl` → `text-[25px]`. Sửa: `data-testid="tax-hero-amount"` cho số chính của thẻ kết quả, test tìm theo đó (6827f171). Bài học: trước
+khi đổi lớp hàng loạt, `git grep` thư mục `tests/` xem có bộ chọn nào bám đúng lớp đó (đã rà: chỉ còn chỗ này).

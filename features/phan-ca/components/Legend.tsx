@@ -205,10 +205,12 @@ const Legend: React.FC<LegendProps> = ({
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-sky-50 border border-sky-200"></span> Thu ngân</span>
                 <span className="flex items-center gap-2"><span className="w-4 h-4 bg-white border border-slate-200"></span> Ca thường</span>
 
+                {/* Chấm = đúng màu chấm góc ô ở phanca.css (.cell-direct-edit / -swap-initiator / -swap-partner). Bản cũ ghi "Xin nghỉ" tím —
+                    không ô nào có chấm đó (off-request chỉ khai trong types, không nơi nào gán) — và thiếu chấm xanh của người đổi cùng. */}
                 <div className="lg:ml-auto flex items-center gap-3 lg:gap-5 flex-wrap">
-                    <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#10b981' }}></span>Sửa trực tiếp</span>
-                    <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ef4444' }}></span>Đang đổi</span>
-                    <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#8b5cf6' }}></span>Xin nghỉ</span>
+                    <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Sửa trực tiếp</span>
+                    <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>Chủ động đổi</span>
+                    <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>Đổi cùng</span>
                 </div>
             </div>
         </div>
