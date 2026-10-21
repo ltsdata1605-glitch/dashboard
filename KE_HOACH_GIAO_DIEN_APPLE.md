@@ -468,6 +468,7 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
    - **Bộ xuất ảnh + lẻ tẻ — XONG 20/10** (14 nút + 3 ô; giữ hình).
    - **Bot LINE — XONG 21/10** (71 nút + 41 ô → 0; giữ hình; `ycx-hit` chỉ cho nút nhỏ đứng riêng — đo vùng chạm không đè ô khác).
    - **Report BI — XONG 21/10** (22 nút + 19 ô → 0; giữ viên tròn "chuẩn Hình 2"; còn 3 thanh trượt `range` — chưa có thành phần chung). Toàn dự án 0 nút thô.
+   - **`<button>` thô: cảnh báo → CHẶN — XONG 21/10** (ESLint `error`; `tests/unit/eslint-cam-nut-tho.test.ts` khoá — hạ về `warn` là đỏ).
 3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.
 

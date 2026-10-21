@@ -103,9 +103,11 @@ export default tseslint.config(
     rules: {
       'react-hooks/rules-of-hooks': 'error',
 
-      // Shared Core Contract §2.5.1 — cảnh báo <button> thô, khuyến khích dùng components/shared/ui/Button.
-      // Mức "warn" vì code cũ còn rất nhiều (~438 chỗ theo AUDIT.md) — không chặn cứng build.
-      'no-restricted-syntax': ['warn', {
+      // Shared Core Contract §2.5.1 — <button> thô bị CHẶN: dùng components/shared/ui/Button (nút tự tạo kiểu hoàn toàn:
+      // `<Button variant="unstyled" size="none">` — giữ nguyên lớp, có sẵn vòng focus bàn phím). Trước là "warn" vì code cũ còn
+      // ~438 chỗ; GĐ10 bước 2 (xong 2026-10-21) đưa về 0 nên chặn hẳn — `tests/unit/eslint-cam-nut-tho.test.ts` khoá mức này.
+      // Ngoại lệ DUY NHẤT: chính Button.tsx (eslint-disable-next-line tại chỗ render <button> thật).
+      'no-restricted-syntax': ['error', {
         selector: "JSXOpeningElement[name.name='button']",
         message: 'Dùng <Button> từ components/shared/ui thay vì <button> thô (RULES.md §2.5).',
       }],

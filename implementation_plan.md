@@ -8697,3 +8697,12 @@ import ở đâu (code chết — để nguyên, không sửa). ESLint: **0 cả
   kpi-card-filter, competition-target-roundup, icon-audit-bi, report-bi-auto-export, apple-tuong-thich, mobile-iphone-6-module,
   chuan-thiet-ke-b: 33 xanh, 3 bỏ qua có chủ đích, 1 đỏ CÓ TỪ TRƯỚC — `bi-competition-bonus-col` (chờ ô `bonus-cell` ở dòng TC HOMECREDIT)
   đỏ y hệt trên code TRƯỚC lượt này (đã chạy lại trên bản cất tạm); spec không nằm trong CI.
+
+## GĐ10 bước 2 — `<button>` thô: cảnh báo → CHẶN (2026-10-21)
+
+Sau Report BI toàn dự án còn **0** `<button>` thô (194 lúc kiểm 15/10; ~438 thời AUDIT cũ) → `eslint.config.js` `no-restricted-syntax`
+`warn` → **`error`**: nút thô mới làm `npm run check` và CI đỏ thay vì lặng lẽ tích lại. Ngoại lệ duy nhất vẫn là chính
+`components/shared/ui/Button.tsx` (dòng render `<button>` thật, `eslint-disable-next-line`). Khoá bằng `tests/unit/eslint-cam-nut-tho.test.ts`
+— lint bằng ĐÚNG cấu hình dự án ở 5 khu vực (gốc + 3 features): `<button>` thô phải ra mức lỗi 2, `<Button>`/chuỗi có chữ "<button>"
+không bị bắt nhầm, Button.tsx sạch; đã thử hạ về `warn` → test đỏ đúng ca chính. Cách viết nút tự tạo kiểu: `<Button variant="unstyled"
+size="none" …>` giữ nguyên lớp (có sẵn vòng focus bàn phím, `disabled:opacity-50`); CLAUDE.md mục 2 ghi quy tắc.

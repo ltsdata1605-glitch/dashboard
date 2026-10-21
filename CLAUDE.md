@@ -234,6 +234,9 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Màu sắc**: Chỉ dùng bảng màu semantic đã duyệt: `sky` (primary), `slate` (secondary), `emerald` (success), `amber` (warning), `rose` (danger). Cấm khai báo custom property màu sắc mới trong `features/*`.
 - **Màu ramp (Xoay vòng)**: Khi phân biệt trên 5 hạng mục dữ liệu, dùng pattern "6 họ semantic x 2 tầng sắc độ" (5 màu chuẩn + `indigo`, mỗi họ 2 sắc độ đậm/nhạt), không tự chế màu ngoài palette.
 - **UI Components**: Mọi phần tử tương tác (button, input, modal, confirm dialog, badge, select, dropdown) **bắt buộc** dùng components ở `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự dựng modal `fixed inset-0` mới.
+  *(2026-10-21: ESLint CHẶN `<button>` thô — trước chỉ cảnh báo; GĐ10 bước 2 đưa 194 chỗ về 0. Nút tự tạo kiểu hoàn toàn: `<Button
+  variant="unstyled" size="none">` giữ nguyên lớp. Khoá bởi `tests/unit/eslint-cam-nut-tho.test.ts`. Ô nhập/chọn/ô tick: `Input`/`Select`/`Textarea`/
+  `Checkbox` — đè hình qua `className`; nút nhỏ đứng riêng thêm `ycx-hit` khi vùng chạm 44 không đè ô/nút khác.)*
 - **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`. *(GĐ10 2026-10-15: ESLint trước chỉ bắt
   `confirm()` viết trần nên 6 chỗ `window.confirm()` lọt — nay chặn cả `window.`/`globalThis.`/`self.`, test
   `tests/unit/eslint-cam-hop-thoai-trinh-duyet.test.ts`. Phải chọn giữa 2 việc → `ConfirmDialog extraAction` (hộp 3 lựa chọn), KHÔNG nối 2 hộp.
