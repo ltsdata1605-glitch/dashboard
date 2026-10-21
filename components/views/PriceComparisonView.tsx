@@ -398,7 +398,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="hidden lg:flex text-2xl font-bold text-slate-900 dark:text-white items-center gap-2">
+          <h1 className="hidden lg:flex text-[25px] font-bold text-slate-900 dark:text-white items-center gap-2 leading-8">
             <AppIcon name="sort" size="xl" className="text-sky-700" />
             So sánh giá đối thủ
           </h1>

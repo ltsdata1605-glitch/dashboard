@@ -53,7 +53,7 @@ export const FeatureLandingLayout: React.FC<FeatureLandingLayoutProps> = ({
 
             <div className="relative z-10 w-full max-w-[1000px] px-4 sm:px-6 flex flex-col items-center text-center mt-4">
                 <div className="mb-4">
-                    <h1 className="text-3xl sm:text-4xl lg:text-[2.8rem] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-3">
+                    <h1 className="text-[28px] sm:text-[34px] lg:text-[2.8rem] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-3">
                         {title || (
                             <>
                                 Dữ liệu phức tạp.<br />

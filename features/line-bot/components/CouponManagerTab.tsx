@@ -361,7 +361,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
-                        <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stockSummary.total}</p>
+                        <p className="text-base sm:text-xl lg:text-[25px] font-black text-slate-900 dark:text-white tabular-nums tracking-tight lg:leading-8">{stockSummary.total}</p>
                         <span className="hidden lg:inline-block text-[11px] text-slate-400 font-semibold truncate">Kho toàn bộ PMH</span>
                     </div>
                 </Button>
@@ -384,7 +384,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
-                        <p className="text-base sm:text-xl lg:text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">{stockSummary.unused}</p>
+                        <p className="text-base sm:text-xl lg:text-[25px] font-black text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight lg:leading-8">{stockSummary.unused}</p>
                         <span className="hidden lg:inline-block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">
                             {stockSummary.total ? `${Math.round((stockSummary.unused / stockSummary.total) * 100)}% tổng kho` : '0%'}
                         </span>
@@ -409,7 +409,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
-                        <p className="text-base sm:text-xl lg:text-2xl font-black text-sky-600 dark:text-sky-400 tabular-nums tracking-tight">{stockSummary.sent}</p>
+                        <p className="text-base sm:text-xl lg:text-[25px] font-black text-sky-600 dark:text-sky-400 tabular-nums tracking-tight lg:leading-8">{stockSummary.sent}</p>
                         <span className="hidden lg:inline-block text-[11px] text-sky-600/80 dark:text-sky-400/80 font-bold">
                             {stockSummary.total ? `${Math.round((stockSummary.sent / stockSummary.total) * 100)}% đã cấp` : '0%'}
                         </span>
@@ -434,7 +434,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
-                        <p className="text-base sm:text-xl lg:text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{stockSummary.revoked}</p>
+                        <p className="text-base sm:text-xl lg:text-[25px] font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight lg:leading-8">{stockSummary.revoked}</p>
                         <span className="hidden lg:inline-block text-[11px] text-amber-600/80 dark:text-amber-400/80 font-bold">
                             {stockSummary.total ? `${Math.round((stockSummary.revoked / stockSummary.total) * 100)}% hoàn kho` : '0%'}
                         </span>

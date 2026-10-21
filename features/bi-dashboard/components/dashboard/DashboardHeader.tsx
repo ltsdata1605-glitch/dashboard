@@ -94,7 +94,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <div className={`relative z-50 mb-3 flex flex-row flex-wrap items-center justify-between gap-x-2.5 gap-y-1.5 pt-1 pb-1.5 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export ${MOBILE_GUTTER}`}>
                 {/* iPhone: tên phân hệ đã nằm trên segmented "Siêu thị | Nhân viên | Cập nhật" (BiWrapper) → không lặp lại tiêu đề IN HOA. */}
                 <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
-                    <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
+                    <h2 className="text-[17px] lg:text-[25px] font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         {title}
                     </h2>
                 </div>
@@ -147,7 +147,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         với tiêu đề → tự xuống hàng riêng, dạt phải, thay vì ép tiêu đề gãy vụn. */}
                     <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
                         <div className="min-w-0">
-                            <h2 className="js-report-title text-base sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5">
+                            <h2 className="js-report-title text-base sm:text-[25px] font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5">
                                 {contentTitle}
                             </h2>
                             <p className="hidden sm:block text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-normal leading-normal whitespace-nowrap">

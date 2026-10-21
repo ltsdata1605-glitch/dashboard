@@ -382,7 +382,7 @@ const RevenueView: React.FC<{
 
     
     // Tiêu đề dùng đúng cỡ chữ nhỏ gọn có sẵn của SectionHeader (text-sm lg:text-xl) thay vì tự
-    // dựng span text-2xl font-black riêng — tránh tiêu đề bị to/nặng bất thường so với chuẩn thiết kế.
+    // dựng span chữ cỡ 2xl font-black riêng — tránh tiêu đề bị to/nặng bất thường so với chuẩn thiết kế.
     // Vẫn giữ class js-report-title (ép font UTM Avo cho tiêu đề báo cáo, xem styles.css) trên cả
     // 2 span vì subtitle không còn là sibling liền kề của title trong SectionHeader.
     const dateTitleStr = useMemo(() => {

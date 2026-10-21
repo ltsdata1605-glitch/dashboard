@@ -68,7 +68,7 @@ export const BonusDesktopRow = React.memo(({
                 {bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}
             </td>
             <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${getCellColor(pnongVal, 'pnong', bonus)}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
-            <td className={`px-1.5 py-1 text-[13.5px] text-center border-r border-slate-200 dark:border-slate-700/60 tabular-nums ${getCellColor(tongVal, 'tong', bonus)}`}>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700/60 tabular-nums ${getCellColor(tongVal, 'tong', bonus)}`}>
                 {bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}
             </td>
             <td className={`px-1.5 py-1 text-[13px] text-center border-l-2 border-l-slate-300 dark:border-l-slate-600 tabular-nums ${getCellColor(dkienVal, 'dkien', bonus)}`}>

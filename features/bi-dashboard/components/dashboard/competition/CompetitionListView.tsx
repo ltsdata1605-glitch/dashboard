@@ -235,7 +235,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                         </div>
 
                                                         <div
-                                                            className="font-sans normal-case tracking-normal text-xs sm:text-[12.5px] font-medium text-slate-600 dark:text-slate-300 ml-auto flex items-center gap-1.5"
+                                                            className="font-sans normal-case tracking-normal text-xs sm:text-[13px] font-medium text-slate-600 dark:text-slate-300 ml-auto flex items-center gap-1.5"
                                                             title={`Tính theo ${stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản'}`}
                                                         >
                                                             <span className="text-slate-400 dark:text-slate-500">·</span>

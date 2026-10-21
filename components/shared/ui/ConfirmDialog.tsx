@@ -86,7 +86,7 @@ export function ConfirmDialog({
         <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${selected.bg}`}>
           {selected.icon}
         </div>
-        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
+        <h3 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 mb-2 leading-7">
           {title}
         </h3>
         <div className="text-sm text-slate-500 dark:text-slate-400 mb-6 whitespace-pre-line text-left w-full px-2">

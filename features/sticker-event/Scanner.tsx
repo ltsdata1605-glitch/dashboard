@@ -456,8 +456,8 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
                 <AppIcon name="error" size="md" className="text-rose-400 animate-pulse" />
               }
             </div>
-            <h3 className="text-2xl mb-2">{scanResult.type === 'success' ? 'THÀNH CÔNG' : 'LỖI'}</h3>
-            <p className="text-lg px-6 text-center font-medium opacity-90">{scanResult.message}</p>
+            <h3 className="text-[25px] mb-2 leading-8">{scanResult.type === 'success' ? 'THÀNH CÔNG' : 'LỖI'}</h3>
+            <p className="text-[17px] px-6 text-center font-medium opacity-90 leading-7">{scanResult.message}</p>
             <div className="mt-8 flex items-center gap-2 text-sm font-normal text-slate-400">
               <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
               Đang chuẩn bị quét tiếp...

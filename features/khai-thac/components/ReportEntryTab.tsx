@@ -95,7 +95,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                                 </span>
                             )}
                         </div>
-                        <p className="text-[11.5px] text-slate-500">Gõ được phép tính (VD <span className="tabular-nums">5+3+4</span>) — rời ô là tự tính ra tổng.</p>
+                        <p className="text-[12px] text-slate-500">Gõ được phép tính (VD <span className="tabular-nums">5+3+4</span>) — rời ô là tự tính ra tổng.</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 p-2 border-t border-slate-100">
                         <ToggleButton on={draft.traGop} onClick={() => onPatch({ traGop: !draft.traGop })} icon={<AppIcon name="card" size="md" />} label="Trả góp" tone="emerald" />
@@ -137,7 +137,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                         <pre className="px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap font-sans text-slate-800 min-h-[120px]" data-testid="preview">{previewText}</pre>
                     </section>
                     {renderActions('desktop')}
-                    <p className="text-[11.5px] text-slate-500 leading-snug">
+                    <p className="text-[12px] text-slate-500 leading-snug">
                         Bấm <b>Báo cáo</b>: copy văn bản vào clipboard để dán lên nhóm Zalo/Line, ghi vào Nhật ký, rồi làm sạch form cho đơn kế tiếp.
                     </p>
                 </div>

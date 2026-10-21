@@ -350,7 +350,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
     <div className="mb-4 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
         <div className="flex justify-between items-start">
             <div>
-                <p className="font-bold text-lg text-slate-800 dark:text-slate-100">{employeeName}</p>
+                <p className="font-bold text-[17px] text-slate-800 dark:text-slate-100 leading-7">{employeeName}</p>
                 <p className="text-sm text-slate-500 dark:text-slate-400">{date}</p>
                 <p className="text-sm mt-1 text-slate-700 dark:text-slate-300">Ca hiện tại: <span className="font-bold text-sky-600 dark:text-sky-400">{currentShift.role}</span></p>
             </div>

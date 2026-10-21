@@ -461,7 +461,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 shadow-sm">
                             <AppIcon name="clock" size="state" />
                         </div>
-                        <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
+                        <h3 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100 sm:leading-7">
                             {isRealtimeView ? 'Chưa có dữ liệu Realtime hôm nay' : 'Chưa có dữ liệu Luỹ kế'}
                         </h3>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 max-w-md leading-relaxed">

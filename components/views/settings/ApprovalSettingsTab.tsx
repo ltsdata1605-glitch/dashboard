@@ -200,7 +200,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                             <span className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
                                 <AppIcon name="security" size="md" className="text-white" />
                             </span>
-                            <h2 className="text-lg font-bold tracking-tight">Cấu Hình Kiểm Duyệt Tài Khoản Tự Động</h2>
+                            <h2 className="text-[17px] font-bold tracking-tight leading-7">Cấu Hình Kiểm Duyệt Tài Khoản Tự Động</h2>
                         </div>
                         <p className="text-xs text-sky-100 max-w-2xl leading-relaxed">
                             Thiết lập cơ chế tự động phê duyệt quyền truy cập khi có người dùng đăng nhập mới, đổi mã kho hoặc cập nhật mã kho vào hệ thống.

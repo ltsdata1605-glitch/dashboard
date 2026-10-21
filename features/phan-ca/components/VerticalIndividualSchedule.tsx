@@ -20,7 +20,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
   return (
     <div className="w-full mx-auto space-y-12 pb-12 pt-8">
       <div className="mb-8">
-         <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest text-center mb-4">LỊCH LÀM VIỆC - THÁNG {month}</h2>
+         <h2 className="text-[28px] font-black text-slate-900 uppercase tracking-widest text-center mb-4 leading-9">LỊCH LÀM VIỆC - THÁNG {month}</h2>
          <h3 className="text-xl font-bold text-slate-700 uppercase tracking-wider text-left pl-2">{staff.name}</h3>
       </div>
       

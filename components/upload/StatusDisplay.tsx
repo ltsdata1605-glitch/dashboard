@@ -43,7 +43,7 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status }) => {
             <div className="flex items-center">
                 {/* Trước 2026-10-06: class w-6 h-6 bị inline style 20px của Icon cũ đè mất — ra 20px chứ không 24px. */}
                 <AppIcon name={classes.icon} size="lg" className={`mr-3 ${classes.iconColor} ${isProcessing ? 'animate-pulse' : ''}`} />
-                <p className="font-semibold text-lg">{status.message}</p>
+                <p className="font-semibold text-[17px] leading-7">{status.message}</p>
             </div>
             {status.progress > 0 && status.progress < 100 && (
                 <div className={`mt-3 w-full rounded-full h-2.5 progress-bar-container ${isProcessing ? 'scanner' : ''}`}>

@@ -201,7 +201,7 @@ const InstructionsPanel = () => (
             <AppIcon name="info" size="state" className="text-sky-600" />
         </div>
         <div>
-            <h3 className="text-2xl font-bold text-slate-900">Hướng dẫn sử dụng Hệ thống In Sticker Event</h3>
+            <h3 className="text-[25px] font-bold text-slate-900 leading-8">Hướng dẫn sử dụng Hệ thống In Sticker Event</h3>
             <p className="text-slate-500">Làm theo các bước sau để bắt đầu sử dụng</p>
         </div>
     </div>
@@ -218,7 +218,7 @@ const InstructionsPanel = () => (
     </div>
     
     <div className="mt-6 pt-5 border-t border-slate-200">
-         <h4 className="font-semibold text-lg text-slate-800 mb-2">Lưu ý quan trọng</h4>
+         <h4 className="font-semibold text-[17px] text-slate-800 mb-2 leading-7">Lưu ý quan trọng</h4>
          <ul className="list-disc list-outside space-y-2 pl-5 text-slate-600">
             <li>Mỗi lần chỉ xuất được <strong>một ngành hàng</strong>. Để in nhiều ngành, bạn cần xuất nhiều file.</li>
             <li>Công cụ cho phép <strong className="text-sky-700">tải lên nhiều file cùng lúc</strong> để gộp dữ liệu từ nhiều ngành hàng.</li>
@@ -227,7 +227,7 @@ const InstructionsPanel = () => (
     </div>
 
     <div className="mt-6 pt-5 border-t border-slate-200">
-         <h4 className="font-semibold text-lg text-slate-800 mb-2">Xem thử Sticker Demo</h4>
+         <h4 className="font-semibold text-[17px] text-slate-800 mb-2 leading-7">Xem thử Sticker Demo</h4>
          <p className="text-sm text-slate-600 mb-3">Công cụ có thể tạo ra nhiều loại sticker với kích thước và bố cục khác nhau.</p>
          <div className="flex items-start gap-4 overflow-x-auto py-4 -mx-8 px-8 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
             
@@ -246,7 +246,7 @@ const InstructionsPanel = () => (
                             <p className="text-sm font-bold leading-tight px-12">IPHONE 15 PRO MAX 256GB</p>
                             <div>
                                 <p className="text-xs line-through">34.990.000</p>
-                                <p className="text-4xl font-extrabold" style={{fontFamily: 'Oswald, sans-serif'}}>29.990</p>
+                                <p className="text-[34px] font-extrabold leading-10" style={{fontFamily: 'Oswald, sans-serif'}}>29.990</p>
                             </div>
                             <p className="text-xs">• PMH 500K</p>
                         </div>
@@ -266,7 +266,7 @@ const InstructionsPanel = () => (
                 <div className="w-full h-full border-t border-l border-r border-b-4 border-black p-1.5 flex flex-col justify-around text-center">
                     <p className="text-xs font-bold leading-tight">NỒI CƠM ĐIỆN TỬ SHARP</p>
                     <div>
-                        <p className="text-2xl font-extrabold" style={{fontFamily: 'Oswald, sans-serif'}}>1.490</p>
+                        <p className="text-[25px] font-extrabold leading-8" style={{fontFamily: 'Oswald, sans-serif'}}>1.490</p>
                         <p className="text-sky-600 text-[9px] font-bold">Thưởng: 500</p>
                     </div>
                      <p className="text-[8px]">• Giảm ngay 100K</p>
@@ -278,7 +278,7 @@ const InstructionsPanel = () => (
                 <div className="w-full h-full border-t border-l border-r border-b-8 border-black p-1.5 flex flex-col justify-around text-center">
                     <p className="text-xs font-bold leading-tight">TAI NGHE BLUETOOTH SONY</p>
                      <div>
-                        <p className="text-2xl font-extrabold" style={{fontFamily: 'Oswald, sans-serif'}}>890</p>
+                        <p className="text-[25px] font-extrabold leading-8" style={{fontFamily: 'Oswald, sans-serif'}}>890</p>
                     </div>
                      <p className="text-[8px]">• Bảo hành 12 tháng</p>
                 </div>

@@ -140,7 +140,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
     // compact takes priority (used in 2-column grid for both draft + saved)
     // isDraft only enlarges when compact is false (full-width mode)
     const dayNumSize  = compact  ? 'text-[11px]'
-                      : isDraft  ? 'text-[16px] md:text-[20px] lg:text-[24px]'
+                      : isDraft  ? 'text-[16px] md:text-[20px] lg:text-[25px]'
                       :            'text-[12px] md:text-[14px]';
 
     const lunarSize   = compact  ? 'text-[11px]'
@@ -149,13 +149,13 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
 
     // Revenue / % value size MUST be larger than day number size and completely symmetrical
     const valueSize   = compact  ? 'text-[13px] md:text-[14px] lg:text-[15px] xl:text-[17px]'
-                      : isDraft  ? 'text-[18px] md:text-[22px] lg:text-[26px] xl:text-[32px]'
+                      : isDraft  ? 'text-[17px] md:text-[20px] lg:text-[26px] xl:text-[34px]'
                       :            'text-[13px] md:text-[14px] lg:text-[15px] xl:text-[17px]';
 
     const cellMinH    = compact ? 'min-h-[44px] md:min-h-[52px]' : 'min-h-[55px] md:min-h-[65px] lg:min-h-[75px]';
     const cellPad     = compact ? 'p-1' : 'p-1.5 md:p-2';
     const gridGap     = compact ? 'gap-0.5 md:gap-1' : 'gap-1 md:gap-2 lg:gap-3';
-    const titleSize   = compact ? 'text-base md:text-lg' : isDraft ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl';
+    const titleSize   = compact ? 'text-base md:text-[17px] md:leading-7' : isDraft ? 'text-[25px] md:text-[28px] leading-8 md:leading-9' : 'text-xl md:text-[25px] md:leading-8';
 
     const monthStr = String(month + 1).padStart(2, '0');
     

@@ -52,7 +52,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
       }
     >
-      <h3 className="text-lg leading-6 font-medium text-slate-900 mb-2">{title}</h3>
+      <h3 className="text-[17px] leading-6 font-medium text-slate-900 mb-2">{title}</h3>
       <div className="mt-2">
         <p className="text-sm text-slate-500 whitespace-pre-wrap">{message}</p>
       </div>

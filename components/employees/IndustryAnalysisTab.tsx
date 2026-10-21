@@ -322,8 +322,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 mr-2">
                     <div className="min-w-0">
-                        <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Phân Tích Khai Thác</h3>
-                        <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
+                        <h3 className="text-sm lg:text-[17px] font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Phân Tích Khai Thác</h3>
+                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
                 <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export shrink-0">
@@ -404,7 +404,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                 <table className="w-full text-left border-collapse whitespace-nowrap">
                     <thead className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                                 <tr>
-                                    <th colSpan={2} rowSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-3 py-1 text-center text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none min-w-[100px] sm:min-w-[140px] align-middle sticky left-0 z-40 h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
+                                    <th colSpan={2} rowSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-3 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none min-w-[100px] sm:min-w-[140px] align-middle sticky left-0 z-40 h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
                                         <div className="flex items-center justify-center gap-1">
                                             NHÂN VIÊN
                                             {sortConfig.key === 'name' && (
@@ -416,7 +416,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         const f = dynamicQuickFilters.find(filter => filter.key === key);
                                         if (!f) return null;
                                         return (
-                                        <th key={f.key} colSpan={dynamicHeaderGroups[f.key]?.colSpan || 1} className={`px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${dynamicHeaderGroups[f.key]?.bg || ''} ${dynamicHeaderGroups[f.key]?.text || ''} relative group/th`}>
+                                        <th key={f.key} colSpan={dynamicHeaderGroups[f.key]?.colSpan || 1} className={`px-1 sm:px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${dynamicHeaderGroups[f.key]?.bg || ''} ${dynamicHeaderGroups[f.key]?.text || ''} relative group/th`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
@@ -465,7 +465,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         <td colSpan={100} className={`px-2 sm:px-3 py-1 sm:py-1.5 ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700 sticky left-0 z-10`}>
                                             <div className="flex items-center gap-1.5 sm:gap-2">
                                                 <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].badge} flex-shrink-0`} />
-                                                <span className={`text-[11px] sm:text-[11px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].text}`}>{dept} — {employees.length} người</span>
+                                                <span className={`text-[11px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIdx % DEPT_COLORS.length].text}`}>{dept} — {employees.length} người</span>
                                             </div>
                                         </td>
                                     </tr>

@@ -324,7 +324,7 @@ export function Modal({
                 <p className="text-[12px] sm:text-[13px] font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
               )}
               {title && (
-                <h3 id={titleId} className={cn("font-semibold text-[17px] sm:text-lg leading-snug tracking-tight", titleColorClass)}>
+                <h3 id={titleId} className={cn("font-semibold text-[17px] leading-snug tracking-tight", titleColorClass)}>
                   {title}
                 </h3>
               )}

@@ -204,7 +204,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                                <h2 className="text-base sm:text-[17px] font-black text-slate-900 dark:text-slate-100 tracking-tight sm:leading-7">
                                     Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao
                                 </h2>
                                 <span className="px-1.5 py-0.2 text-[11px] font-black uppercase tracking-wider rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-200 border border-amber-300 dark:border-amber-700">

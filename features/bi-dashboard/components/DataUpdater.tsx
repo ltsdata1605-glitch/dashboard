@@ -816,7 +816,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
             <div className={`relative z-20 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
                 <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
-                    <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
+                    <h2 className="text-[17px] lg:text-[25px] font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>

@@ -888,7 +888,7 @@ export default function App(): React.JSX.Element {
         {isPrinting && (
           <Overlay kind="busy" data-modal-overlay="" className="z-50 bg-slate-900/30 flex flex-col items-center justify-center backdrop-blur-md">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400"></div>
-            <p className="text-white mt-4 text-lg font-medium">Đang tạo tệp PDF...</p>
+            <p className="text-white mt-4 text-[17px] font-medium leading-7">Đang tạo tệp PDF...</p>
           </Overlay>
         )}
 

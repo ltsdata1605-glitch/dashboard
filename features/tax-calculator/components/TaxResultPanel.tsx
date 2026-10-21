@@ -309,7 +309,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                       onClick={() => !maskIncomeForExport && (onNameChange || onMonthYearChange) && setIsEditingName(true)}
                       title={!maskIncomeForExport && (onNameChange || onMonthYearChange) ? "Bấm vào tên để đổi tên / kỳ tháng" : undefined}
                       className={`font-extrabold uppercase tracking-tight text-slate-900 dark:text-white leading-tight truncate ${
-                        maskIncomeForExport ? 'text-xl' : 'text-base sm:text-lg cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors'
+                        maskIncomeForExport ? 'text-xl' : 'text-base sm:text-[17px] cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors sm:leading-7'
                       }`}
                     >
                       {name}
@@ -387,7 +387,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                   <AppIcon name="success" size="xs" />
                   Thuế nhận thay giữ lại
                 </span>
-                <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">
+                <div className="text-[25px] font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight leading-8">
                   {maskValue(formatVnd(taxOnProxyAmount))}
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -427,7 +427,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider bg-slate-200/80 dark:bg-slate-800 px-1.5 py-0.2 rounded mb-1">
                   Thuế TNCN cá nhân (Cả kỳ)
                 </span>
-                <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+                <div className="text-[25px] font-extrabold text-slate-800 dark:text-slate-100 tracking-tight leading-8">
                   {maskValue(formatVnd(totalTaxWithProxy))}
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -440,7 +440,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
               <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60 dark:border-slate-800/30">
                 <span className="text-[11px] text-slate-500">Tổng giảm trừ:</span>
-                <div className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                <div className="text-[17px] font-bold text-slate-800 dark:text-slate-100 leading-7">
                   {maskValue(formatVnd(totalDeductions))}
                 </div>
                 <span className="text-[11px] text-slate-400">

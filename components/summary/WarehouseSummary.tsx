@@ -936,7 +936,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border-y border-r border-slate-200 dark:border-slate-700 whitespace-nowrap tabular-nums">
                         <thead>
                             {/* Top Level Group Headers */}
-                            <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
+                            <tr className="text-[11px] font-bold uppercase tracking-wider">
                                 <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider ycx-pin-left">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
@@ -951,7 +951,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                         return colsInGroup.map((col, idx) => {
                                             const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                             return (
-                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
                                                         {col.metric === 'percentHT' && isLuyKe ? '%D.KIẾN' : col.subHeader}
                                                         {sortConfig.key === col.id && (
@@ -965,7 +965,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                                     const styles = groupColorMap[group.name] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] sm:text-[11px] font-bold border-r text-center align-middle`}>
+                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] font-bold border-r text-center align-middle`}>
                                             {group.name}
                                         </th>
                                     );
@@ -979,7 +979,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     }
                                     const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !${getBorderAccentFromColorClass(styles.sub)} dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.metric === 'percentHT' && isLuyKe ? '%D.KIẾN' : col.subHeader}
                                                 {sortConfig.key === col.id && (
@@ -1113,7 +1113,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[11px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center ycx-pin-left">Tổng</td>
+                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center ycx-pin-left">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value: number | undefined;
                                     if (col.isCustom) {
@@ -1187,7 +1187,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     <div className="inline-block min-w-full align-top px-1.5 sm:px-2 lg:px-6">
                     <table className="w-full text-[11px] sm:text-sm border-collapse border-y border-r border-slate-200 dark:border-slate-700 tabular-nums">
                         <thead>
-                            <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
+                            <tr className="text-[11px] font-bold uppercase tracking-wider">
                                 <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[11px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] ycx-pin-left align-middle">
                                     Nhóm / Chỉ Số
                                 </th>
@@ -1202,7 +1202,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     </th>
                                 )}
                             </tr>
-                            <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
+                            <tr className="text-[11px] font-bold uppercase tracking-wider">
                                 {displayedVerticalData.map(row => (
                                     <React.Fragment key={`sub-${row.khoName}`}>
                                         <th className="px-1 py-1 text-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 font-bold border-b-[3px] !border-b-slate-400 border-r border-slate-200">M.Tiêu</th>
@@ -1318,7 +1318,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                                                 setEditingTargetCell(null);
                                                                             }
                                                                         }}
-                                                                        className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[11px] sm:text-[11px] font-semibold text-slate-700"
+                                                                        className="w-14 sm:w-16 px-1 py-0.5 text-center border border-sky-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-[11px] font-semibold text-slate-700"
                                                                     />
                                                                 ) : (
                                                                     <span className={hasTarget ? 'font-semibold text-slate-700 dark:text-slate-200' : `text-slate-300 ${canEdit ? 'underline decoration-dotted underline-offset-2' : ''}`}>
@@ -1554,7 +1554,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 value={editingTargetKho?.valueDTThuc || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTThuc', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-md bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-md bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-[17px] font-bold text-emerald-700 dark:text-emerald-300 transition-all sm:leading-7"
                                 placeholder="VD: 1,500"
                             />
                         </div>
@@ -1569,7 +1569,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 value={editingTargetKho?.valueDTQD || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-amber-200 dark:border-amber-800 rounded-md bg-white dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base sm:text-lg font-bold text-amber-700 dark:text-amber-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-amber-200 dark:border-amber-800 rounded-md bg-white dark:bg-slate-800 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-base sm:text-[17px] font-bold text-amber-700 dark:text-amber-300 transition-all sm:leading-7"
                                 placeholder="VD: 2,000"
                             />
                         </div>

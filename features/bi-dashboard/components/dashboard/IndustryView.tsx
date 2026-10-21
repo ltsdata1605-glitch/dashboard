@@ -491,7 +491,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             <div ref={ref} className="js-industry-view-container relative z-10 bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
                 <Card 
                     title={title} 
-                    titleClassName="text-lg sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5"
+                    titleClassName="text-[17px] sm:text-[25px] font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5"
                     bordered={false} 
                     rounded={false}
                 >
@@ -673,7 +673,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         <div ref={ref} className="js-industry-view-container relative z-10 bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700/60 shadow-sm overflow-hidden">
             <Card 
                 title={title} 
-                titleClassName="text-lg sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5"
+                titleClassName="text-[17px] sm:text-[25px] font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5"
                 actionButton={actionButton} 
                 headerClassName="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/60"
                 bordered={false} 

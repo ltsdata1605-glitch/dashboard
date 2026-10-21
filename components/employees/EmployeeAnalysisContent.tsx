@@ -231,8 +231,8 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                         <div className="flex justify-between items-center mb-3 sm:mb-6">
                             <div className="flex items-center gap-2 sm:gap-4">
                                 <div className="min-w-0">
-                                    <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{customTab.name}</h3>
-                                    <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
+                                    <h3 className="text-sm lg:text-[17px] font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{customTab.name}</h3>
+                                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-1.5 hide-on-export shrink-0">

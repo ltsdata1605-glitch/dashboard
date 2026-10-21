@@ -68,7 +68,7 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
         >
             {/* Header */}
             <div className="flex items-center justify-between pb-1">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                <h3 className="text-base sm:text-[17px] font-bold text-slate-900 dark:text-slate-100 tracking-tight sm:leading-7">
                     Phân Tích & Đề Xuất
                 </h3>
 

@@ -68,7 +68,7 @@ export const BonusDataModal: React.FC<{
                             <div className="flex flex-col">
                                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Chờ duyệt</span>
                                 <div className="flex items-end gap-1.5">
-                                     <span className="text-2xl font-black text-rose-600 tabular-nums leading-none">{remainingInBatch}</span>
+                                     <span className="text-[25px] font-black text-rose-600 tabular-nums leading-none">{remainingInBatch}</span>
                                      <span className="text-[11px] font-semibold text-slate-500">nhân viên</span>
                                 </div>
                             </div>

@@ -342,7 +342,7 @@ export const TaxCalculatorView: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h1 className="hidden lg:block text-lg font-bold text-slate-800 dark:text-slate-100">
+                <h1 className="hidden lg:block text-[17px] font-bold text-slate-800 dark:text-slate-100 leading-7">
                   Tính thuế
                 </h1>
                 <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 px-1.5 py-0.5 rounded-md">

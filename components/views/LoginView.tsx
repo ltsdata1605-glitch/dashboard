@@ -180,14 +180,14 @@ const LoginView: React.FC = () => {
         <div className="min-h-dvh bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden select-none">
             {/* Ambient Lighting Gradients */}
             <div className="absolute top-1/4 -left-20 w-80 h-80 bg-sky-400/10 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-sky-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Login Card */}
             <div className="relative max-w-sm sm:max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-2xl shadow-sky-950/5 dark:shadow-black/60 transition-all">
                 {/* Brand Badge & Header */}
                 <div className="flex flex-col items-center text-center mb-6">
                     <div className="relative mb-4">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 via-sky-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/25 ring-4 ring-sky-50 dark:ring-sky-950/40">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 via-sky-600 to-sky-700 flex items-center justify-center text-white shadow-lg shadow-sky-500/25 ring-4 ring-sky-50 dark:ring-sky-950/40">
                             <AppIcon name="dashboard" size="state" className="text-white" />
                         </div>
                     </div>

@@ -191,7 +191,7 @@ const TabContent = React.memo(() => {
             {/* Fallback for any tab not handled above */}
             {!persistentViews.some(v => v.id === activeTab) && !['tools-coupon', 'tools-tax', 'tools-price-compare', 'tools'].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
-                    <p className="text-lg font-medium">Tính năng đang được phát triển</p>
+                    <p className="text-[17px] font-medium leading-7">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
                 </div>
             )}
@@ -367,7 +367,7 @@ function AppContent() {
 
                                 <div className="h-8 w-1 bg-sky-600 rounded-full shadow-[0_0_12px_rgba(2,132,199,0.4)] ml-1 mr-3" />
                                 <div className="flex flex-col">
-                                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                                    <h1 className="text-[28px] font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                                         {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
                                     </h1>
                                     <div id="desktop-header-subtitle" className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 flex items-center"></div>

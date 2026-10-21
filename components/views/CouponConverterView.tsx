@@ -197,7 +197,7 @@ export default function CouponConverterView() {
                     {/* Input Section */}
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-xl">
                           <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-                              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                              <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 leading-7">
                                   <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />
                                   Nguồn dữ liệu
                               </h2>
@@ -255,7 +255,7 @@ export default function CouponConverterView() {
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group rounded-xl">
                         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 relative z-10">
                             <div className="flex items-center gap-4">
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 leading-7">
                                     <div className="w-2.5 h-2.5 bg-emerald-500" />
                                     Kết quả
                                 </h2>

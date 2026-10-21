@@ -241,7 +241,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         title="Click để xem thống kê ngày này"
                     >
                         <div className="text-[11px] font-medium opacity-80 leading-none mb-1">{["CN", "T2", "T3", "T4", "T5", "T6", "T7"][date.getDay()]}</div>
-                        <div className="text-lg leading-none">{String(date.getDate()).padStart(2, '0')}</div>
+                        <div className="text-[17px] leading-none">{String(date.getDate()).padStart(2, '0')}</div>
                     </th>
                 );
             })}
