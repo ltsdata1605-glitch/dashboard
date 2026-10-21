@@ -81,7 +81,7 @@ export const StatCard = React.memo<StatCardProps>(({
           </p>
 
           {/* Value */}
-          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1.5 tracking-tight leading-none">
+          <p className="text-[25px] sm:text-[28px] font-black text-slate-900 dark:text-white mt-1.5 tracking-tight leading-none">
             {value}
           </p>
 

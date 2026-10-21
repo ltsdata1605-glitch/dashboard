@@ -26,40 +26,34 @@ interface PerformanceModalProps {
 
 const MODAL_KPI_COLORS: Record<string, { top: string; iconBg: string; iconText: string; valText: string }> = {
     indigo: {
-        top: 'bg-gradient-to-r from-indigo-400 to-violet-600',
+        top: 'bg-gradient-to-r from-indigo-400 to-indigo-700',
         iconBg: 'bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40',
         iconText: 'text-indigo-600 dark:text-indigo-400',
         valText: 'text-indigo-700 dark:text-indigo-300',
     },
     emerald: {
-        top: 'bg-gradient-to-r from-emerald-400 to-teal-600',
+        top: 'bg-gradient-to-r from-emerald-400 to-emerald-700',
         iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40',
         iconText: 'text-emerald-600 dark:text-emerald-400',
         valText: 'text-emerald-700 dark:text-emerald-300',
     },
     rose: {
-        top: 'bg-gradient-to-r from-rose-400 to-pink-600',
+        top: 'bg-gradient-to-r from-rose-400 to-rose-700',
         iconBg: 'bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40',
         iconText: 'text-rose-600 dark:text-rose-400',
         valText: 'text-rose-700 dark:text-rose-300',
     },
     amber: {
-        top: 'bg-gradient-to-r from-amber-400 to-orange-600',
+        top: 'bg-gradient-to-r from-amber-400 to-amber-700',
         iconBg: 'bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40',
         iconText: 'text-amber-600 dark:text-amber-400',
         valText: 'text-amber-700 dark:text-amber-300',
     },
     cyan: {
-        top: 'bg-gradient-to-r from-sky-400 to-blue-600',
+        top: 'bg-gradient-to-r from-sky-400 to-sky-700',
         iconBg: 'bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40',
         iconText: 'text-sky-600 dark:text-sky-400',
         valText: 'text-sky-700 dark:text-sky-300',
-    },
-    purple: {
-        top: 'bg-gradient-to-r from-purple-400 to-indigo-600',
-        iconBg: 'bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40',
-        iconText: 'text-purple-600 dark:text-purple-400',
-        valText: 'text-purple-700 dark:text-purple-300',
     },
 };
 
@@ -386,7 +380,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                         <div className="whitespace-nowrap">Tổng: <span className="font-bold text-slate-700 dark:text-slate-200">{attachOrdersMetrics.total} ĐH</span></div>
                     </div>
                 </KpiCard>
-                <KpiCard icon="users" label="Tiếp Cận" value={formatQuantity(employeeData.slTiepCan)} color="purple">
+                <KpiCard icon="users" label="Tiếp Cận" value={formatQuantity(employeeData.slTiepCan)} color="emerald">
                      <div className="flex flex-col min-[370px]:flex-row justify-between items-center w-full gap-0.5 text-slate-500 dark:text-slate-400">
                         <span className="shrink-0">Thu Hộ:</span>
                         <span className="font-bold text-slate-700 dark:text-slate-200 truncate">{formatQuantity(employeeData.slThuHo)}</span>
