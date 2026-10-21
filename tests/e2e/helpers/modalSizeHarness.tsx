@@ -19,7 +19,6 @@ export const MODALS: Record<string, () => Promise<Record<string, unknown>>> = {
     'WarehouseSettingsModal': () => import('../../../components/summary/WarehouseSettingsModal'),
     'KpiCardConfigModal': () => import('../../../components/kpis/modals/KpiCardConfigModal'),
     'phan-ca/GoogleSheetExportModal': () => import('../../../features/phan-ca/components/GoogleSheetExportModal'),
-    'phan-ca/HelpModal': () => import('../../../features/phan-ca/components/HelpModal'),
     'phan-ca/AiSuggestPatternModal': () => import('../../../features/phan-ca/components/AiSuggestPatternModal'),
     'phan-ca/EditPatternModal': () => import('../../../features/phan-ca/components/EditPatternModal'),
     'phan-ca/SuggestionModal': () => import('../../../features/phan-ca/components/SuggestionModal'),

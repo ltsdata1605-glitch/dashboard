@@ -18,7 +18,6 @@ import EditPatternModal from './components/EditPatternModal';
 import SuggestionModal from './components/SuggestionModal';
 import HistoryModal from './components/HistoryModal';
 import GoogleSheetExportModal from './components/GoogleSheetExportModal';
-import HelpModal from './components/HelpModal';
 import ConflictListModal from './components/ConflictListModal';
 import BusyReportModal from './components/BusyReportModal';
 import AiSuggestPatternModal from './components/AiSuggestPatternModal';

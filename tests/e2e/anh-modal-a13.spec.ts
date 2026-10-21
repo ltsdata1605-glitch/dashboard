@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import * as fs from 'node:fs';
 /** Chụp ảnh trước/sau A13 — chạy tay: A13_OUT=<thư mục> npx playwright test anh-modal-a13 */
-const TEN = ['DrillDownModal','PerformanceModal','UnconfiguredGroupsModal','ChangelogModal','EmployeeManagerModal','FileHistoryModal','CustomExploitationTabModal','ColumnConfigModal','HeadToHeadConfigModal','WarehouseSettingsModal','KpiCardConfigModal','phan-ca/GoogleSheetExportModal','phan-ca/HelpModal','phan-ca/AiSuggestPatternModal','phan-ca/EditPatternModal','phan-ca/SuggestionModal','phan-ca/BusyReportModal','phan-ca/ConflictListModal','phan-ca/ImportStaffModal','sticker/SuperAdminModal','sticker/UserManagementModal','sticker/PdfPreviewModal','sticker/FilterModal','sticker/UserGuideModal','sticker/LayoutSelectionModal','sticker/SavedListsModal','bi/BonusDataModal'];
+const TEN = ['DrillDownModal','PerformanceModal','UnconfiguredGroupsModal','ChangelogModal','EmployeeManagerModal','FileHistoryModal','CustomExploitationTabModal','ColumnConfigModal','HeadToHeadConfigModal','WarehouseSettingsModal','KpiCardConfigModal','phan-ca/GoogleSheetExportModal','phan-ca/AiSuggestPatternModal','phan-ca/EditPatternModal','phan-ca/SuggestionModal','phan-ca/BusyReportModal','phan-ca/ConflictListModal','phan-ca/ImportStaffModal','sticker/SuperAdminModal','sticker/UserManagementModal','sticker/PdfPreviewModal','sticker/FilterModal','sticker/UserGuideModal','sticker/LayoutSelectionModal','sticker/SavedListsModal','bi/BonusDataModal'];
 test.use({ viewport: { width: 1366, height: 768 } });
 test('chụp modal', async ({ page }) => {
     test.skip(!process.env.A13_OUT, 'chỉ chạy tay');

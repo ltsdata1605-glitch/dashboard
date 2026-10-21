@@ -8791,6 +8791,7 @@ Thang thêm bậc thứ 10 `kpi-xl` 44/48: `TYPE_SCALE_PX` (`scripts/lint-ratche
 
 **2. Xoá `features/phan-ca/components/HelpModal.tsx`** (không nút nào mở): file + import trong `PhanCaView.tsx` + khoá harness
 `'phan-ca/HelpModal'` + tên trong danh sách modal của `tests/e2e`.
+→ **XONG:** đã xoá file, dòng import, khoá harness `modalSizeHarness.tsx`, tên trong `anh-modal-a13.spec.ts`. Không còn nơi nào dùng (`docs/audit-2026-10-07` là bằng chứng lịch sử, giữ). Hướng dẫn sử dụng Phân ca giờ chỉ còn ô "Hướng dẫn nhanh" trong hộp Ca xoay.
 
 **3. Bước 4 — bo góc kiểu cũ → token, giao diện KHÔNG đổi.** Đo: 905 lớp `rounded-lg` (421) / `rounded-xl` (376) / `rounded-2xl` (108)
 ở 205 file. Đổi THEO GIÁ TRỊ (token là thang 3 cỡ đặt tên theo vai trò chính): `lg` 8px → `rounded-control`, `xl` 12px →
