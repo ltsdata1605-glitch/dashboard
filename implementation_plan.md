@@ -8779,3 +8779,30 @@ Ratchet chỉ quét lớp Tailwind nên mã hex (`style={{…'#…'}}`, `bg-[#�
 CI `main` lượt 411 đỏ ở `tax-qr-and-export`: test tìm số thuế bằng `[data-testid=tax-result-panel] .text-2xl`, lượt cỡ chữ ở trên đổi
 `text-2xl` → `text-[25px]`. Sửa: `data-testid="tax-hero-amount"` cho số chính của thẻ kết quả, test tìm theo đó (6827f171). Bài học: trước
 khi đổi lớp hàng loạt, `git grep` thư mục `tests/` xem có bộ chọn nào bám đúng lớp đó (đã rà: chỉ còn chỗ này).
+
+## GĐ10 — chủ dự án chốt 21/10: thẻ KPI phương án B · xoá Hướng dẫn Phân ca · bước 4 bo góc → token
+
+Chủ dự án trả lời: thẻ KPI "Chọn B"; hộp Hướng dẫn Phân ca "xoá hẳn"; bước 4 "Làm tiếp".
+
+**1. Thẻ KPI — phương án B.** Gộp nhánh `claude/gd10-b3-the-kpi` (phương án A: số KPI 26/28/34px theo thang, đuôi dải màu về họ
+chuẩn, hộp hiệu suất bỏ tím) rồi thêm `xl:text-[44px]` cho 7 số KPI chính (KpiCards 3, KpiOverview 4) — B = A + bậc 44px ở màn ≥ xl.
+Thang thêm bậc thứ 10 `kpi-xl` 44/48: `TYPE_SCALE_PX` (`scripts/lint-ratchet.cjs`), token `--type-kpi-xl` + utility `type-kpi-xl`,
+`DESIGN_SYSTEM.md` mục 7, CLAUDE.md mục 2. Kiểm: `npm run check`, e2e thẻ KPI/hộp hiệu suất, ảnh dữ liệu thật 1440 + 1920 + iPhone.
+
+**2. Xoá `features/phan-ca/components/HelpModal.tsx`** (không nút nào mở): file + import trong `PhanCaView.tsx` + khoá harness
+`'phan-ca/HelpModal'` + tên trong danh sách modal của `tests/e2e`.
+
+**3. Bước 4 — bo góc kiểu cũ → token, giao diện KHÔNG đổi.** Đo: 905 lớp `rounded-lg` (421) / `rounded-xl` (376) / `rounded-2xl` (108)
+ở 205 file. Đổi THEO GIÁ TRỊ (token là thang 3 cỡ đặt tên theo vai trò chính): `lg` 8px → `rounded-control`, `xl` 12px →
+`rounded-popup`, `2xl` 16px → `rounded-card` (lớp nổi/khung modal → `rounded-overlay`, cũng 16px). Giữ: `rounded`/`-sm`/`-xs` (4/2px —
+thang không có), `-md` 6px (tooltip, đã trong thang), `-full`, `-none`, `-[…]`.
+- **Rủi ro chính:** Tailwind xếp lớp `rounded-*` trong CSS theo chữ cái, còn `cn()` (tailwind-merge 3.5) không biết 4 token tự đặt.
+  Phần tử có ≥ 2 lớp bo góc cùng biến thể (lớp gốc của component + lớp truyền vào, hoặc 2 lớp trong một chuỗi) có thể đổi bên thắng:
+  hôm nay tailwind-merge chọn lớp sau (vd nút cỡ `icon` gốc `rounded-lg` + truyền `rounded-2xl` → 16px), đổi tên xong thành
+  `rounded-control` + `rounded-card` thì không ai gộp, CSS cho `control` thắng → 8px. Cặp tĩnh cũng có thể lật thứ tự: `lg`/`full`,
+  `xl`/`sm`, `2xl`/`3xl`, `2xl`/`[…]`. Ánh xạ lg→control, xl→popup, 2xl→card GIỮ thứ tự giữa 3 lớp với nhau (2xl < lg < xl ↔
+  card < control < popup) nên chỉ cần soát các ca lẫn với lớp khác.
+- **Cách làm:** công cụ AST (TypeScript) liệt kê mọi phần tử JSX có ≥ 2 lớp bo góc cùng biến thể/cạnh trong mọi nhánh biểu thức
+  className (+ lớp gốc của component dùng chung: Button theo `size`, Input/Select/Textarea, Checkbox, Badge, Skeleton…), tính bên
+  thắng trước/sau bằng tailwind-merge THẬT + thứ tự CSS THẬT (đọc từ bản build) → xử lý tay từng ca lệch. Rồi đổi tên hàng loạt bằng
+  script, đo `border-radius` tính toán của mọi phần tử trên nhiều màn trước/sau (Dùng thử + tài khoản thật chỉ đọc) — phải trùng 100%.
