@@ -3,6 +3,8 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Textarea } from '../../../components/shared/ui/Textarea';
+import { Input } from '../../../components/shared/ui/Input';
 import { Switch } from '../../../components/shared/ui/Switch';
 import { LineBotConfig, LineGroup, botHasToken } from '../types/lineBot.types';
 import { LineBotInfo } from '../services/lineMessagingService';
@@ -116,12 +118,15 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 shadow-2xs w-full sm:w-auto">
                             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Mã Kho:</span>
-                            <input
+                            <Input
+                                dense
+                                fullWidth={false}
+                                aria-label="Mã Kho"
                                 type="text"
                                 value={deptId}
                                 onChange={e => setDeptId(e.target.value)}
                                 placeholder="Ví dụ: 910"
-                                className="w-24 px-1.5 py-0.5 text-xs font-bold text-sky-600 dark:text-sky-400 bg-transparent border-0 focus:outline-none focus:ring-0 text-center font-mono"
+                                className="h-auto w-24 px-1.5 py-0.5 text-xs font-bold text-sky-600 bg-transparent border-0 rounded-none focus-visible:ring-0 text-center font-mono"
                             />
                         </div>
                     </div>
@@ -221,7 +226,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         </a>
                     </div>
                     <div className="relative">
-                        <textarea
+                        <Textarea
+                            aria-label="Channel access token"
                             ref={tokenInputRef}
                             rows={3}
                             value={token}
@@ -229,7 +235,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             onBlur={() => setTokenFocused(false)}
                             onChange={e => setToken(e.target.value)}
                             placeholder={tokenFocused ? (tokenSaved ? 'Dán Channel access token mới vào đây để thay (để trống thì giữ nguyên)...' : 'Dán Channel access token (long-lived) từ LINE Developers...') : ''}
-                            className={`w-full p-3 rounded-xl text-xs font-mono transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                            className={`min-h-0 p-3 rounded-xl text-xs font-mono transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 ${
                                 tokenSaved && !token.trim() && !tokenFocused
                                     ? 'bg-emerald-50 border border-emerald-300 dark:bg-slate-900 dark:border-emerald-700/80 text-slate-800 dark:text-slate-200'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
@@ -307,7 +313,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         </div>
                     </div>
                     <div className="relative">
-                        <input
+                        <Input
+                            aria-label="Channel secret"
                             ref={secretInputRef}
                             type="text"
                             value={secret}
@@ -315,7 +322,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             onBlur={() => setSecretFocused(false)}
                             onChange={e => setSecret(e.target.value)}
                             placeholder={secretFocused ? (secretSaved ? 'Dán Channel secret mới vào đây để thay (để trống thì giữ nguyên)...' : 'Dán Channel secret từ tab Basic settings...') : ''}
-                            className={`w-full p-3 rounded-xl text-xs font-mono transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                            className={`h-auto p-3 rounded-xl text-xs font-mono transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 ${
                                 secretSaved && !secret.trim() && !secretFocused
                                     ? 'bg-emerald-50 border border-emerald-300 dark:bg-slate-900 dark:border-emerald-700/80 text-slate-800 dark:text-slate-200'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
@@ -372,12 +379,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300/40">1-Touch LIFF</span>
                         </label>
                     </div>
-                    <input
+                    <Input
+                        aria-label="LINE LIFF ID"
                         type="text"
                         value={liffId}
                         onChange={e => setLiffId(e.target.value)}
                         placeholder="2011679071-BclvutpD"
-                        className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="h-auto p-3 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                     />
                     <p className="flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
                         <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" /><span>Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 PMH 1 đã được sử dụng lúc HH:mm!\n↳ User: [Tên]"</em></span>
@@ -406,12 +414,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                         Lệnh duyệt đơn thủ công (khi tắt Auto-Approve)
                     </label>
-                    <input
+                    <Input
+                        aria-label="Lệnh duyệt đơn thủ công"
                         type="text"
                         value={approvalCmd}
                         onChange={e => setApprovalCmd(e.target.value)}
                         placeholder="DUYỆT"
-                        className="w-full sm:w-64 p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold uppercase text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="h-auto sm:w-64 p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold uppercase text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                     />
                     <span className="text-[11px] text-slate-500 block mt-1">
                         Chỉ các Admin được khai báo mới có quyền gửi lệnh này để Bot phát mã.

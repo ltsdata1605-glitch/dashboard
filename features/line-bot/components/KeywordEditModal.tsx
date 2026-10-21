@@ -3,6 +3,9 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Textarea } from '../../../components/shared/ui/Textarea';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
 import { KeywordReply, KeywordMatchType } from '../types/lineBot.types';
 import { uploadBotImage, deleteBotImage } from '../services/botMediaService';
 
@@ -192,12 +195,13 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Từ khoá kích hoạt <span className="text-rose-500">*</span>
                         </label>
-                        <input
+                        <Input
+                            aria-label="Từ khoá kích hoạt"
                             type="text"
                             value={kwText}
                             onChange={e => setKwText(e.target.value)}
                             placeholder="Ví dụ: hướng dẫn, xin mã, bảo hành..."
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                            className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                             required
                         />
                     </div>
@@ -207,28 +211,30 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                 Kiểu so khớp
                             </label>
-                            <select
+                            <Select
+                                aria-label="Kiểu so khớp"
                                 value={matchType}
                                 onChange={e => setMatchType(e.target.value as any)}
-                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                             >
                                 <option value="EXACT">Khớp chính xác (Toàn bộ tin)</option>
                                 <option value="CONTAINS">Khớp chứa (Tin nhắn có chứa từ)</option>
-                            </select>
+                            </Select>
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                 Trạng thái
                             </label>
-                            <select
+                            <Select
+                                aria-label="Trạng thái"
                                 value={active ? '1' : '0'}
                                 onChange={e => setActive(e.target.value === '1')}
-                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                             >
                                 <option value="1">Đang kích hoạt</option>
                                 <option value="0">Tạm tắt</option>
-                            </select>
+                            </Select>
                         </div>
                     </div>
 
@@ -236,12 +242,13 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Nội dung tin nhắn trả lời tự động
                         </label>
-                        <textarea
+                        <Textarea
+                            aria-label="Nội dung tin nhắn trả lời tự động"
                             rows={3}
                             value={replyText}
                             onChange={e => setReplyText(e.target.value)}
                             placeholder="Nhập nội dung bot sẽ phản hồi..."
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                            className="min-h-0 p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                         />
                     </div>
 
@@ -333,7 +340,9 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                             >
                                                 <AppIcon name="externalLink" size="sm" />
                                             </a>
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -343,7 +352,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                                 title="Xoá ảnh này"
                                             >
                                                 <AppIcon name="delete" size="sm" />
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 ))}

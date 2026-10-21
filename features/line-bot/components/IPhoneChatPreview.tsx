@@ -132,13 +132,15 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                     {/* 2. LINE App Navigation Bar */}
                     <div className="relative z-20 px-3 py-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between shadow-2xs">
                         <div className="flex items-center gap-2">
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 className="text-slate-700 dark:text-slate-200 flex items-center -ml-1 hover:text-emerald-600 transition-colors"
                             >
                                 <AppIcon name="chevronLeft" size="md" />
                                 <span className="text-[10px] font-bold px-1.5 py-0.2 bg-emerald-500 text-white rounded-full font-mono">12</span>
-                            </button>
+                            </Button>
                             
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white ring-2 ring-emerald-200 dark:ring-emerald-950 shadow-xs">
@@ -167,7 +169,9 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                     {/* 3. iOS Mode Segmented Tabs */}
                     <div className="px-3 pt-2 pb-1.5 bg-slate-200/60 dark:bg-slate-900/60 border-b border-slate-200/60 dark:border-slate-800">
                         <div className="grid grid-cols-4 gap-1 p-1 bg-slate-300/60 dark:bg-slate-800/80 rounded-xl text-[9px]">
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => onTabChange('filter')}
                                 className={`py-1 rounded-lg font-bold transition-all text-center ${
@@ -177,8 +181,10 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 }`}
                             >
                                 🎯 Lọc PMH
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => onTabChange('tk')}
                                 className={`py-1 rounded-lg font-bold transition-all text-center ${
@@ -188,8 +194,10 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 }`}
                             >
                                 📊 Lệnh &quot;tk&quot;
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => onTabChange('issue')}
                                 className={`py-1 rounded-lg font-bold transition-all text-center ${
@@ -199,8 +207,10 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 }`}
                             >
                                 ⚡ Nhận mã
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => onTabChange('hd')}
                                 className={`py-1 rounded-lg font-bold transition-all text-center ${
@@ -210,7 +220,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 }`}
                             >
                                 📖 Lệnh &quot;hd&quot;
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
@@ -235,7 +245,9 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                     {activeNames.map(name => {
                                         const isSelected = name === targetName;
                                         return (
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 key={name}
                                                 type="button"
                                                 onClick={() => onSelectName?.(name)}
@@ -246,7 +258,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                                 }`}
                                             >
                                                 {isSelected ? '✓ ' : ''}{name}
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>
@@ -465,7 +477,9 @@ ${otherName}
                             <>
                                 {/* Sub-filters inside chat */}
                                 <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs rounded-xl shadow-2xs text-[10px]">
-                                    <button
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onTkModeChange('all')}
                                         className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
@@ -475,8 +489,10 @@ ${otherName}
                                         }`}
                                     >
                                         Toàn bộ (tk)
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onTkModeChange('event')}
                                         className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
@@ -486,8 +502,10 @@ ${otherName}
                                         }`}
                                     >
                                         Event (tk event)
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onTkModeChange('gvgs')}
                                         className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
@@ -497,7 +515,7 @@ ${otherName}
                                         }`}
                                     >
                                         Giờ Vàng (tk gvgs)
-                                    </button>
+                                    </Button>
                                 </div>
 
                                 <div className="flex justify-end">
@@ -592,7 +610,9 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                             <>
                                 {/* Sub-filters inside chat */}
                                 <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs rounded-xl shadow-2xs text-[10px]">
-                                    <button
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onIssueModeChange('event')}
                                         className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
@@ -602,8 +622,10 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                         }`}
                                     >
                                         Event (e4 12345678)
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => onIssueModeChange('gvgs')}
                                         className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
@@ -613,7 +635,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                         }`}
                                     >
                                         Giờ Vàng (gv2 87654321)
-                                    </button>
+                                    </Button>
                                 </div>
 
                                 <div className="flex justify-end">
@@ -793,24 +815,30 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                     {/* 5. LINE Bottom Input Toolbar */}
                     <div className="relative z-20 px-2 py-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800">
                         <div className="flex items-center gap-1.5">
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 className="w-7 h-7 rounded-full text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
                             >
                                 <AppIcon name="add" size="md" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 className="w-7 h-7 rounded-full text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
                             >
                                 <AppIcon name="exportImage" size="md" />
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 className="w-7 h-7 rounded-full text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
                             >
                                 <AppIcon name="image" size="md" />
-                            </button>
+                            </Button>
 
                             {/* Fake input text box */}
                             <div className="flex-1 py-1 px-3 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
@@ -826,12 +854,14 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                 <AppIcon name="emoji" size="sm" className="text-slate-400" />
                             </div>
 
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs hover:bg-emerald-600 transition-colors"
                             >
                                 <AppIcon name="mic" size="sm" />
-                            </button>
+                            </Button>
                         </div>
 
                         {/* 6. iPhone Home Indicator Bar */}

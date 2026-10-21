@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { FilteredCouponRecord } from '../types/lineBot.types';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
@@ -149,29 +150,36 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
             <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
                 {/* Search Bar */}
                 <div className="relative w-full sm:w-[220px] lg:w-[260px] shrink-0">
-                    <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
+                    {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
+                    <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 text-slate-400" />
+                    <Input
+                        dense
+                        aria-label="Tìm mã đã lọc"
                         type="text"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Tìm mã, NV, loại PMH, người dùng..."
-                        className="w-full h-8 pl-7.5 pr-6 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm sm:text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium"
+                        className="h-8 pl-7.5 pr-6 bg-slate-50 border-slate-200 rounded-lg text-sm sm:text-xs text-slate-800 font-medium"
                     />
                     {searchQuery && (
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setSearchQuery('')}
                             aria-label="Xoá tìm kiếm"
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-0.5 after:absolute after:-inset-3.5 after:content-[''] sm:after:hidden"
                         >
                             <AppIcon name="close" size="sm" />
-                        </button>
+                        </Button>
                     )}
                 </div>
 
                 {/* Filter Pills & Actions */}
                 <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap ml-auto lg:ml-0 min-w-0 max-w-full">
                     <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-lg border border-slate-200/70 dark:border-slate-700/70 min-w-0 max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setStatusFilter('ALL')}
                             className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'ALL'
@@ -180,8 +188,10 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             }`}
                         >
                             Tất cả ({stats.total})
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setStatusFilter('UNUSED')}
                             className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'UNUSED'
@@ -190,8 +200,10 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             }`}
                         >
                             Chưa dùng ({stats.unused})
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setStatusFilter('USED')}
                             className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'USED'
@@ -200,7 +212,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             }`}
                         >
                             Đã dùng ({stats.used})
-                        </button>
+                        </Button>
                     </div>
 
                     <Button
@@ -289,11 +301,13 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                     </span>
                                                 </td>
                                                 <td className="max-md:sticky max-md:left-0 max-md:z-[1] max-md:bg-white max-md:shadow-[inset_-2px_0_0_var(--color-slate-200)] py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
-                                                    <button
+                                                    <Button
+                                                        variant="unstyled"
+                                                        size="none"
                                                         type="button"
                                                         onClick={() => handleCopy(item.code)}
                                                         title={`Bấm để copy mã: ${item.code}`}
-                                                        className={`inline-flex items-center justify-center gap-1.5 h-6.5 px-2.5 rounded-md text-xs font-semibold font-mono border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                                                        className={`ycx-hit inline-flex items-center justify-center gap-1.5 h-6.5 px-2.5 rounded-md text-xs font-semibold font-mono border transition-all cursor-pointer shadow-2xs active:scale-95 ${
                                                             copiedCode === item.code
                                                                 ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 ring-1 ring-emerald-500/30'
                                                                 : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-600'
@@ -310,7 +324,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                                 <span className="tracking-wide">{item.code}</span>
                                                             </>
                                                         )}
-                                                    </button>
+                                                    </Button>
                                                 </td>
                                                 <td className="py-1.5 px-2.5 border-r border-slate-100 dark:border-slate-800/60">
                                                     <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate max-w-[240px] lg:max-w-[340px]">

@@ -156,9 +156,13 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
 
                     <div className="flex items-center gap-1.5">
                         {steps.map(s => (
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 key={s.step}
                                 onClick={() => setCurrentStep(s.step)}
+                                aria-label={`Bước ${s.step}`}
+                                aria-current={s.step === currentStep ? 'step' : undefined}
                                 className={`relative after:absolute after:-inset-[17px] after:content-[''] w-2.5 h-2.5 rounded-full transition-all ${
                                     s.step === currentStep ? 'bg-emerald-500 w-6' : 'bg-slate-200 dark:bg-slate-700'
                                 }`}

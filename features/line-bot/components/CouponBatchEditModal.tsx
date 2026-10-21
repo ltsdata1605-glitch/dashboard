@@ -2,6 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
 import { toast } from '../../../components/shared/ui/toast';
 import { Coupon, CouponStatus } from '../types/lineBot.types';
 import { getVietnamTodayString } from '../services/couponParser';
@@ -205,7 +208,10 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                         {distinctProducts.length > 1 && (
                             <div className="flex items-center gap-1 text-[11px]">
                                 <span className="text-slate-500">Áp dụng cho:</span>
-                                <select
+                                <Select
+                                    dense
+                                    fullWidth={false}
+                                    aria-label="Áp dụng cho"
                                     value={targetProduct}
                                     onChange={e => {
                                         setTargetProduct(e.target.value);
@@ -213,38 +219,41 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                             setNewProductName(e.target.value);
                                         }
                                     }}
-                                    className="p-1 text-[11px] bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded"
+                                    className="h-auto py-1 pl-1 text-[11px] bg-slate-50 rounded-sm"
                                 >
                                     <option value="ALL">Tất cả sản phẩm trong đợt</option>
                                     {distinctProducts.map(p => (
                                         <option key={p} value={p}>{p}</option>
                                     ))}
-                                </select>
+                                </Select>
                             </div>
                         )}
                     </div>
 
-                    <input
+                    <Input
+                        aria-label="Tên sản phẩm / model áp dụng"
                         type="text"
                         value={newProductName}
                         onChange={e => setNewProductName(e.target.value)}
                         placeholder="Nhập tên sản phẩm chuẩn (Ví dụ: Máy lọc nước RO Kangaroo KG12S2H4)..."
-                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                     />
 
                     {distinctProducts.length > 0 && (
                         <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
                             <span className="text-slate-400">Gợi ý từ đợt nạp:</span>
                             {distinctProducts.map(prod => (
-                                <button
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     key={prod}
                                     type="button"
                                     onClick={() => setNewProductName(prod)}
-                                    className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 rounded-md transition-all truncate max-w-xs"
+                                    className="ycx-hit px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-600 rounded-md transition-all truncate max-w-xs"
                                     title="Click để chọn tên này"
                                 >
                                     {prod}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     )}
@@ -259,7 +268,9 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                         </label>
                         <div className="grid grid-cols-2 gap-1.5">
                             {COMMON_TYPES.map(t => (
-                                <button
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     key={t}
                                     type="button"
                                     onClick={() => setSelectedType(t)}
@@ -270,16 +281,17 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                     }`}
                                 >
                                     {t}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                         {selectedType === 'CUSTOM' && (
-                            <input
+                            <Input
+                                aria-label="Tên loại mới"
                                 type="text"
                                 value={customType}
                                 onChange={e => setCustomType(e.target.value)}
                                 placeholder="Nhập tên loại mới..."
-                                className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                                className="h-auto p-2 bg-slate-50 border-slate-200 rounded-lg text-xs"
                             />
                         )}
                     </div>
@@ -289,42 +301,52 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                         <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
                             Hạn Sử Dụng (YYYY-MM-DD)
                         </label>
-                        <input
+                        {/* `block`: ô ngày/giờ để `flex` (mặc định của Input) thì Chrome dồn icon lịch sát chữ thay vì nằm mép phải như cũ */}
+                        <Input
+                            aria-label="Hạn sử dụng"
                             type="date"
                             value={expiryDate}
                             onChange={e => setExpiryDate(e.target.value)}
-                            className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono"
+                            className="block h-auto p-2 bg-slate-50 border-slate-200 rounded-lg text-xs font-mono"
                         />
                         <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
                             <span className="text-slate-400">Chọn nhanh:</span>
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setExpiryDate(getVietnamTodayString())}
-                                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
+                                className="ycx-hit px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
                             >
                                 Hôm nay
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => handleSetQuickDate(7)}
-                                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
+                                className="ycx-hit px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
                             >
                                 +7 ngày
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => handleSetQuickDate(14)}
-                                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
+                                className="ycx-hit px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
                             >
                                 +14 ngày
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => handleSetQuickDate(30)}
-                                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
+                                className="ycx-hit px-2 py-0.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded"
                             >
                                 +30 ngày
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -341,18 +363,20 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                 Dùng khi nhân viên chưa thực sự sử dụng mã hoặc muốn đưa toàn bộ mã trong đợt về kho để phát lại.
                             </div>
                         </div>
-                        <input
-                            type="checkbox"
+                        <Checkbox
+                            aria-label="Khôi phục mã đã cấp về Chưa dùng"
                             checked={restoreSentToUnused}
                             onChange={e => setRestoreSentToUnused(e.target.checked)}
-                            className="w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500 cursor-pointer"
+                            className="h-5 w-5"
                         />
                     </div>
                 )}
 
                 {/* PHẦN 4: DANH SÁCH CHI TIẾT TỪNG MÃ */}
                 <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800">
-                    <button
+                    <Button
+                        variant="unstyled"
+                        size="none"
                         type="button"
                         onClick={() => setShowDetailedCodes(!showDetailedCodes)}
                         className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition-colors"
@@ -362,16 +386,17 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                             <span>Xem & Sửa trạng thái từng mã trong đợt ({batch.total} mã)</span>
                         </span>
                         <AppIcon name={showDetailedCodes ? 'chevronUp' : 'chevronDown'} size="xs" />
-                    </button>
+                    </Button>
 
                     {showDetailedCodes && (
                         <div className="p-3 space-y-2 border-t border-slate-200 dark:border-slate-700 animate-in fade-in duration-100">
-                            <input
+                            <Input
+                                aria-label="Tìm mã trong đợt"
                                 type="text"
                                 value={codeSearch}
                                 onChange={e => setCodeSearch(e.target.value)}
                                 placeholder="Tìm mã code hoặc tên sản phẩm..."
-                                className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+                                className="h-auto p-2 bg-slate-50 border-slate-200 rounded-lg text-xs"
                             />
 
                             <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
@@ -389,13 +414,15 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                             </div>
 
                                             <div className="flex items-center gap-1 shrink-0">
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     type="button"
                                                     onClick={() => setIndividualStatusOverrides(prev => ({
                                                         ...prev,
                                                         [c.id]: currentStatus === 'UNUSED' ? 'SENT' : 'UNUSED'
                                                     }))}
-                                                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
+                                                    className={`ycx-hit px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
                                                         currentStatus === 'UNUSED'
                                                             ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
                                                             : (currentStatus === 'SENT' ? 'bg-sky-100 text-sky-700' : 'bg-rose-100 text-rose-700')
@@ -403,7 +430,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                                     title="Chạm để chuyển đổi trạng thái Khả dụng / Đã cấp"
                                                 >
                                                     {currentStatus === 'UNUSED' ? 'Chưa dùng' : (currentStatus === 'SENT' ? 'Đã phát' : 'Thu hồi')}
-                                                </button>
+                                                </Button>
                                             </div>
                                         </div>
                                     );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Select } from '../../../components/shared/ui/Select';
 import type { GroupFeatureConfig, LineGroup } from '../types/lineBot.types';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 
@@ -148,10 +149,11 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                     <AppIcon name="settings" size="md" className="text-slate-600" />
                     <h3 className="font-bold text-slate-900 dark:text-white">Chọn Nhóm để Cấu Hình</h3>
                 </div>
-                <select
+                <Select
+                    aria-label="Chọn nhóm để cấu hình"
                     value={selectedGroupId}
                     onChange={(e) => setSelectedGroupId(e.target.value)}
-                    className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="h-auto pl-3 py-3 bg-slate-50 border-slate-200 rounded-xl text-base text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                 >
                     <option value="">-- Chọn nhóm --</option>
                     {groups.map(group => (
@@ -159,7 +161,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                             {group.groupName} ({group.memberCount || 0} thành viên)
                         </option>
                     ))}
-                </select>
+                </Select>
             </div>
 
             {/* Feature Toggles */}
@@ -192,16 +194,18 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                                         {feature.description}
                                     </p>
                                 </div>
-                                <button
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     onClick={() => handleToggleFeature(feature.key)}
-                                    className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-all shrink-0 hover:shadow-sm ${
+                                    className={`ycx-hit px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-all shrink-0 hover:shadow-sm ${
                                         currentConfig.features[feature.key]
                                             ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60'
                                             : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/60'
                                     }`}
                                 >
                                     {currentConfig.features[feature.key] ? 'BẬT' : 'TẮT'}
-                                </button>
+                                </Button>
                             </div>
                         ))}
                     </div>

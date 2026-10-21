@@ -3,6 +3,8 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
 import { Switch } from '../../../components/shared/ui/Switch';
 import { LineAdmin, AdminRole, InteractedUser } from '../types/lineBot.types';
 import { lineMessagingService } from '../services/lineMessagingService';
@@ -143,12 +145,13 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Tên Admin / Quản lý <span className="text-rose-500">*</span>
                         </label>
-                        <input
+                        <Input
+                            aria-label="Tên Admin / Quản lý"
                             type="text"
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Ví dụ: Sơn (QL K910)"
-                            className="min-h-11 sm:min-h-0 w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="h-auto p-2 bg-slate-50 border-slate-200 rounded-xl text-xs"
                             required
                         />
                     </div>
@@ -158,7 +161,9 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                                 LINE User ID (Bắt đầu bằng U...) <span className="text-rose-500">*</span>
                             </label>
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setIsSelectModalOpen(true)}
                                 className="min-h-11 sm:min-h-0 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
@@ -166,14 +171,15 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             >
                                 <AppIcon name="users" size="xs" />
                                 <span>Chọn người</span>
-                            </button>
+                            </Button>
                         </div>
-                        <input
+                        <Input
+                            aria-label="LINE User ID"
                             type="text"
                             value={lineUserId}
                             onChange={e => setLineUserId(e.target.value)}
                             placeholder="U272dcb226f9..."
-                            className="min-h-11 sm:min-h-0 w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="h-auto p-2 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono"
                             required
                         />
                     </div>
@@ -182,15 +188,16 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Vai trò phân quyền
                         </label>
-                        <select
+                        <Select
+                            aria-label="Vai trò phân quyền"
                             value={role}
                             onChange={e => setRole(e.target.value as AdminRole)}
-                            className="min-h-11 sm:min-h-0 w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="h-auto pl-2 py-2 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
                         >
                             <option value="APPROVER">Duyệt cấp mã (Lệnh DUYỆT)</option>
                             <option value="SUPER_ADMIN">Toàn quyền (Quản trị cao nhất)</option>
                             <option value="VIEWER">Chỉ xem báo cáo (.tk)</option>
-                        </select>
+                        </Select>
                     </div>
 
                     <div>

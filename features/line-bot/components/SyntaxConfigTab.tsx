@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 import { LineBotConfig, InteractedUser } from '../types/lineBot.types';
 import { SelectFilterUserModal } from './SelectFilterUserModal';
 import { IPhoneChatPreview } from './IPhoneChatPreview';
@@ -226,7 +227,9 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                                 iPhone
                                             </span>
                                         )}
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -236,7 +239,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             title={`Xoá "${name}"`}
                                         >
                                             <AppIcon name="close" size="sm" />
-                                        </button>
+                                        </Button>
                                     </span>
                                 );
                             })}
@@ -248,8 +251,9 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                             Thêm tên mới hoặc chọn từ người dùng BOT:
                         </label>
-                        <div className="flex gap-2">
-                            <input
+                        <div className="flex gap-2 [&>div:first-child]:flex-1 [&>div:first-child]:min-w-0">
+                            <Input
+                                aria-label="Tên người nhận mới"
                                 type="text"
                                 value={newCandidateName}
                                 onChange={e => setNewCandidateName(e.target.value)}
@@ -260,7 +264,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     }
                                 }}
                                 placeholder="Nhập tên người nhận (ví dụ: Lê Sơn, Boss)..."
-                                className="flex-1 min-w-0 p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                             />
                             <Button
                                 variant="secondary"
@@ -289,17 +293,21 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                         <AppIcon name="sparkles" size="xs" className="text-amber-500" />
                                         <span>Gợi ý thành viên Bot ({suggestedUsers.length}):</span>
                                     </span>
-                                    <button
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => setIsSelectUserModalOpen(true)}
                                         className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[11px]"
                                     >
                                         Xem tất cả &rarr;
-                                    </button>
+                                    </Button>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {suggestedUsers.slice(0, 5).map(u => (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             key={u.lineUserId}
                                             type="button"
                                             onClick={() => handleAddDirectName(u.displayName)}
@@ -311,7 +319,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             <span className="text-[11px] text-slate-400">
                                                 {u.lastInteractionType === 'GROUP' ? '(Nhóm)' : '(1-1)'}
                                             </span>
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             </div>
@@ -470,7 +478,9 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-1.5">
-                                    <button
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -485,8 +495,10 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                         title="Click xem trước lệnh e4 (Event) trên iPhone"
                                     >
                                         e4 12345678
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -501,7 +513,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                         title="Click xem trước lệnh gv2 (Giờ Vàng) trên iPhone"
                                     >
                                         gv2 87654321
-                                    </button>
+                                    </Button>
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     {previewTab === 'issue' && (

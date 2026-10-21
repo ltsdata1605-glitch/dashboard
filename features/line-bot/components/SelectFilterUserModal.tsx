@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Input } from '../../../components/shared/ui/Input';
 import { InteractedUser } from '../types/lineBot.types';
 
 interface SelectFilterUserModalProps {
@@ -185,27 +186,34 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}
                     <div className="relative">
-                        <AppIcon name="search" size="md" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
+                        {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
+                        <AppIcon name="search" size="md" className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 text-slate-400" />
+                        <Input
+                            aria-label="Tìm người dùng LINE"
                             type="text"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Tìm kiếm theo Tên hiển thị, Tên nhóm LINE, LINE ID..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
+                            className="h-auto pl-10 pr-4 bg-slate-50 border-slate-200 !rounded-2xl text-xs font-medium transition-all py-2.5 focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500"
                         />
                         {searchTerm && (
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 onClick={() => setSearchTerm('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                                aria-label="Xoá tìm kiếm"
+                                className="ycx-hit absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
                             >
                                 <AppIcon name="close" size="sm" />
-                            </button>
+                            </Button>
                         )}
                     </div>
 
                     {/* Filter Pills */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold">
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('ALL')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ALL'
@@ -219,9 +227,11 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             }`}>
                                 {counts.all}
                             </span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('NOT_ADDED')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'NOT_ADDED'
@@ -231,9 +241,11 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                         >
                             <AppIcon name="sparkles" size="sm" />
                             <span>Chưa thêm ({counts.notAdded})</span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('ADDED')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ADDED'
@@ -243,9 +255,11 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                         >
                             <AppIcon name="userCheck" size="sm" />
                             <span>Đã trong danh sách ({counts.added})</span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('GROUP')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'GROUP'
@@ -255,9 +269,11 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                         >
                             <AppIcon name="message" size="sm" />
                             <span>Từ Nhóm LINE ({counts.group})</span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('DIRECT')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'DIRECT'
@@ -267,16 +283,18 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                         >
                             <AppIcon name="message" size="sm" />
                             <span>Nhắn riêng / Bạn bè ({counts.direct})</span>
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Batch Actions Bar (nếu có item chưa thêm) */}
                     {counts.notAdded > 0 && (
                         <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={handleSelectAllVisible}
-                                className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-emerald-600 font-semibold transition-colors"
+                                className="ycx-hit flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-emerald-600 font-semibold transition-colors"
                             >
                                 {selectedIds.size > 0 ? (
                                     <AppIcon name="checkboxOn" size="md" className="text-emerald-600" />
@@ -288,7 +306,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                         ? `Đã chọn ${selectedIds.size} người`
                                         : 'Chọn tất cả người chưa thêm'}
                                 </span>
-                            </button>
+                            </Button>
 
                             {selectedIds.size > 0 && (
                                 <Button
@@ -355,17 +373,21 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                         {/* Checkbox (chỉ hiện khi chưa thêm vào filter) */}
                                         {!inFilter ? (
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 type="button"
                                                 onClick={() => handleToggleSelectId(user.lineUserId)}
-                                                className="text-slate-400 hover:text-emerald-600 transition-colors shrink-0"
+                                                aria-label={`Chọn ${user.displayName}`}
+                                                aria-pressed={isSelected}
+                                                className="ycx-hit text-slate-400 hover:text-emerald-600 transition-colors shrink-0"
                                             >
                                                 {isSelected ? (
                                                     <AppIcon name="checkboxOn" size="md" className="text-emerald-600" />
                                                 ) : (
                                                     <AppIcon name="checkboxOff" size="md" className="text-slate-300" />
                                                 )}
-                                            </button>
+                                            </Button>
                                         ) : (
                                             <div className="w-[18px] shrink-0 flex items-center justify-center">
                                                 <AppIcon name="check" size="sm" className="text-emerald-600" />

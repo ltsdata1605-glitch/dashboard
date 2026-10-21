@@ -3,6 +3,10 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Checkbox } from '../../../components/shared/ui/Checkbox';
+import { Textarea } from '../../../components/shared/ui/Textarea';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
 import { BotSchedule, LineGroup, ScheduleRepeatType } from '../types/lineBot.types';
 
 interface ScheduleEditModalProps {
@@ -183,12 +187,13 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Tên lịch hẹn <span className="text-rose-500">*</span>
                         </label>
-                        <input
+                        <Input
+                            aria-label="Tên lịch hẹn"
                             type="text"
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Ví dụ: Báo cáo tồn kho sáng 6h..."
-                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                            className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs"
                             required
                         />
                     </div>
@@ -198,11 +203,13 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                 Giờ thông báo (HH:mm) <span className="text-rose-500">*</span>
                             </label>
-                            <input
+                            {/* `block`: ô ngày/giờ để `flex` (mặc định của Input) thì Chrome dồn icon lịch sát chữ thay vì nằm mép phải như cũ */}
+                            <Input
+                                aria-label="Giờ thông báo"
                                 type="time"
                                 value={time}
                                 onChange={e => setTime(e.target.value)}
-                                className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono"
+                                className="block h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono"
                                 required
                             />
                         </div>
@@ -211,14 +218,15 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                 Trạng thái
                             </label>
-                            <select
+                            <Select
+                                aria-label="Trạng thái"
                                 value={active ? '1' : '0'}
                                 onChange={e => setActive(e.target.value === '1')}
-                                className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold"
+                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
                             >
                                 <option value="1">Đang bật (Hoạt động)</option>
                                 <option value="0">Tạm tắt</option>
-                            </select>
+                            </Select>
                         </div>
                     </div>
 
@@ -228,16 +236,17 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             <AppIcon name="repeat" size="sm" className="text-sky-600" />
                             <span>Chu Kỳ Lặp</span>
                         </label>
-                        <select
+                        <Select
+                            aria-label="Chu kỳ lặp"
                             value={repeatType}
                             onChange={e => handleRepeatTypeChange(e.target.value as ScheduleRepeatType)}
-                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-sky-500/20"
+                            className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus-visible:ring-2 focus-visible:ring-sky-500/20"
                         >
                             <option value="DAILY">Hàng ngày (Mỗi ngày)</option>
                             <option value="CUSTOM">Tùy chọn thứ trong tuần (Nhiều thứ)</option>
                             <option value="WEEKDAYS">Thứ 2 đến Thứ 6 (Ngày làm việc)</option>
                             <option value="ONCE">Một lần duy nhất</option>
-                        </select>
+                        </Select>
                     </div>
 
                     {/* Hiển thị tuỳ chọn tương ứng theo Chu Kỳ Lặp */}
@@ -247,12 +256,13 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 <AppIcon name="calendar" size="sm" className="text-emerald-500" />
                                 <span>Ngày phát thông báo (Một lần duy nhất) <span className="text-rose-500">*</span></span>
                             </label>
-                            <input
+                            <Input
+                                aria-label="Ngày phát thông báo"
                                 type="date"
                                 value={specificDate}
                                 min={new Date().toISOString().slice(0, 10)}
                                 onChange={e => setSpecificDate(e.target.value)}
-                                className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold font-mono"
+                                className="block h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold font-mono"
                                 required
                             />
                             <p className="flex items-start gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 mt-1">
@@ -285,7 +295,9 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 {DAYS.map(d => {
                                     const selected = days.includes(d.val);
                                     return (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             type="button"
                                             key={d.val}
                                             onClick={() => toggleDay(d.val)}
@@ -296,7 +308,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                             }`}
                                         >
                                             {d.label}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>
@@ -307,14 +319,15 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Đối tượng nhận tin
                         </label>
-                        <select
+                        <Select
+                            aria-label="Đối tượng nhận tin"
                             value={targetType}
                             onChange={e => setTargetType(e.target.value as any)}
-                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold mb-2"
+                            className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold mb-2"
                         >
                             <option value="ALL_GROUPS">Tất cả các nhóm đã lưu</option>
                             <option value="SPECIFIC_GROUPS">Chọn nhóm cụ thể</option>
-                        </select>
+                        </Select>
 
                         {targetType === 'SPECIFIC_GROUPS' && (
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
@@ -332,7 +345,9 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                     <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
                                         <div className="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-slate-700 text-[11px] text-slate-400">
                                             <span>Chọn các nhóm nhận tin ({targetGroupIds.length}/{groups.length})</span>
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 type="button"
                                                 onClick={() => {
                                                     if (targetGroupIds.length === groups.length) {
@@ -344,25 +359,28 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                                 className="text-emerald-600 hover:underline font-bold"
                                             >
                                                 {targetGroupIds.length === groups.length ? 'Bỏ chọn hết' : 'Chọn tất cả'}
-                                            </button>
+                                            </Button>
                                         </div>
                                         {groups.map(g => (
-                                            <label key={g.groupId} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 p-1 rounded-lg transition-colors">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={targetGroupIds.includes(g.groupId)}
-                                                    onChange={e => {
-                                                        if (e.target.checked) {
-                                                            setTargetGroupIds([...targetGroupIds, g.groupId]);
-                                                        } else {
-                                                            setTargetGroupIds(targetGroupIds.filter(id => id !== g.groupId));
-                                                        }
-                                                    }}
-                                                    className="rounded text-emerald-600"
-                                                />
-                                                <span className="font-medium">{g.groupName || g.groupId}</span>
-                                                {g.groupName && <span className="text-[11px] text-slate-400 font-mono">({g.groupId.slice(0, 10)}...)</span>}
-                                            </label>
+                                            <Checkbox
+                                                key={g.groupId}
+                                                wrapperClassName="flex text-xs text-slate-700 hover:bg-slate-100 p-1 rounded-lg transition-colors"
+                                                labelClassName="inline-flex items-center gap-2 text-xs text-slate-700"
+                                                label={
+                                                    <>
+                                                        <span className="font-medium">{g.groupName || g.groupId}</span>
+                                                        {g.groupName && <span className="text-[11px] text-slate-400 font-mono">({g.groupId.slice(0, 10)}...)</span>}
+                                                    </>
+                                                }
+                                                checked={targetGroupIds.includes(g.groupId)}
+                                                onChange={e => {
+                                                    if (e.target.checked) {
+                                                        setTargetGroupIds([...targetGroupIds, g.groupId]);
+                                                    } else {
+                                                        setTargetGroupIds(targetGroupIds.filter(id => id !== g.groupId));
+                                                    }
+                                                }}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -371,31 +389,40 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 {onAddManualGroup && (
                                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
                                         {!showManualInput && groups.length > 0 ? (
-                                            <button
+                                            <Button
+                                                variant="unstyled"
+                                                size="none"
                                                 type="button"
                                                 onClick={() => setShowManualInput(true)}
                                                 className="text-[11px] text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1"
                                             >
                                                 + Nhập thêm Group ID thủ công
-                                            </button>
+                                            </Button>
                                         ) : (
                                             <div className="space-y-1.5">
-                                                <div className="flex gap-1.5">
-                                                    <input
+                                                <div className="flex gap-1.5 [&>div:first-child]:flex-1 [&>div:first-child]:min-w-0">
+                                                    <Input
+                                                        dense
+                                                        aria-label="Group ID"
                                                         type="text"
                                                         placeholder="Dán Group ID (ví dụ: c...)"
                                                         value={manualGroupId}
                                                         onChange={e => setManualGroupId(e.target.value)}
-                                                        className="flex-1 p-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono"
+                                                        className="h-auto p-1.5 text-xs border-slate-200 rounded-lg font-mono"
                                                     />
-                                                    <input
+                                                    <Input
+                                                        dense
+                                                        fullWidth={false}
+                                                        aria-label="Tên nhóm"
                                                         type="text"
                                                         placeholder="Tên nhóm (tuỳ chọn)"
                                                         value={manualGroupName}
                                                         onChange={e => setManualGroupName(e.target.value)}
-                                                        className="w-32 p-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
+                                                        className="h-auto w-32 p-1.5 text-xs border-slate-200 rounded-lg"
                                                     />
-                                                    <button
+                                                    <Button
+                                                        variant="unstyled"
+                                                        size="none"
                                                         type="button"
                                                         onClick={async () => {
                                                             if (!manualGroupId.trim()) return;
@@ -408,10 +435,10 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                                             }
                                                         }}
                                                         disabled={!manualGroupId.trim()}
-                                                        className="px-2.5 py-1 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                                                        className="ycx-hit px-2.5 py-1 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                                                     >
                                                         Thêm
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         )}
@@ -427,28 +454,33 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 Nội dung thông báo
                             </label>
                             <div className="flex gap-1">
-                                <button
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     type="button"
                                     onClick={() => insertVariable('{date}')}
                                     className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[11px] font-mono text-sky-600 rounded hover:bg-slate-200"
                                 >
                                     + {`{date}`}
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
                                     type="button"
                                     onClick={() => insertVariable('{ton_kho}')}
                                     className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[11px] font-mono text-emerald-600 rounded hover:bg-slate-200"
                                 >
                                     + {`{ton_kho}`}
-                                </button>
+                                </Button>
                             </div>
                         </div>
-                        <textarea
+                        <Textarea
+                            aria-label="Nội dung thông báo"
                             rows={4}
                             value={messageTemplate}
                             onChange={e => setMessageTemplate(e.target.value)}
                             placeholder="Nhập nội dung thông báo..."
-                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                            className="min-h-0 p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs"
                             required
                         />
                     </div>

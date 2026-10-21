@@ -3,6 +3,8 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
 import { InteractedUser, LineAdmin, AdminRole } from '../types/lineBot.types';
 
 interface SelectInteractedUserModalProps {
@@ -173,27 +175,34 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}
                     <div className="relative">
-                        <AppIcon name="search" size="md" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
+                        {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
+                        <AppIcon name="search" size="md" className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 text-slate-400" />
+                        <Input
+                            aria-label="Tìm người dùng LINE"
                             type="text"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Tìm kiếm theo Tên, LINE User ID, Nhóm LINE..."
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none"
+                            className="h-auto pl-10 pr-4 bg-slate-50 border-slate-200 !rounded-2xl text-xs font-medium transition-all py-2 focus-visible:ring-2 focus-visible:ring-sky-500/20"
                         />
                         {searchTerm && (
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 onClick={() => setSearchTerm('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                                aria-label="Xoá tìm kiếm"
+                                className="ycx-hit absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
                             >
                                 <AppIcon name="close" size="sm" />
-                            </button>
+                            </Button>
                         )}
                     </div>
 
                     {/* Filter Pills */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold">
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('ALL')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ALL'
@@ -207,9 +216,11 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             }`}>
                                 {counts.all}
                             </span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('NON_ADMIN')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'NON_ADMIN'
@@ -224,9 +235,11 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             }`}>
                                 {counts.nonAdmin}
                             </span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('GROUP')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'GROUP'
@@ -241,9 +254,11 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             }`}>
                                 {counts.group}
                             </span>
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setChannelFilter('DIRECT')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'DIRECT'
@@ -258,7 +273,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             }`}>
                                 {counts.direct}
                             </span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -370,9 +385,11 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                             {/* LINE User ID + Copy Button */}
                                             <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                                                 <span className="truncate select-all">{user.lineUserId}</span>
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     onClick={() => handleCopy(user.lineUserId)}
-                                                    className="text-slate-400 hover:text-sky-600 p-0.5 rounded transition-colors"
+                                                    className="ycx-hit text-slate-400 hover:text-sky-600 p-0.5 rounded transition-colors"
                                                     title="Sao chép LINE User ID"
                                                 >
                                                     {copiedId === user.lineUserId ? (
@@ -380,7 +397,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     ) : (
                                                         <AppIcon name="copy" size="xs" />
                                                     )}
-                                                </button>
+                                                </Button>
                                             </div>
 
                                             {/* Last message snippet & time */}
@@ -418,17 +435,20 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                         ) : (
                                             <div className="flex items-center gap-2">
                                                 {/* Role selection dropdown */}
-                                                <select
+                                                <Select
+                                                    dense
+                                                    fullWidth={false}
+                                                    aria-label={`Vai trò cho ${user.displayName}`}
                                                     value={currentRole}
                                                     onChange={e =>
                                                         handleRoleChange(user.lineUserId, e.target.value as AdminRole)
                                                     }
-                                                    className="py-1.5 px-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none focus:ring-1 focus:ring-sky-500"
+                                                    className="h-auto py-1.5 pl-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
                                                 >
                                                     <option value="APPROVER">Duyệt cấp mã</option>
                                                     <option value="SUPER_ADMIN">Toàn quyền</option>
                                                     <option value="VIEWER">Chỉ xem</option>
-                                                </select>
+                                                </Select>
 
                                                 {/* Add button */}
                                                 <Button

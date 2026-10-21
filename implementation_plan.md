@@ -8632,3 +8632,38 @@ ios-xuat-anh-chia-se, xuat-hang-loat-dien-thoai-chia-se-mot-lan, login-view-rede
 tnb-data-userscript: 29 xanh. `auth-fresh-login-no-flash` (không chạy trên CI) đỏ 1/4 lượt vì chỉ kịp lấy 4 mẫu trong 2,3 s (máy
 bận — mỗi mẫu `innerText` cả dashboard ~575 ms) dù 4/4 mẫu là dashboard: ngưỡng tối thiểu 5 → 3, giữ nguyên 2 assert chính (0 mẫu
 Login/chờ duyệt, ≤ 2 mẫu không phải dashboard); chạy lại 3/3 xanh.
+
+## GĐ10 bước 2 — Bot LINE (2026-10-21)
+
+`features/line-bot`: `<button>` thô **71 → 0** + ô nhập/chọn tự vẽ **41 → 0** (còn 2 ô chọn tệp ẩn trong nhãn dạng nút / vùng kéo-thả,
+có chủ đích). ESLint: cảnh báo nút thô toàn dự án 93 → 22 (còn đúng Report BI).
+- Nút: chỉ đổi thẻ `<button …>` → `<Button variant="unstyled" size="none" …>`, giữ MỌI lớp và giữ cả chỗ KHÔNG có `type` (nút trong
+  `<form>` vẫn là nút gửi như cũ). `ycx-hit` (vùng chạm 44 vô hình) chỉ thêm cho 18 nút nhỏ ĐỨNG RIÊNG mà vùng nới không đè ô nhập/nút
+  khác — đo bằng script trên iPhone 440 cảm ứng (vùng `::after` thật so với mọi ô/nút trong hộp đang mở): copy mã trong bảng (2 tab),
+  xoá nhóm sản phẩm, "Chỉnh sửa" đợt nạp, "Xuất File Mẫu", chip gợi ý tên + chọn nhanh hạn dùng + chip trạng thái từng mã, "Thêm" Group
+  ID, × xoá tìm kiếm, "Chọn tất cả người chưa thêm", ô tick từng người, copy LINE ID, BẬT/TẮT tính năng nhóm. KHÔNG thêm cho: cụm viên
+  lọc/segmented (nút sát nhau), nút đã có vùng chạm riêng (`min-h-11` / `after:-inset`), iPhone mô phỏng (thu nhỏ có chủ đích), và nút
+  sát ô nhập mà vùng nới sẽ "cướp" chạm: chèn biến `{date}`/`{ton_kho}` ngay trên ô nội dung, "Xoá nội dung" phủ góc ô dán (chạm nhầm là
+  mất danh sách vừa dán), × hạn dùng cạnh ô ngày, "Chọn tất cả" ngay trên hàng nhóm đầu, "Xem tất cả →" trên hàng chip gợi ý.
+- Ô nhập → `Input`/`Select`/`Textarea`/`Checkbox`, giữ hình: `h-auto` khi bản cũ không đặt chiều cao (cao do đệm + cỡ chữ như cũ; máy
+  cảm ứng vẫn 44px của thành phần chung); ô trong thanh công cụ/hàng dày dùng `dense` (tìm mã 32px, lọc loại, số dòng/trang, vai trò
+  trong danh sách, Group ID/tên nhóm, mã kho trong viên); màu focus xanh lá giữ qua `focus-visible:` (mặc định của thành phần là vòng sky);
+  ô chọn dùng `pl-*` (giữ chỗ mũi tên). 39 ô thêm `aria-label` đúng chữ nhãn (trước nhãn `<label>` không gắn `htmlFor`, hoặc chỉ có
+  placeholder).
+- 3 lỗi hình bắt được nhờ so ảnh từng điểm ảnh, sửa trước khi đẩy: (1) icon kính lúp của 4 ô tìm kiếm BIẾN MẤT — `Input` tự bọc
+  `<div relative>` vẽ SAU icon nên che icon → icon `z-10`; (2) ô ngày/giờ: `Input` mặc định `flex` làm Chrome dồn icon lịch/đồng hồ sát
+  chữ (bản cũ ở mép phải) → `block`; (3) 2 ô tìm người dùng bo 16px (`rounded-2xl`) thua `rounded-control` 8px theo thứ tự CSS (`2`
+  đứng trước `c`) → `!rounded-2xl`.
+- Danh sách nhóm ở hộp lịch Gửi Notify: `<label>` tự vẽ + ô tick thô → `Checkbox` (khung `<label>` của Checkbox mang luôn cả hàng — không
+  lồng `<label>`). Nút chỉ có icon có tên: × xoá tìm kiếm (2 hộp chọn người), ô tick từng người (`aria-label` + `aria-pressed`), chấm bước
+  hộp Hướng dẫn (`Bước n`, `aria-current="step"`).
+- Khác nhìn thấy (theo chuẩn chung): mũi tên ô chọn (mũi tên trình duyệt → chevron), ô tick 16px màu sky, ô cao 44px trên máy cảm ứng ở
+  các form (Admin, lịch, từ khoá, sửa đợt nạp), vòng focus. Hộp "Sửa đợt nạp" trên iPhone: ô "Áp dụng cho" co vừa chỗ (trước giãn hết cỡ
+  tên sản phẩm dài, ép tiêu đề thành 4 dòng; nay 2 dòng).
+- Ảnh trước/sau: (a) trang thử tạm `scratch/bot-harness` (thư mục gitignore, không commit) dựng 9 cảnh bằng dữ liệu giả — bảng 14 mã,
+  hộp nạp mã (trống / dán / lịch sử), sửa đợt nạp (+ từng mã), lịch Gửi Notify (theo thứ / một lần / nhập Group ID), từ khoá có ảnh, chọn
+  người lọc, Admin + chọn từ tương tác, Cú pháp & Lọc, Hướng dẫn — iPhone 440 + laptop 1280, 0 lỗi runtime; (b) tài khoản test thật CHỈ
+  ĐỌC (`chanGhiCloud`): 8 tab + Hướng dẫn, iPhone + laptop — khác < 0,6 %, tab Cấu hình Bot lệch 5–10px chiều cao (ô nhập là khối, hết
+  khe dòng dưới ô kiểu inline-block).
+- Kiểm: `npm run check`; e2e (Chromium) gd7-mini-app, coupon-bang-iphone, gd10-xac-nhan-va-bang, mobile-iphone-6-module (Bot LINE: 0 nút
+  < 44px), apple-tuong-thich, chuan-thiet-ke-b: 27 xanh.

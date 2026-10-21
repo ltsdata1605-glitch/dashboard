@@ -4,6 +4,8 @@ import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Select } from '../../../components/shared/ui/Select';
+import { Input } from '../../../components/shared/ui/Input';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { ActionMenu } from '../../../components/shared/ui/ActionMenu';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
@@ -142,11 +144,13 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     // ---- Mảnh hiển thị dùng CHUNG cho bảng (≥ md) và thẻ mobile — tránh 2 bản chép (mobile 2026-09-21) ----
     const renderCopyButton = (c: Coupon) => (
         <>
-        <button
+        <Button
+            variant="unstyled"
+            size="none"
             type="button"
             onClick={() => handleCopyCode(c.id, c.code)}
             title={`Bấm để copy mã: ${c.code}`}
-            className={`inline-flex items-center justify-center gap-1.5 h-6.5 px-2.5 font-mono text-xs font-semibold rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+            className={`ycx-hit inline-flex items-center justify-center gap-1.5 h-6.5 px-2.5 font-mono text-xs font-semibold rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
                 copiedCode === c.code
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 ring-1 ring-emerald-500/30'
                     : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300 dark:hover:bg-slate-700'
@@ -163,7 +167,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <span className="tracking-wide">{c.code}</span>
                 </>
             )}
-        </button>
+        </Button>
         </>
     );
     const renderProduct = (c: Coupon) => (
@@ -339,7 +343,9 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         <div className="space-y-2.5 sm:space-y-3.5">
             {/* KPI Cards - Bấm trực tiếp để chuyển bộ lọc trạng thái (Micro KPI chuẩn Report BI) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2.5">
-                <button
+                <Button
+                    variant="unstyled"
+                    size="none"
                     type="button"
                     onClick={() => setStatusFilter('ALL')}
                     className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-slate-400 dark:border-t-slate-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
@@ -358,9 +364,11 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stockSummary.total}</p>
                         <span className="hidden lg:inline-block text-[11px] text-slate-400 font-semibold truncate">Kho toàn bộ PMH</span>
                     </div>
-                </button>
+                </Button>
 
-                <button
+                <Button
+                    variant="unstyled"
+                    size="none"
                     type="button"
                     onClick={() => setStatusFilter('UNUSED')}
                     className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-emerald-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
@@ -381,9 +389,11 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             {stockSummary.total ? `${Math.round((stockSummary.unused / stockSummary.total) * 100)}% tổng kho` : '0%'}
                         </span>
                     </div>
-                </button>
+                </Button>
 
-                <button
+                <Button
+                    variant="unstyled"
+                    size="none"
                     type="button"
                     onClick={() => setStatusFilter('SENT')}
                     className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-sky-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
@@ -404,9 +414,11 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             {stockSummary.total ? `${Math.round((stockSummary.sent / stockSummary.total) * 100)}% đã cấp` : '0%'}
                         </span>
                     </div>
-                </button>
+                </Button>
 
-                <button
+                <Button
+                    variant="unstyled"
+                    size="none"
                     type="button"
                     onClick={() => setStatusFilter('REVOKED')}
                     className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-amber-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
@@ -427,7 +439,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             {stockSummary.total ? `${Math.round((stockSummary.revoked / stockSummary.total) * 100)}% hoàn kho` : '0%'}
                         </span>
                     </div>
-                </button>
+                </Button>
             </div>
 
             {/* Low stock warning banner */}
@@ -483,22 +495,27 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 {/* Nhóm bộ lọc & tìm kiếm bên trái */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full lg:w-auto">
                     <div className="relative w-full sm:w-[180px] lg:w-[200px] xl:w-[240px] shrink-0">
-                        <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        <input
+                        {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
+                        <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 text-slate-400 pointer-events-none" />
+                        <Input
+                            dense
+                            aria-label="Tìm mã coupon"
                             type="text"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Tìm mã, MĐH, người nhận, SP..."
-                            className="w-full h-8 pl-7.5 pr-6 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm sm:text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+                            className="h-8 pl-7.5 pr-6 bg-slate-50 border-slate-200 rounded-lg text-sm sm:text-xs text-slate-800"
                         />
                         {searchQuery && (
-                            <button
+                            <Button
+                                variant="unstyled"
+                                size="none"
                                 onClick={() => setSearchQuery('')}
                                 aria-label="Xoá tìm kiếm"
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-0.5 after:absolute after:-inset-3.5 after:content-[''] sm:after:hidden"
                             >
                                 <AppIcon name="close" size="sm" />
-                            </button>
+                            </Button>
                         )}
                     </div>
 
@@ -518,16 +535,19 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     />
 
                     {availableTypes.length > 0 && (
-                        <select
+                        <Select
+                            dense
+                            fullWidth={false}
+                            aria-label="Lọc theo loại PMH"
                             value={typeFilter}
                             onChange={e => setTypeFilter(e.target.value)}
-                            className="h-8 px-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-xs font-semibold text-slate-700 dark:text-slate-200 shrink-0 max-w-[110px] truncate cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="h-8 pl-2 bg-slate-50 border-slate-200 rounded-lg text-[11px] sm:text-xs font-semibold text-slate-700 max-w-[110px] truncate"
                         >
                             <option value="ALL">Tất cả loại</option>
                             {availableTypes.map(t => (
                                 <option key={t} value={t}>{t}</option>
                             ))}
-                        </select>
+                        </Select>
                     )}
 
                 </div>
@@ -652,20 +672,23 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             <span className="text-slate-300 dark:text-slate-700">|</span>
                             <div className="flex items-center gap-1">
                                 <span>Xem:</span>
-                                <select
+                                <Select
+                                    dense
+                                    fullWidth={false}
+                                    aria-label="Số dòng mỗi trang"
                                     value={pageSize}
                                     onChange={e => {
                                         setPageSize(Number(e.target.value));
                                         setCurrentPage(1);
                                     }}
-                                    className="py-0.5 px-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer"
+                                    className="h-auto py-0.5 pl-1.5 border-slate-200 rounded-md text-[11px] font-semibold text-slate-700"
                                 >
                                     <option value={5}>5 dòng</option>
                                     <option value={10}>10 dòng</option>
                                     <option value={20}>20 dòng</option>
                                     <option value={50}>50 dòng</option>
                                     <option value={100}>100 dòng</option>
-                                </select>
+                                </Select>
                             </div>
                         </div>
 

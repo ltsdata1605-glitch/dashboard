@@ -4,6 +4,8 @@ import { Modal } from '../../../components/shared/ui/Modal';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Textarea } from '../../../components/shared/ui/Textarea';
+import { Input } from '../../../components/shared/ui/Input';
 import { Coupon, ParsedImportItem } from '../types/lineBot.types';
 import { parsePastedCouponList, extractProductSyntax, extractLatestDateFromText, getVietnamTodayString } from '../services/couponParser';
 import { downloadCouponSampleTemplate, readCouponExcelFile } from '../services/couponTemplateService';
@@ -341,16 +343,18 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
             controls={
                 <>
                         {/* Nút 1: Xuất File Mẫu */}
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             onClick={handleExportTemplate}
                             disabled={isExportingTemplate}
-                            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] disabled:opacity-50"
+                            className="ycx-hit px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] disabled:opacity-50"
                             title="Tải file Excel mẫu (.xlsx) chuẩn để soạn danh sách mã PMH"
                         >
                             <AppIcon name="download" size="xs" className="text-emerald-600 dark:text-emerald-400" />
                             <span>{isExportingTemplate ? 'Đang xuất...' : 'Xuất File Mẫu'}</span>
-                        </button>
+                        </Button>
 
                         {/* Nút 2: Nhập từ File Excel */}
                         <label
@@ -382,23 +386,27 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                     <label htmlFor="import-expiry-date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none whitespace-nowrap">
                                         Hạn dùng:
                                     </label>
-                                    <input
+                                    <Input
+                                        dense
+                                        fullWidth={false}
                                         id="import-expiry-date"
                                         type="date"
                                         value={expiryDate}
                                         onChange={e => handleExpiryDateChange(e.target.value)}
-                                        className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+                                        className="h-auto w-auto p-0 border-0 rounded-none bg-transparent text-xs font-semibold text-slate-800 focus-visible:ring-0 cursor-pointer"
                                         title="Mã sẽ tự động xoá khỏi kho khi bước sang 00:00 ngày hôm sau"
                                     />
                                     {expiryDate && (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             type="button"
                                             onClick={() => handleExpiryDateChange('')}
                                             className="p-0.5 text-slate-400 hover:text-rose-500 transition-colors rounded"
                                             title="Xoá hạn dùng (không thời hạn)"
                                         >
                                             <AppIcon name="close" size="sm" />
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                                 {expiryDate ? (
@@ -444,7 +452,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                 <div className="space-y-4">
                     {/* Tab Navigation: Dán mã vs Lịch sử các lần nạp */}
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                        <button
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             onClick={() => setMode('paste')}
                             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
@@ -455,8 +465,10 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                         >
                             <AppIcon name="sparkles" size="sm" />
                             <span>Dán Danh Sách Mã (Tự Động Bóc Tách)</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             onClick={() => setMode('history')}
                             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
@@ -467,7 +479,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                         >
                             <AppIcon name="history" size="sm" />
                             <span>Lịch Sử Các Lần Nạp ({importBatches.length} đợt)</span>
-                        </button>
+                        </Button>
                     </div>
 
                     {/* TAB 1: DÁN DANH SÁCH MÃ */}
@@ -480,7 +492,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                 </label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {DEFAULT_TYPES.map(t => (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             key={t}
                                             type="button"
                                             onClick={() => handleTypeChange(t)}
@@ -491,11 +505,12 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             }`}
                                         >
                                             {t === 'CUSTOM' ? 'Loại khác...' : t}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                                 {selectedType === 'CUSTOM' && (
-                                    <input
+                                    <Input
+                                        aria-label="Tên loại PMH khác"
                                         type="text"
                                         value={customType}
                                         onChange={e => {
@@ -505,14 +520,15 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             }
                                         }}
                                         placeholder="Nhập tên loại (ví dụ: PMH 50K, PMH Tri Ân)..."
-                                        className="min-h-11 sm:min-h-0 mt-2 w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500"
+                                        className="h-auto mt-2 p-2 bg-slate-50 border-slate-200 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                                     />
                                 )}
                             </div>
 
                             <div className="space-y-2">
                                 <div className="relative">
-                                    <textarea
+                                    <Textarea
+                                        aria-label="Danh sách mã cần nạp"
                                         rows={5}
                                         value={pasteText}
                                         onChange={e => {
@@ -521,10 +537,12 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             autoParseText(text, effectiveType);
                                         }}
                                         placeholder={`Dán danh sách mã vào đây (Hệ thống sẽ TỰ ĐỘNG TRÍCH XUẤT NGAY sau khi dán):\nNgày 18/09/2026 : Mã Phiếu mua hàng 1 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: CG5BBSGXJ9\nNgày 18/09/2026 : Mã Phiếu mua hàng 2 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: 4P1DXFTUM8`}
-                                        className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500"
+                                        className="min-h-0 p-3 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                                     />
                                     {pasteText && (
-                                        <button
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
                                             type="button"
                                             onClick={() => {
                                                 setPasteText('');
@@ -537,7 +555,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                         >
                                             <AppIcon name="delete" size="xs" />
                                             <span>Xoá nội dung</span>
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             </div>
@@ -587,11 +605,13 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                             </div>
                                                         </td>
                                                         <td className="p-2.5">
-                                                            <input
+                                                            <Input
+                                                                dense
+                                                                aria-label={`Cú pháp cho ${g.productName}`}
                                                                 type="text"
                                                                 value={g.syntax}
                                                                 onChange={e => handleSyntaxChange(g.productName, e.target.value)}
-                                                                className="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 focus:ring-1 focus:ring-emerald-500"
+                                                                className="h-auto px-2 py-1 border-slate-200 rounded-md text-xs font-mono font-bold text-emerald-600 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                                                                 placeholder="Nhập cú pháp..."
                                                             />
                                                         </td>
@@ -601,14 +621,16 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                             </span>
                                                         </td>
                                                         <td className="p-2.5 pr-3 text-center">
-                                                            <button
+                                                            <Button
+                                                                variant="unstyled"
+                                                                size="none"
                                                                 type="button"
                                                                 onClick={() => handleRemoveProductGroup(g.productName)}
-                                                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                                                                className="ycx-hit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
                                                                 title={`Xoá toàn bộ ${g.count} mã của sản phẩm này`}
                                                             >
                                                                 <AppIcon name="delete" size="sm" />
-                                                            </button>
+                                                            </Button>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -715,15 +737,17 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             </div>
 
                                             <div className="shrink-0 flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                                <button
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
                                                     type="button"
                                                     onClick={() => setBatchToEdit(batch)}
-                                                    className="px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                                                    className="ycx-hit px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
                                                     title="Chỉnh sửa tên sản phẩm, loại PMH, hạn dùng hoặc khôi phục mã"
                                                 >
                                                     <AppIcon name="edit" size="sm" />
                                                     <span>Sửa đợt này</span>
-                                                </button>
+                                                </Button>
                                                 <Button
                                                     variant="danger"
                                                     onClick={() => setBatchToDelete(batch)}
