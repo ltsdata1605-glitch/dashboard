@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Đăng nhập Dashboard YCX</title>
-<!-- Tải song song 3 thư viện Firebase ngay khi nhận HTML (trước đây tải nối đuôi theo import) — tới trang Google sớm hơn. -->
+<!-- Tải song song 2 thư viện Firebase ngay khi nhận HTML (trước đây tải nối đuôi theo import) — tới trang Google sớm hơn. -->
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js" crossorigin>
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js" crossorigin>
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.11.0/firebase-functions.js" crossorigin>
 <!--
   Trang đăng nhập cho app ở MÀN HÌNH CHÍNH iPhone (PWA Standalone).
   Phục vụ tại: https://auth.dashboard.pro.vn/pwa-login.html
@@ -64,22 +63,55 @@
 </main>
 
 <script type="module">
+  /*
+   * 2026-10-21 (chủ dự án quay video iPhone mới: kẹt "Đang mở trang đăng nhập Google…" rồi "Trang Google chưa mở?"):
+   * getAuth() trên iPhone/Safari chờ tải xong khung ẩn gapi (apis.google.com) + mở IndexedDB rồi mới cho
+   * signInWithRedirect chạy — thư viện cho chờ tới 30–60 s trên điện thoại. Máy nào treo một trong hai bước là
+   * không bao giờ sang được Google. Nay:
+   *  - Bước 1 (sang Google): initializeAuth bộ nhớ RAM, KHÔNG gắn popupRedirectResolver lúc khởi tạo → không tải
+   *    gapi, không mở IndexedDB; chỉ truyền resolver vào signInWithRedirect (đường này chỉ dựng URL rồi chuyển trang).
+   *  - Bước 2 (về từ Google): trang /__/auth/handler (cùng origin) để kết quả ở sessionStorage
+   *    `firebase:redirectEvent:<apiKey>:[DEFAULT]` ({urlResponse, sessionId}); đọc thẳng rồi gọi REST
+   *    accounts:signInWithIdp — KHÔNG getRedirectResult (đường đó cần khung gapi). Gửi phiên bằng fetch tới callable
+   *    pwaHandoffStore kèm Bearer ID token Firebase.
+   * Test: tests/e2e/pwa-login-khong-gapi.spec.ts.
+   */
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
-  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult }
+  import { initializeAuth, inMemoryPersistence, browserPopupRedirectResolver, GoogleAuthProvider, signInWithRedirect }
     from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
-  import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-functions.js';
 
   // Cấu hình Firebase công khai
-  const app = initializeApp({
-    apiKey: 'AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4',
-    authDomain: 'auth.dashboard.pro.vn',
-    projectId: 'dashboa-7e20b',
-    appId: '1:388853115750:web:33759964955d77a04df6a7',
-  });
-  const auth = getAuth(app);
+  const API_KEY = 'AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4';
+  const STORE_URL = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net/pwaHandoffStore';
+  const EVENT_KEY = 'firebase:redirectEvent:' + API_KEY + ':[DEFAULT]';
+  const PENDING_KEY = 'firebase:pendingRedirect:' + API_KEY + ':[DEFAULT]';
+  const t0 = Date.now();
   const $ = (id) => document.getElementById(id);
   const show = (id, on) => { $(id).hidden = !on; };
   const say = (text, kind = '') => { $('msg').textContent = text; $('msg').className = 'msg ' + kind; };
+
+  // Lấy kết quả Google NGAY khi trang mở (trước mọi thứ khác) rồi xoá để tải lại trang không dùng lại mã cũ.
+  let redirectEvent = null;
+  try {
+    const raw = sessionStorage.getItem(EVENT_KEY);
+    if (raw) redirectEvent = JSON.parse(raw);
+  } catch { /* hỏng thì coi như chưa có */ }
+  sessionStorage.removeItem(EVENT_KEY);
+  sessionStorage.removeItem(PENDING_KEY);
+
+  // Gọi callable bằng fetch (không cần thư viện firebase-functions). diag = ghi chẩn đoán vào log máy chủ.
+  const callStore = async (data, bearer) => {
+    const res = await fetch(STORE_URL, {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, bearer ? { Authorization: 'Bearer ' + bearer } : {}),
+      body: JSON.stringify({ data }),
+      keepalive: true,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.error) throw new Error((body.error && (body.error.status || body.error.message)) || ('HTTP ' + res.status));
+    return body.result;
+  };
+  const diag = (stage, extra) => callStore({ warmup: true, diag: { stage, ms: Date.now() - t0, ua: navigator.userAgent.slice(0, 160), ...extra } }).catch(() => {});
 
   // Mã chuyển phiên: trong #c=… lúc app mở trang; lưu sessionStorage để giữ qua bước redirect
   const KEY = 'ycxPwaHandoffCode';
@@ -95,12 +127,14 @@
   provider.addScope('https://www.googleapis.com/auth/drive.file');
   provider.setCustomParameters({ prompt: 'select_account' });
 
-  // Đánh thức trước Cloud Function nhận phiên (khởi động nguội ~5 s) — chạy song song, lỗi thì kệ.
-  const warmUp = () => httpsCallable(getFunctions(app, 'asia-southeast1'), 'pwaHandoffStore')({ warmup: true }).catch(() => {});
+  let auth = null;
+  const getAuthFast = () => auth || (auth = initializeAuth(initializeApp({
+    apiKey: API_KEY,
+    authDomain: 'auth.dashboard.pro.vn',
+    projectId: 'dashboa-7e20b',
+    appId: '1:388853115750:web:33759964955d77a04df6a7',
+  }), { persistence: inMemoryPersistence }));
 
-  // Mở trang Google. Trước 2026-10-13 bước này BẮT người dùng bấm thêm 1 nút "Tiếp tục với Google" (bấm 2 lần mới tới
-  // Google — chủ dự án quay video). signInWithRedirect là chuyển trang cấp cao nhất (không phải popup) nên Safari không
-  // chặn khi tự gọi; nút vẫn giữ làm đường lùi nếu vì lý do gì trang chưa chuyển đi.
   let failsafe = 0;
   function showButton(text, kind = '') {
     clearTimeout(failsafe);
@@ -115,10 +149,14 @@
     show('busy', true);
     sessionStorage.setItem(KEY + ':returning', '1');
     say('Đang mở trang đăng nhập Google…');
-    failsafe = setTimeout(() => showButton('Trang Google chưa mở? Bấm nút bên dưới.', 'err'), 6000);
+    failsafe = setTimeout(() => {
+      diag('step1-stuck');
+      showButton('Trang Google chưa mở? Bấm nút bên dưới.', 'err');
+    }, 8000);
     try {
-      await signInWithRedirect(auth, provider);
+      await signInWithRedirect(getAuthFast(), provider, browserPopupRedirectResolver);
     } catch (e) {
+      diag('step1-error', { err: String(e.code || e.message).slice(0, 120) });
       showButton('Không thể mở trang Google (' + (e.code || e.message) + '). Vui lòng bấm thử lại.', 'err');
     }
   }
@@ -128,6 +166,11 @@
   window.addEventListener('pageshow', (e) => {
     if (e.persisted) showButton('Bấm nút bên dưới để đăng nhập Google.');
   });
+
+  const IDP_ERRORS = {
+    USER_CANCELLED: 'Bạn đã huỷ đăng nhập Google.',
+    INVALID_IDP_RESPONSE: 'Lượt đăng nhập Google đã hết hạn.',
+  };
 
   async function main() {
     if (!code || !/^[A-Za-z0-9_-]{43}$/.test(code)) {
@@ -143,62 +186,66 @@
       return;
     }
 
-    // 2. Quay lại sau Google.
-    show('busy', true);
-    show('go', false);
-    $('lead').textContent = 'Đang nhận diện tài khoản Google…';
-    say('Vui lòng đợi giây lát.');
-    warmUp();
-
-    let result = null;
-    try {
-      result = await Promise.race([
-        getRedirectResult(auth),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
-      ]);
-    } catch (e) {
-      console.error('[PWA-Auth] getRedirectResult error:', e);
-      if (e.message !== 'timeout') {
-        $('lead').textContent = 'Đăng nhập Google cho ứng dụng Dashboard YCX.';
-        showButton('Đăng nhập Google không thành công (' + (e.code || e.message) + '). Bấm để thử lại.', 'err');
-        return;
-      }
-    }
-
-    if (!result) {
-      // Không có kết quả (bấm Huỷ ở Google / hết giờ): KHÔNG tự chuyển lại để khỏi lặp — cho bấm.
-      $('lead').textContent = 'Đăng nhập Google cho ứng dụng Dashboard YCX.';
+    // 2. Quay lại sau Google — không có kết quả (bấm "Quay lại" ở Google, tải lại trang): cho bấm, KHÔNG tự lặp.
+    $('lead').textContent = 'Đăng nhập Google cho ứng dụng Dashboard YCX.';
+    if (!redirectEvent || !redirectEvent.urlResponse) {
       showButton('Bấm nút bên dưới để đăng nhập Google.');
       return;
     }
 
-    const cred = GoogleAuthProvider.credentialFromResult(result);
-    if (!cred?.idToken) {
+    show('busy', true);
+    show('go', false);
+    $('lead').textContent = 'Đang nhận diện tài khoản Google…';
+    say('Vui lòng đợi giây lát.');
+    callStore({ warmup: true }).catch(() => {}); // đánh thức hàm nhận phiên song song
+
+    let idp;
+    try {
+      const res = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=' + API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestUri: redirectEvent.urlResponse,
+          sessionId: redirectEvent.sessionId || undefined,
+          postBody: redirectEvent.postBody || undefined,
+          returnSecureToken: true,
+          returnIdpCredential: true,
+        }),
+      });
+      idp = await res.json();
+      if (!res.ok || idp.error) {
+        const m = String((idp.error && idp.error.message) || res.status).split(' ')[0].split(':')[0];
+        diag('step2-idp-error', { err: m.slice(0, 80) });
+        showButton((IDP_ERRORS[m] || 'Đăng nhập Google không thành công (' + m + ').') + ' Bấm để thử lại.', 'err');
+        return;
+      }
+    } catch (e) {
+      diag('step2-network', { err: String(e.message).slice(0, 80) });
+      showButton('Mạng chập chờn, chưa nhận được tài khoản Google. Bấm để thử lại.', 'err');
+      return;
+    }
+    if (!idp.oauthIdToken || !idp.idToken) {
       showButton('Google không trả về thông tin đăng nhập. Vui lòng bấm thử lại.', 'err');
       return;
     }
 
-    $('lead').textContent = 'Đã nhận tài khoản ' + (result.user.email || '');
+    $('lead').textContent = 'Đã nhận tài khoản ' + (idp.email || '');
     say('Đang chuyển về ứng dụng…');
     try {
-      await httpsCallable(getFunctions(app, 'asia-southeast1'), 'pwaHandoffStore')({
-        code,
-        idToken: cred.idToken,
-        accessToken: cred.accessToken || null
-      });
+      await callStore({ code, idToken: idp.oauthIdToken, accessToken: idp.oauthAccessToken || null }, idp.idToken);
     } catch (e) {
-      showButton('Không gửi được phiên về ứng dụng (' + (e.code || e.message) + '). Bấm để thử lại.', 'err');
+      diag('step2-store-error', { err: String(e.message).slice(0, 80) });
+      showButton('Không gửi được phiên về ứng dụng (' + e.message + '). Bấm để thử lại.', 'err');
       return;
     }
     sessionStorage.removeItem(KEY);
     sessionStorage.removeItem(KEY + ':returning');
-    auth.signOut().catch(() => {}); // phiên ở trang này không cần giữ; không chờ
 
-    // Về app NGAY (trước đây chờ thêm 1 s). Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
+    // Về app NGAY. Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
     show('busy', false);
     show('go', false);
     show('back', true);
-    say('✅ Đăng nhập thành công! Đang về ứng dụng…', 'ok');
+    say('Đăng nhập thành công! Đang về ứng dụng…', 'ok');
     location.replace('https://dashboard.pro.vn/');
   }
 

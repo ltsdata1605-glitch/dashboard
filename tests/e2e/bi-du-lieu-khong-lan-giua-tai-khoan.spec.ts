@@ -15,6 +15,8 @@ export class GoogleAuthProvider {
   static credentialFromResult() { return null; }
 }
 export function getAuth() { return { currentUser: null }; }
+export function initializeAuth() { return { currentUser: null }; } // services/firebase.ts dùng initializeAuth (2026-10-21)
+export const indexedDBLocalPersistence = {}; export const browserPopupRedirectResolver = {};
 const fakeUser = {
   uid: '${uid}', email: '${uid}@test.local', displayName: 'Người ${uid}', photoURL: null,
   getIdTokenResult: async () => ({ claims: { role: 'admin', departmentId: null } }),

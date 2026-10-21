@@ -14,6 +14,8 @@ export class GoogleAuthProvider { addScope() {} setCustomParameters() {} static 
 const fakeUser = { uid: 'u-super', email: 'lts.truongson@gmail.com', displayName: 'Super Admin', photoURL: null,
   getIdTokenResult: async () => ({ claims: {} }), getIdToken: async () => { window.__tokenRefreshed = (window.__tokenRefreshed||0)+1; return 'token'; } };
 export function getAuth() { return { currentUser: fakeUser }; }
+export function initializeAuth() { return { currentUser: fakeUser }; } // services/firebase.ts dùng initializeAuth (2026-10-21)
+export const indexedDBLocalPersistence = {}; export const browserPopupRedirectResolver = {};
 export function onAuthStateChanged(auth, cb) { setTimeout(() => cb(fakeUser), 30); return noop; }
 export async function signInWithPopup() { return { user: fakeUser }; }
 export async function signInWithRedirect() {}

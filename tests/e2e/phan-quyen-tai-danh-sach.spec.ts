@@ -17,6 +17,8 @@ const AUTH_STUB = `
 const noop = () => {};
 export class GoogleAuthProvider { addScope() {} setCustomParameters() {} static credentialFromResult() { return null; } }
 export function getAuth() { return { currentUser: null }; }
+export function initializeAuth() { return { currentUser: null }; } // services/firebase.ts dùng initializeAuth (2026-10-21)
+export const indexedDBLocalPersistence = {}; export const browserPopupRedirectResolver = {};
 const fakeUser = {
   uid: 'u-quanly', email: 'quanly@test.local', displayName: 'Quản Lý Kho 405', photoURL: null,
   getIdTokenResult: async () => ({ claims: { role: 'manager', departmentId: '405' } }),

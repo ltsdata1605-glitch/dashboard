@@ -164,6 +164,11 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
   `functions/src/lineBotSecrets.ts → withSecrets()`. Client lưu Token/Secret qua `lineBotWebhook?action=saveSecrets` (chỉ chủ bot/admin) và gửi tin/kiểm tra
   qua `?action=sendTestPush|pushImage|sendBroadcast|getProfile|verifyToken` với `botId` + ID token (quyền = chủ bot, admin, hoặc manager CÙNG Mã Kho;
   token không bao giờ về client). Đừng thêm code client đọc/ghi 3 field này; muốn gửi LINE từ client thì thêm action theo `botId`.
+- 🔴 **Đăng nhập iPhone KHÔNG được phụ thuộc khung ẩn gapi (2026-10-21):** `getAuth()` trên iPhone chờ tải `apis.google.com` (tới
+  60 s) trước khi xong khởi tạo — máy nào treo là không đăng nhập được. `services/firebase.ts` dùng `initializeAuth` không gắn resolver
+  trên iOS (popup/redirect truyền `browserPopupRedirectResolver` tường minh); `auth-hosting/pwa-login.html` tự đọc kết quả handler
+  + REST `signInWithIdp`, KHÔNG `getRedirectResult`. Test: `pwa-login-khong-gapi`, `iphone-gapi-treo-dang-nhap`. Bản giả
+  `firebase/auth` trong test phải có `initializeAuth`. Log chẩn đoán: `[pwa-login diag]` của hàm `pwaHandoffStore`.
 - 🔵 **Lỗi tải mảnh code (2026-10-20):** tự tải lại khi lỗi chunk PHẢI qua `components/shared/ui/taiLaiKhiLoiChunk.ts` (chờ 800 ms, bỏ
   qua khi trang đang rời đi) — CẤM `location.reload()` trần trong đường lỗi chunk: WebKit huỷ `import()` dở dang lúc điều hướng, tải lại
   khi đó giành mất lượt chuyển trang của người dùng (CI WebKit "Frame load interrupted").
