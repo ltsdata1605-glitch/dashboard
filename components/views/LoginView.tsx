@@ -187,7 +187,7 @@ const LoginView: React.FC = () => {
                 {/* Brand Badge & Header */}
                 <div className="flex flex-col items-center text-center mb-6">
                     <div className="relative mb-4">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 via-sky-600 to-sky-700 flex items-center justify-center text-white shadow-lg shadow-sky-500/25 ring-4 ring-sky-50 dark:ring-sky-950/40">
+                        <div className="w-16 h-16 rounded-card bg-gradient-to-tr from-sky-500 via-sky-600 to-sky-700 flex items-center justify-center text-white shadow-lg shadow-sky-500/25 ring-4 ring-sky-50 dark:ring-sky-950/40">
                             <AppIcon name="dashboard" size="state" className="text-white" />
                         </div>
                     </div>
@@ -209,7 +209,7 @@ const LoginView: React.FC = () => {
 
                 {/* Standalone PWA Notice */}
                 {isStandalone && (
-                    <div className="mb-4 p-2.5 bg-sky-50/80 dark:bg-sky-950/40 text-sky-900 dark:text-sky-200 rounded-xl text-xs border border-sky-200/70 dark:border-sky-800/60 flex items-center justify-between gap-2 shadow-xs">
+                    <div className="mb-4 p-2.5 bg-sky-50/80 dark:bg-sky-950/40 text-sky-900 dark:text-sky-200 rounded-popup text-xs border border-sky-200/70 dark:border-sky-800/60 flex items-center justify-between gap-2 shadow-xs">
                         <span className="flex items-center gap-1.5 font-medium truncate">
                             <AppIcon name="phone" size="sm" className="text-sky-600 dark:text-sky-400 shrink-0" />
                             <span>Màn hình chính (PWA)</span>
@@ -227,7 +227,7 @@ const LoginView: React.FC = () => {
 
                 {/* In-app Browser Notice */}
                 {isInAppWebView && (
-                    <div className="mb-4 p-3 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 rounded-xl text-xs border border-amber-200/80 dark:border-amber-900/50 flex flex-col gap-1.5">
+                    <div className="mb-4 p-3 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 rounded-popup text-xs border border-amber-200/80 dark:border-amber-900/50 flex flex-col gap-1.5">
                         <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
                             <AppIcon name="warning" size="md" /> Lưu ý trình duyệt Zalo/Facebook:
                         </div>
@@ -239,7 +239,7 @@ const LoginView: React.FC = () => {
                 
                 {/* Error Banner */}
                 {error && (
-                    <div className="mb-5 p-3.5 bg-rose-50/90 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-2xl text-xs font-medium border border-rose-200/70 dark:border-rose-900/50 leading-relaxed shadow-xs">
+                    <div className="mb-5 p-3.5 bg-rose-50/90 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-card text-xs font-medium border border-rose-200/70 dark:border-rose-900/50 leading-relaxed shadow-xs">
                         <div className="flex items-start gap-2">
                             <AppIcon name="warning" size="md" className="text-rose-500 shrink-0 mt-0.5" />
                             <div className="flex-1 whitespace-pre-line">{error}</div>
@@ -288,7 +288,7 @@ const LoginView: React.FC = () => {
                             size="none"
                             onClick={handleLogin}
                             disabled={isLoggingIn}
-                            className="w-full h-12 flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-750 transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/30 font-bold text-slate-700 dark:text-white disabled:opacity-50 cursor-pointer active:scale-[0.99]"
+                            className="w-full h-12 flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup hover:bg-slate-50 dark:hover:bg-slate-750 transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/30 font-bold text-slate-700 dark:text-white disabled:opacity-50 cursor-pointer active:scale-[0.99]"
                         >
                             {isLoggingIn ? (
                                 <div className="w-5 h-5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
@@ -338,7 +338,7 @@ const LoginView: React.FC = () => {
                         variant="unstyled"
                         size="none"
                         onClick={() => setDemoMode(true)}
-                        className="w-full h-11 flex items-center justify-center gap-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-xl transition-all font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer active:scale-[0.99]"
+                        className="w-full h-11 flex items-center justify-center gap-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-popup transition-all font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer active:scale-[0.99]"
                     >
                         <AppIcon name="glasses" size="md" className="text-slate-500 dark:text-slate-400" />
                         <span>Kích hoạt Chế độ Dùng Thử</span>

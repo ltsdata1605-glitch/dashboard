@@ -57,10 +57,10 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
     };
 
     return (
-        <div className="mt-4 mb-2 bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 overflow-hidden shadow-sm lg:hover:shadow-md transition-shadow relative">
+        <div className="mt-4 mb-2 bg-white rounded-none lg:rounded-card border-y lg:border border-slate-200 overflow-hidden shadow-sm lg:hover:shadow-md transition-shadow relative">
             <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md lg:rounded-lg flex items-center justify-center shrink-0 bg-sky-100 text-sky-600">
+                    <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md lg:rounded-control flex items-center justify-center shrink-0 bg-sky-100 text-sky-600">
                         <AppIcon name="chartBar" size="md" />
                     </div>
                     <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Thống Kê Nhân Sự Theo Ca</h3>

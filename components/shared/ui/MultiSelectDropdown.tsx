@@ -80,7 +80,7 @@ const OptionRow: React.FC<{ option: MultiSelectDropdownOption; onToggle: (key: s
     tabIndex={0}
     onClick={() => onToggle(option.key)}
     onKeyDown={onActivateKey(() => onToggle(option.key))}
-    className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+    className="flex items-center justify-between px-3 py-2 rounded-control cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
   >
     <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate pr-2">{option.label}</span>
     <ToggleDot checked={option.checked} />
@@ -193,7 +193,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             tabIndex={0}
             onClick={onToggleAll}
             onKeyDown={onActivateKey(onToggleAll)}
-            className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors"
+            className="flex items-center justify-between px-3 py-2 rounded-control cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors"
           >
             <span className="text-xs font-black text-sky-700 dark:text-sky-400">{allLabel}</span>
             <ToggleDot checked={allChecked} />

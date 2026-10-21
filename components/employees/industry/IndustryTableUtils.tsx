@@ -76,6 +76,6 @@ export const HeaderCell: React.FC<{
 export const getHeatmapClass = (value: number, threshold: number) => {
     // Ô trống (0 / không có số → hiện "-") luôn xám nhạt — trước đây `undefined` lọt xuống nhánh "đạt" và được tô viên xanh.
     if (!(value > 0)) return 'text-slate-300 dark:text-slate-600';
-    if (value < threshold) return 'text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-rose-100 dark:border-rose-800/50';
-    return 'text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-emerald-100 dark:border-emerald-800/50';
+    if (value < threshold) return 'text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-control border border-rose-100 dark:border-rose-800/50';
+    return 'text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-control border border-emerald-100 dark:border-emerald-800/50';
 };

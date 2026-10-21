@@ -130,7 +130,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           onClick={hasOptions ? () => setIsOpen(p => !p) : handleSingleExport}
           disabled={disabled || isLoading}
           className={cn(
-            "export-button-component preserve-rounded ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150 active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
+            "export-button-component preserve-rounded ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150 active:scale-[0.94] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
             hasOptions ? "px-2 gap-1.5 w-auto" : "",
             isOpen && "text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border-sky-300 dark:border-sky-700 shadow-2xs font-semibold",
             className
@@ -160,7 +160,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
               right: coords.right,
               zIndex: 999999
             } : undefined}
-            className="w-64 sm:w-72 bg-white dark:bg-slate-850 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700/80 p-1.5 animate-in fade-in zoom-in-95 duration-150"
+            className="w-64 sm:w-72 bg-white dark:bg-slate-850 rounded-popup shadow-2xl border border-slate-200 dark:border-slate-700/80 p-1.5 animate-in fade-in zoom-in-95 duration-150"
           >
             <div className="px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 mb-1">
               Tuỳ chọn xuất ảnh
@@ -173,7 +173,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                   key={opt.id}
                   type="button"
                   onClick={() => handleSelectOption(opt)}
-                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer"
+                  className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-control text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer"
                 >
                   <div className="mt-0.5 p-1 rounded-md bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 shadow-2xs transition-colors shrink-0">
                     {opt.icon ? renderIcon(opt.icon, 'md') : <AppIcon name="exportImage" size="md" className="text-slate-500" />}

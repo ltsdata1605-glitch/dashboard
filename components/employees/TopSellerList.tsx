@@ -106,7 +106,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsExpanded(false)}
-                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${!isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Top/Bot 20%"
                         >
                             <AppIcon name="percent" size="md" />
@@ -114,7 +114,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsExpanded(true)}
-                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Tất cả"
                         >
                             <AppIcon name="viewList" size="md" />
@@ -124,7 +124,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                     <Button 
                         variant="unstyled" size="none"
                         onClick={handleBatchExportClick}
-                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         title="Xuất hàng loạt báo cáo chi tiết"
                     >
                         <AppIcon name="exportBatch" size="md" />
@@ -134,7 +134,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             variant="unstyled" size="none"
                             onClick={onExport}
                             disabled={isExporting}
-                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                             title="Xuất Ảnh"
                         >
                             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
@@ -180,7 +180,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                         const traChamClass = getTraChamPercentClass(Number(seller.traChamPercent || 0));
 
                                         return (
-                                            <div key={seller.name} role="button" tabIndex={0} onClick={() => onEmployeeClick(seller.name)} onKeyDown={onActivateKey(() => onEmployeeClick(seller.name))} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg transition-shadow hover:shadow-md cursor-pointer">
+                                            <div key={seller.name} role="button" tabIndex={0} onClick={() => onEmployeeClick(seller.name)} onKeyDown={onActivateKey(() => onEmployeeClick(seller.name))} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-control transition-shadow hover:shadow-md cursor-pointer">
                                                     <div className="flex items-center gap-1 sm:gap-1.5">
                                                     {rankDisplay}
                                                     <div className="flex-grow min-w-0">

@@ -1,6 +1,14 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
 import type { KeyboardEvent } from 'react';
+
+/**
+ * tailwind-merge BIẾT 4 token bo góc của dự án (`rounded-control/card/popup/overlay`, styles.css `@theme inline`) là cỡ bo góc:
+ * `cn('rounded-control', 'rounded-card')` → giữ lớp SAU như mọi lớp Tailwind khác. Trước đây (bản mặc định) token không được nhận
+ * ra nên cả 2 lớp cùng ở lại và CSS thắng theo CHỮ CÁI (card < control < full < lg < … < popup) — đè bo góc của Input/Button qua
+ * className phải thêm `!` (GĐ10 bước 4, 2026-10-21; test `components/shared/ui/cnBoGoc.test.ts`).
+ */
+const twMerge = extendTailwindMerge({ extend: { theme: { radius: ['control', 'card', 'popup', 'overlay'] } } });
 
 /** Utility to merge tailwind classes safely */
 export function cn(...inputs: ClassValue[]) {

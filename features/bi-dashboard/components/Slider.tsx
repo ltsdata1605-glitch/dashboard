@@ -39,7 +39,7 @@ const Slider: React.FC<SliderProps> = ({
                     {displayValue !== undefined ? (
                         <div className="text-right">{displayValue}</div>
                     ) : (
-                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 focus-within:border-sky-500 transition-colors">
+                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-control border border-slate-200 dark:border-slate-700 focus-within:border-sky-500 transition-colors">
                             <input 
                                 type="number" inputMode="decimal"
                                 value={value}

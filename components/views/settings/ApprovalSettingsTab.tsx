@@ -183,7 +183,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700">
                 <AppIcon name="refresh" size="lg" className="animate-spin text-sky-600 mb-3" />
                 <p className="text-sm text-slate-500 font-medium">Đang tải cấu hình phê duyệt...</p>
             </div>
@@ -193,11 +193,11 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
     return (
         <div className="space-y-6">
             {/* Banner giới thiệu */}
-            <div className="bg-gradient-to-r from-sky-600 via-sky-700 to-sky-800 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
+            <div className="bg-gradient-to-r from-sky-600 via-sky-700 to-sky-800 rounded-popup p-5 text-white shadow-md relative overflow-hidden">
                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <span className="p-1.5 bg-white/20 rounded-control backdrop-blur-sm">
                                 <AppIcon name="security" size="md" className="text-white" />
                             </span>
                             <h2 className="text-[17px] font-bold tracking-tight leading-7">Cấu Hình Kiểm Duyệt Tài Khoản Tự Động</h2>
@@ -210,7 +210,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                         variant="unstyled"
                         size="none"
                         onClick={() => loadSettings(true)}
-                        className="px-3 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-lg border border-white/20 transition-all flex items-center gap-1.5 text-white shrink-0"
+                        className="px-3 py-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 rounded-control border border-white/20 transition-all flex items-center gap-1.5 text-white shrink-0"
                     >
                         <AppIcon name="refresh" size="sm" /> Làm Mới Cài Đặt
                     </Button>
@@ -218,14 +218,14 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
             </div>
 
             {/* MỤC 1: DÀNH CHO SUPER ADMIN (TỰ ĐỘNG DUYỆT QUẢN LÝ) */}
-            <div className={`p-5 rounded-xl border transition-all ${
+            <div className={`p-5 rounded-popup border transition-all ${
                 isAdmin
                     ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm'
                     : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-700/60 opacity-80'
             }`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700/60">
                     <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        <div className={`w-10 h-10 rounded-popup flex items-center justify-center shrink-0 ${
                             settings.autoApproveManagers
                                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
                                 : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
@@ -276,10 +276,10 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
             </div>
 
             {/* MỤC 2: DÀNH CHO CẤP QUẢN LÝ (TỰ ĐỘNG DUYỆT NHÂN VIÊN VÀO KHO) */}
-            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-popup border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700/60">
                     <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-popup bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 flex items-center justify-center shrink-0">
                             <AppIcon name="users" size="lg" />
                         </div>
                         <div>
@@ -318,10 +318,10 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                                 return (
                                     <div
                                         key={kho}
-                                        className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/30"
+                                        className="flex items-center justify-between p-3.5 rounded-control border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/30"
                                     >
                                         <div className="flex items-center gap-2.5">
-                                            <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-mono font-bold text-xs flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-control bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-mono font-bold text-xs flex items-center justify-center">
                                                 {kho}
                                             </div>
                                             <div>
@@ -345,7 +345,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                 {/* Nếu là Admin/Super Admin: Cấu hình mặc định toàn hệ thống + theo từng kho */}
                 {isAdmin && (
                     <div className="space-y-4 pt-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-control bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 gap-3">
                             <div>
                                 <div className="text-sm font-bold text-slate-800 dark:text-white mb-0.5">
                                     Cấu Hình Mặc Định Toàn Hệ Thống (Tất Cả Các Kho)

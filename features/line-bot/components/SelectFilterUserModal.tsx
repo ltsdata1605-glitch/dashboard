@@ -160,7 +160,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                 </span>
             }
             controls={
-                <Button variant="ghost" onClick={onRefresh} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl" title="Làm mới danh sách">
+                <Button variant="ghost" onClick={onRefresh} className="p-2 text-slate-400 hover:text-slate-600 rounded-popup" title="Làm mới danh sách">
                     <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
                 </Button>
             }
@@ -173,7 +173,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                     <Button
                         variant="secondary"
                         onClick={onClose}
-                        className="px-4 py-2 font-bold rounded-xl text-xs"
+                        className="px-4 py-2 font-bold rounded-popup text-xs"
                     >
                         Hoàn tất &amp; Đóng
                     </Button>
@@ -194,7 +194,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Tìm kiếm theo Tên hiển thị, Tên nhóm LINE, LINE ID..."
-                            className="h-auto pl-10 pr-4 bg-slate-50 border-slate-200 !rounded-2xl text-xs font-medium transition-all py-2.5 focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500"
+                            className="h-auto pl-10 pr-4 bg-slate-50 border-slate-200 !rounded-card text-xs font-medium transition-all py-2.5 focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500"
                         />
                         {searchTerm && (
                             <Button
@@ -215,7 +215,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('ALL')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ALL'
                                     ? 'bg-emerald-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -233,7 +233,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('NOT_ADDED')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'NOT_ADDED'
                                     ? 'bg-emerald-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -247,7 +247,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('ADDED')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ADDED'
                                     ? 'bg-emerald-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -261,7 +261,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('GROUP')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'GROUP'
                                     ? 'bg-emerald-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -275,7 +275,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('DIRECT')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'DIRECT'
                                     ? 'bg-emerald-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -312,7 +312,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                 <Button
                                     variant="primary"
                                     onClick={handleBatchAddSelected}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs animate-in fade-in"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-popup shadow-xs animate-in fade-in"
                                 >
                                     <AppIcon name="add" size="sm" />
                                     <span>Thêm {selectedIds.size} người đã chọn</span>
@@ -331,7 +331,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                         </div>
                     ) : filteredUsers.length === 0 ? (
                         <div className="py-12 px-4 text-center space-y-3">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center mx-auto">
+                            <div className="w-12 h-12 rounded-card bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center mx-auto">
                                 <AppIcon name="users" size="xl" />
                             </div>
                             <div>
@@ -362,7 +362,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             return (
                                 <div
                                     key={user.lineUserId}
-                                    className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                                    className={`p-3.5 rounded-card border transition-all flex items-center justify-between gap-3 ${
                                         inFilter
                                             ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-800/40'
                                             : isSelected
@@ -400,10 +400,10 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                 <img
                                                     src={user.pictureUrl}
                                                     alt={user.displayName}
-                                                    className="w-10 h-10 rounded-2xl object-cover ring-2 ring-slate-100 dark:ring-slate-800 shadow-2xs"
+                                                    className="w-10 h-10 rounded-card object-cover ring-2 ring-slate-100 dark:ring-slate-800 shadow-2xs"
                                                 />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs">
+                                                <div className="w-10 h-10 rounded-card bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs">
                                                     {getInitials(user.displayName)}
                                                 </div>
                                             )}
@@ -468,7 +468,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                     onToggleName(user.displayName);
                                                     toast.success(`Đã xoá "${user.displayName}" khỏi danh sách lọc`);
                                                 }}
-                                                className="px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-semibold transition-colors"
+                                                className="px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-popup font-semibold transition-colors"
                                                 title="Bỏ khỏi danh sách lọc"
                                             >
                                                 Bỏ lọc
@@ -480,7 +480,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                     onToggleName(user.displayName);
                                                     toast.success(`Đã thêm "${user.displayName}" vào danh sách lọc!`);
                                                 }}
-                                                className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs"
+                                                className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-popup shadow-xs"
                                             >
                                                 <AppIcon name="add" size="sm" />
                                                 <span>Thêm vào lọc</span>

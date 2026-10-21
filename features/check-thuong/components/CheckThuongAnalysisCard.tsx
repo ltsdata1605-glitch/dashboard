@@ -64,7 +64,7 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
     return (
         <div
             ref={cardRef}
-            className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-5 shadow-xs space-y-3 sm:space-y-4"
+            className="rounded-card border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-5 shadow-xs space-y-3 sm:space-y-4"
         >
             {/* Header */}
             <div className="flex items-center justify-between pb-1">

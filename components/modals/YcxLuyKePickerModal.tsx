@@ -43,7 +43,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
             <div className="modal-bleed p-5 space-y-4">
                 {/* Header */}
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/50 dark:border-emerald-900/30 shrink-0">
+                    <div className="w-10 h-10 rounded-popup bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/50 dark:border-emerald-900/30 shrink-0">
                         <AppIcon name="dateRange" size="lg" />
                     </div>
                     <div>
@@ -61,7 +61,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                     {/* Option 1: Luỹ kế từ ngày 1 đến hôm qua */}
                     <div
                         onClick={() => setChoice('luyke')}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        className={`p-3 rounded-popup border cursor-pointer transition-all ${
                             choice === 'luyke'
                                 ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-500 dark:border-emerald-500/60 shadow-xs'
                                 : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
@@ -92,7 +92,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                     {/* Option 2: Chọn tháng */}
                     <div
                         onClick={() => setChoice('month')}
-                        className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        className={`p-3 rounded-popup border cursor-pointer transition-all ${
                             choice === 'month'
                                 ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-500 dark:border-emerald-500/60 shadow-xs'
                                 : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
@@ -120,7 +120,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                                             value={selectedMonth}
                                             max={defaultMonthVal}
                                             onChange={(e) => setSelectedMonth(e.target.value)}
-                                            className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                            className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-control text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
                                         />
                                     </div>
                                 )}
@@ -139,7 +139,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                         variant="secondary"
                         size="sm"
                         onClick={onClose}
-                        className="rounded-lg"
+                        className="rounded-control"
                     >
                         Huỷ bỏ
                     </Button>
@@ -148,7 +148,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                         variant="primary"
                         size="sm"
                         onClick={handleStart}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1.5"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-control flex items-center gap-1.5"
                     >
                         <AppIcon name="sparkles" size="xs" />
                         <span>Bắt đầu — {choice === 'luyke' ? 'Luỹ kế' : monthTitle}</span>

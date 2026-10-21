@@ -138,7 +138,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
 
     if (!config || !config.columns || config.columns.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700">
                 <p className="text-slate-500 font-bold mb-4">Bảng bán kèm chưa được thiết lập cột.</p>
                 <div className="text-sm text-slate-400">Vui lòng bấm vào nút "Cấu Hình Bảng" ở bên trên góc trái để tạo các Cột đo lường.</div>
             </div>
@@ -147,7 +147,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
 
     return (
         <div className="w-full overflow-x-auto custom-scrollbar" ref={tableContainerRef}>
-            <table className="w-full min-w-[600px] border-collapse bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm tabular-nums">
+            <table className="w-full min-w-[600px] border-collapse bg-white dark:bg-slate-800 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm tabular-nums">
                 <thead>
                     <tr className="bg-slate-100 dark:bg-slate-700/80 uppercase text-[11px] sm:text-[11px]">
                         <th className="px-4 py-3 text-left font-black text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-600 truncate max-w-[200px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-700/80 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">

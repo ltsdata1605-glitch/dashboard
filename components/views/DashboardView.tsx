@@ -524,7 +524,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             )}
                             <div className="container mx-auto px-4 py-4 space-y-6 opacity-40 blur-[3px] pointer-events-none select-none transition-all duration-700">
                                 {/* Fake Filter Bar */}
-                                <div className="h-16 w-full bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse mb-6"></div>
+                                <div className="h-16 w-full bg-slate-200 dark:bg-slate-800 rounded-control animate-pulse mb-6"></div>
                                 <KpiCardsSkeleton />
                                 <div className="space-y-8">
                                     <ChartSkeleton height="h-[350px]" />

@@ -451,7 +451,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         disabled={isBatchExporting || autoPairs.length === 0}
                         title="Xuất tất cả cặp so sánh"
                         aria-label="Xuất tất cả cặp so sánh"
-                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 transition-colors"
+                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-control disabled:opacity-40 transition-colors"
                     >
                         <AppIcon name="exportBatch" size="md" className={isBatchExporting ? 'animate-pulse text-sky-500' : ''} />
                     </Button>
@@ -460,7 +460,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         onClick={() => handleExportPNG()}
                         title="Xuất ảnh"
                         aria-label="Xuất ảnh"
-                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-control transition-colors"
                     >
                         <AppIcon name="exportImage" size="md" />
                     </Button>

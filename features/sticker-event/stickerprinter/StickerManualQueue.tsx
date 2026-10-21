@@ -109,7 +109,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
 
             {/* Config Panel for Empty Queue (Only visible when empty) */}
             {manualPages.length === 0 && (
-                <div className="flex items-center justify-between shrink-0 py-1 bg-slate-50 dark:bg-slate-900/20 px-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40">
+                <div className="flex items-center justify-between shrink-0 py-1 bg-slate-50 dark:bg-slate-900/20 px-2.5 rounded-control border border-slate-100 dark:border-slate-800/40">
                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                         Cấu hình in nhãn:
                     </span>
@@ -136,7 +136,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             </Button>
                             
                             {showOnboarding && (
-                                <div className="absolute right-0 top-9 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="absolute right-0 top-9 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-control shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="font-bold flex items-center justify-between">
                                         <span className="inline-flex items-center gap-1"><AppIcon name="idea" size="xs" />Kiểu giảm giá mới!</span>
                                         <Button variant="ghost" size="icon" icon="close" onClick={dismissOnboarding} className="text-sky-200 hover:text-white" aria-label="Đóng" />
@@ -190,7 +190,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 placeholder="% Giảm"
                                 value={discountThreshold}
                                 onChange={(e) => handleDiscountThresholdChange(e.target.value)}
-                                className="!w-12 !h-7 text-center px-1 text-[11px] rounded-lg font-bold border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
+                                className="!w-12 !h-7 text-center px-1 text-[11px] rounded-control font-bold border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
                                 title="Nhập % giảm tối thiểu"
                                 fullWidth={false}
                             />
@@ -217,7 +217,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 </Button>
                                 
                                 {showOnboarding && (
-                                    <div className="absolute right-0 top-8 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="absolute right-0 top-8 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-control shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="font-bold flex items-center justify-between">
                                             <span className="inline-flex items-center gap-1"><AppIcon name="idea" size="xs" />Kiểu giảm giá mới!</span>
                                             <Button variant="ghost" size="icon" icon="close" onClick={dismissOnboarding} className="text-sky-200 hover:text-white" aria-label="Đóng" />
@@ -252,7 +252,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 onClick={saveCurrentList} 
                                 size="icon"
                                 variant="secondary"
-                                className="h-7 w-7 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
+                                className="h-7 w-7 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/30 rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Lưu danh sách"
                             >
                                 <AppIcon name="save" size="sm" />
@@ -263,7 +263,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 onClick={clearManualPages} 
                                 size="icon"
                                 variant="secondary"
-                                className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
+                                className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Xóa tất cả"
                             >
                                 <AppIcon name="delete" size="sm" />
@@ -273,7 +273,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
 
                     {/* Price toggle (Segmented control) for ERP prices */}
                     {manualPages.some(p => p.servicePrice || p.salePrice) && (
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 w-full shrink-0 mb-1">
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-control border border-slate-200 dark:border-slate-700 w-full shrink-0 mb-1">
                             <Button
                                 variant="unstyled"
                                 size="none"
@@ -321,7 +321,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 key={page.id} 
                                 tabIndex={0}
                                 data-queue-index={idx}
-                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border cursor-pointer hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-sky-900/10 transition-all group outline-none ${
+                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-control border cursor-pointer hover:border-sky-300 hover:bg-sky-50/50 dark:hover:bg-sky-900/10 transition-all group outline-none ${
                                     page.id === activeQueuePageId 
                                         ? 'border-sky-600 dark:border-sky-500 ring-2 ring-sky-500/20 bg-sky-50/30 dark:bg-sky-950/20' 
                                         : 'border-slate-100 dark:border-slate-700'
@@ -422,7 +422,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                     {showSavedLists && (
                         <div className="mt-3 space-y-2 flex-1 overflow-y-auto pr-1">
                             {savedLists.map(list => (
-                                <div key={list.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group">
+                                <div key={list.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-control border border-slate-100 dark:border-slate-700 group">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{list.name}</p>
                                         <div className="flex gap-2 mt-0.5 text-[11px] text-slate-400">

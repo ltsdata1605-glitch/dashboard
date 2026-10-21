@@ -114,11 +114,11 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
     };
 
     return (
-        <div className="w-full bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/80 overflow-hidden flex flex-col max-h-[calc(100vh-100px)] xl:max-h-[920px]">
+        <div className="w-full bg-white dark:bg-slate-800 rounded-card shadow-sm border border-slate-200 dark:border-slate-700/80 overflow-hidden flex flex-col max-h-[calc(100vh-100px)] xl:max-h-[920px]">
             {/* Header Sidebar */}
             <div className="p-3 sm:p-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2 bg-slate-50/70 dark:bg-slate-800/80">
                 <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                    <div className="w-7 h-7 rounded-control bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <AppIcon name="history" size="md" />
                     </div>
                     <div className="min-w-0">
@@ -256,7 +256,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                     <div
                                         key={rec.id || rec.createdAt}
                                         onClick={() => onSelectRecord(rec)}
-                                        className={`group relative p-2.5 rounded-xl border transition-all cursor-pointer text-left ${
+                                        className={`group relative p-2.5 rounded-popup border transition-all cursor-pointer text-left ${
                                             isSelected
                                                 ? 'border-sky-500 bg-sky-50/70 dark:bg-sky-950/40 ring-1 ring-sky-500/30 shadow-xs'
                                                 : 'border-slate-200/80 dark:border-slate-700/70 bg-slate-50/40 dark:bg-slate-900/40 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/30 dark:hover:bg-slate-800/70 shadow-2xs'

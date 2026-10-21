@@ -201,7 +201,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                             value={kwText}
                             onChange={e => setKwText(e.target.value)}
                             placeholder="Ví dụ: hướng dẫn, xin mã, bảo hành..."
-                            className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
+                            className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                             required
                         />
                     </div>
@@ -215,7 +215,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                 aria-label="Kiểu so khớp"
                                 value={matchType}
                                 onChange={e => setMatchType(e.target.value as any)}
-                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
+                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                             >
                                 <option value="EXACT">Khớp chính xác (Toàn bộ tin)</option>
                                 <option value="CONTAINS">Khớp chứa (Tin nhắn có chứa từ)</option>
@@ -230,7 +230,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                 aria-label="Trạng thái"
                                 value={active ? '1' : '0'}
                                 onChange={e => setActive(e.target.value === '1')}
-                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
+                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                             >
                                 <option value="1">Đang kích hoạt</option>
                                 <option value="0">Tạm tắt</option>
@@ -248,7 +248,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                             value={replyText}
                             onChange={e => setReplyText(e.target.value)}
                             placeholder="Nhập nội dung bot sẽ phản hồi..."
-                            className="min-h-0 p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
+                            className="min-h-0 p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all"
                         />
                     </div>
 
@@ -279,7 +279,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}
                                 onClick={() => !isUploading && fileInputRef.current?.click()}
-                                className={`group relative border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-1.5 ${
+                                className={`group relative border-2 border-dashed rounded-popup p-4 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-1.5 ${
                                     isDragging
                                         ? 'border-emerald-500 bg-emerald-500/10 scale-[0.99]'
                                         : 'border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20'
@@ -312,7 +312,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                 {imageUrls.map((url, i) => (
                                     <div
                                         key={i}
-                                        className="group relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm"
+                                        className="group relative aspect-square rounded-popup overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm"
                                     >
                                         <img
                                             src={url}
@@ -334,7 +334,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                                 href={url}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="p-1.5 rounded-lg bg-white/90 text-slate-700 hover:text-emerald-600 hover:bg-white transition-all shadow-sm"
+                                                className="p-1.5 rounded-control bg-white/90 text-slate-700 hover:text-emerald-600 hover:bg-white transition-all shadow-sm"
                                                 title="Xem ảnh gốc"
                                                 onClick={e => e.stopPropagation()}
                                             >
@@ -348,7 +348,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                                     e.stopPropagation();
                                                     handleRemoveImage(i);
                                                 }}
-                                                className="p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-sm"
+                                                className="p-1.5 rounded-control bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-sm"
                                                 title="Xoá ảnh này"
                                             >
                                                 <AppIcon name="delete" size="sm" />
@@ -361,14 +361,14 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                     </div>
 
                     <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/50 modal-bleed-x modal-bleed-b mt-4">
-                        <Button variant="ghost" type="button" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
+                        <Button variant="ghost" type="button" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-control">
                             Huỷ
                         </Button>
                         <Button
                             variant="primary"
                             type="submit"
                             disabled={isSubmitting || isUploading}
-                            className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm"
+                            className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-control shadow-sm"
                         >
                             {isSubmitting ? 'Đang lưu...' : 'Lưu Từ Khoá'}
                         </Button>

@@ -57,7 +57,7 @@ export const CheckThuongEmptyDropzone: React.FC<CheckThuongEmptyDropzoneProps> =
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
-                className={`w-full max-w-xl p-8 rounded-2xl border-2 border-dashed transition-all text-center flex flex-col items-center justify-center ${
+                className={`w-full max-w-xl p-8 rounded-card border-2 border-dashed transition-all text-center flex flex-col items-center justify-center ${
                     isDragging
                         ? 'border-sky-500 bg-sky-50/50 dark:bg-sky-950/30 scale-[1.01]'
                         : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:border-sky-400'
@@ -72,7 +72,7 @@ export const CheckThuongEmptyDropzone: React.FC<CheckThuongEmptyDropzoneProps> =
                 />
 
                 {/* GĐ7: bỏ icon NHẢY liên tục (animate-bounce — gây phân tâm, tốn pin) → icon đứng yên; tiêu đề viết như câu */}
-                <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-card bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
                     <AppIcon name="upload" size="xl" />
                 </div>
 

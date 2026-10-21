@@ -39,7 +39,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         href="https://developers.line.biz/console/"
                         target="_blank"
                         rel="noreferrer"
-                        className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+                        className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold rounded-control border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
                     >
                         <span>Mở LINE Developers Console</span>
                         <AppIcon name="externalLink" size="md" />
@@ -88,7 +88,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
             content: (
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                     <p>Đường dẫn Webhook URL riêng biệt của bạn là:</p>
-                    <div className="flex items-center gap-2 p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-xs break-all">
+                    <div className="flex items-center gap-2 p-2.5 bg-slate-100 dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700 font-mono text-xs break-all">
                         <span className="flex-1 text-sky-600 dark:text-sky-400 font-medium">{webhookUrl || 'Đang tạo URL...'}</span>
                         <Button
                             variant="ghost"
@@ -174,7 +174,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         <Button
                             variant="primary"
                             onClick={() => setCurrentStep(prev => Math.min(steps.length, prev + 1))}
-                            className="flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg"
+                            className="flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-control"
                         >
                             <span>Tiếp theo</span>
                             <AppIcon name="chevronRight" size="md" />
@@ -183,7 +183,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         <Button
                             variant="primary"
                             onClick={onClose}
-                            className="flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg"
+                            className="flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-control"
                         >
                             <span>Đã hiểu & Bắt đầu</span>
                             <AppIcon name="check" size="md" />
@@ -205,8 +205,8 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                 </div>
 
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
-                        <div className="p-2 bg-emerald-500 text-white rounded-lg">
+                    <div className="flex items-center gap-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-popup border border-emerald-100 dark:border-emerald-900/40">
+                        <div className="p-2 bg-emerald-500 text-white rounded-control">
                             <AppIcon name={currentData.icon} size="lg" />
                         </div>
                         <div>
@@ -215,7 +215,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div className="bg-white dark:bg-slate-800/40 p-4 rounded-popup border border-slate-100 dark:border-slate-800">
                         {currentData.content}
                     </div>
                 </div>

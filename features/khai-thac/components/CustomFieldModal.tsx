@@ -45,15 +45,15 @@ export const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ group, onClo
                 <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Tên mục / sản phẩm</label>
                     <Input autoFocus placeholder="VD: Ốp lưng, Mở thẻ…" value={name} onChange={e => setName(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') submit(); }} className="rounded" />
+                        onKeyDown={e => { if (e.key === 'Enter') submit(); }} />
                 </div>
                 <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Cách nhập</label>
                     <div className="grid grid-cols-2 gap-2">
-                        <Button variant={type === 'count' ? 'primary' : 'secondary'} size="sm" className="rounded" onClick={() => setType('count')}>
+                        <Button variant={type === 'count' ? 'primary' : 'secondary'} size="sm" onClick={() => setType('count')}>
                             Đếm số lượng (cái)
                         </Button>
-                        <Button variant={type === 'revenue' ? 'primary' : 'secondary'} size="sm" className="rounded" onClick={() => setType('revenue')}>
+                        <Button variant={type === 'revenue' ? 'primary' : 'secondary'} size="sm" onClick={() => setType('revenue')}>
                             Tiền (Tr)
                         </Button>
                     </div>

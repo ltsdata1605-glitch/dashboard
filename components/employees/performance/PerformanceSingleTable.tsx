@@ -279,7 +279,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                         {...triggerProps}
                                         variant="unstyled"
                                         size="none"
-                                        className="ycx-hit flex items-center justify-center w-8 h-8 rounded-lg text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 active:scale-95 transition-all"
+                                        className="ycx-hit flex items-center justify-center w-8 h-8 rounded-control text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 active:scale-95 transition-all"
                                         title="Thêm thao tác"
                                         aria-label="Thêm thao tác"
                                     >
@@ -299,7 +299,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
                                     variant="unstyled" size="none"
-                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-control transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     title={tabLabel}
                                 >
                                     <AppIcon name={resolveIconName(tabIcon) ?? 'help'} size="md" />
@@ -315,7 +315,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             }}
                             disabled={isExporting}
                             variant="unstyled" size="none"
-                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
                             <AppIcon name="exportBatch" size="md" />
@@ -324,7 +324,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
                             disabled={isExporting}
                             variant="unstyled" size="none"
-                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
                             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
@@ -419,7 +419,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                         if (!isNaN(num)) setTempTarget(new Intl.NumberFormat('vi-VN').format(num));
                                                     }}
                                                     onBlur={handleSaveTarget}
-                                                    className="w-20 px-2 py-0.5 text-xs text-center border rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-sky-400 dark:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                                    className="w-20 px-2 py-0.5 text-xs text-center border rounded-control bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-sky-400 dark:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:outline-none"
                                                     autoFocus
                                                     placeholder="VD: 100"
                                                     onKeyDown={e => {
@@ -516,7 +516,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                             <span className="font-extrabold text-slate-800 dark:text-slate-100">{formatCurrency(emp.doanhThuQD)}</span>
                                                         )}
                                                         {h.key === 'hieuQuaValue' && (
-                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-extrabold ${getHieuQuaBadge(Number(emp.hieuQuaValue || 0), kpiTargets?.hieuQua)}`}>
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-control text-[11px] font-extrabold ${getHieuQuaBadge(Number(emp.hieuQuaValue || 0), kpiTargets?.hieuQua)}`}>
                                                                 {Number(emp.hieuQuaValue || 0).toFixed(0)}%
                                                             </span>
                                                         )}

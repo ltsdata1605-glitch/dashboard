@@ -119,19 +119,19 @@ export default function LineBotView() {
         <div className="w-full flex justify-center bg-slate-50/50 dark:bg-slate-900/60 min-h-full">
             <div className="w-full max-w-[960px] mx-auto p-2 sm:p-4 lg:p-6 space-y-2 sm:space-y-3.5 animate-in fade-in duration-150 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
                 {/* Mini Status Bar — Tinh gọn chuẩn Report BI, không chiếm diện tích màn hình iPhone */}
-                <div className="flex flex-row items-center justify-between gap-2.5 bg-white dark:bg-slate-800/90 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
+                <div className="flex flex-row items-center justify-between gap-2.5 bg-white dark:bg-slate-800/90 px-3 py-2 sm:px-4 sm:py-2.5 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         {botConfigHook.botInfo?.pictureUrl ? (
                             <img
                                 src={botConfigHook.botInfo.pictureUrl}
                                 alt="Bot avatar"
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl shadow-xs object-cover shrink-0 ring-1 ring-slate-200/80 dark:ring-slate-700"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-control sm:rounded-popup shadow-xs object-cover shrink-0 ring-1 ring-slate-200/80 dark:ring-slate-700"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                 }}
                             />
                         ) : (
-                            <div className="p-1.5 sm:p-2 bg-sky-600 text-white rounded-lg sm:rounded-xl shadow-xs shrink-0">
+                            <div className="p-1.5 sm:p-2 bg-sky-600 text-white rounded-control sm:rounded-popup shadow-xs shrink-0">
                                 <AppIcon name="bot" size="md" />
                             </div>
                         )}
@@ -184,7 +184,7 @@ export default function LineBotView() {
                                 disabled={isLoggingIn}
                                 aria-label="Đăng nhập để thừa kế Bot"
                                 title="Đăng nhập tài khoản Google quản lý để tự động thừa kế Bot Kho"
-                                className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg border border-sky-600 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                                className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-control border border-sky-600 shadow-2xs transition-all active:scale-95 cursor-pointer"
                             >
                                 <AppIcon name="login" size="md" />
                                 <span>{isLoggingIn ? 'Đang kết nối...' : 'Đăng nhập để thừa kế'}</span>
@@ -197,7 +197,7 @@ export default function LineBotView() {
                                 disabled={isLoggingIn}
                                 aria-label="Đổi tài khoản Google để thừa kế Bot"
                                 title={`Đang đăng nhập: ${user.email || user.displayName || 'Tài khoản'}. Bấm để chuyển sang tài khoản Google quản lý khác.`}
-                                className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200/80 dark:border-slate-700/80 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                                className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-control border border-slate-200/80 dark:border-slate-700/80 shadow-2xs transition-all active:scale-95 cursor-pointer"
                             >
                                 <AppIcon name="login" size="md" className="text-sky-600" />
                                 <span className="hidden md:inline text-slate-500 dark:text-slate-400 max-w-[110px] truncate">{user.displayName || user.email?.split('@')[0]}</span>
@@ -211,7 +211,7 @@ export default function LineBotView() {
                             onClick={() => setIsOnboardingOpen(true)}
                             aria-label="Hướng dẫn tạo Bot"
                             title="Hướng dẫn tạo Bot"
-                            className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-lg border border-sky-200/80 dark:border-sky-800/80 shadow-2xs transition-all active:scale-95"
+                            className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-control border border-sky-200/80 dark:border-sky-800/80 shadow-2xs transition-all active:scale-95"
                         >
                             <AppIcon name="help" size="md" className="text-sky-600" />
                             <span className="hidden sm:inline">Hướng dẫn tạo Bot</span>
@@ -234,7 +234,7 @@ export default function LineBotView() {
 
                 {/* Warehouse Inheritance Banner / Scope Switcher */}
                 {currentDept && (
-                    <div className={`px-3 py-2 rounded-xl border text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 transition-all ${
+                    <div className={`px-3 py-2 rounded-popup border text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 transition-all ${
                         isInheriting
                             ? 'bg-sky-50/90 dark:bg-sky-950/30 border-sky-200/80 dark:border-sky-800/60 text-sky-900 dark:text-sky-200 shadow-2xs'
                             : scopeMode === 'warehouse' && hasWarehouseBot

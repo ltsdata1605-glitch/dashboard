@@ -775,7 +775,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <AppIcon name="layers" size="sm" className="lg:hidden" />
@@ -786,7 +786,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button
                             variant="unstyled" size="none"
                             onClick={toggleViewMode}
-                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
                             <AppIcon name={resolveIconName(viewMode === 'horizontal' ? 'layout-list' : 'table-2') ?? 'help'} size="sm" className="lg:hidden" />
@@ -812,12 +812,12 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <div className="hidden lg:block w-px h-4 lg:h-5 bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
 
                         {userRole !== 'employee' && (
-                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                                 <AppIcon name="settings" size="md" />
                             </Button>
                         )}
 
-                        <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
+                        <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
                             {isExporting ? <><AppIcon name="loading" size="md" spin /></> : <><AppIcon name="exportImage" size="md" /></>}
                         </Button>
 
@@ -889,7 +889,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 {/* Skeleton while columns load from IndexedDB */}
                 {!columnsLoaded && (
                     <div className="p-1.5 sm:p-2 lg:p-6">
-                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                        <div className="border border-slate-200 dark:border-slate-700 rounded-control overflow-hidden">
                             {/* Skeleton header */}
                             <div className="flex">
                                 <div className="w-16 sm:w-20 shrink-0 h-10 bg-rose-50 dark:bg-rose-900/30 border-r border-slate-200 dark:border-slate-700 flex items-center justify-center">
@@ -1589,17 +1589,17 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
                             }
                             return (
-                                <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                                <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-popup border border-slate-200 dark:border-slate-700 space-y-2">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quy đổi Target ngày ({days} ngày)</div>
                                     <div className="grid grid-cols-2 gap-3">
                                         {valDTThuc > 0 && (
-                                            <div className="flex items-center justify-between text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg">
+                                            <div className="flex items-center justify-between text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-control">
                                                 <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT Thực/ngày</span>
                                                 <span className="font-bold text-emerald-700 dark:text-emerald-400">{(valDTThuc / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
                                             </div>
                                         )}
                                         {valDTQD > 0 && (
-                                            <div className="flex items-center justify-between text-sm bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-lg">
+                                            <div className="flex items-center justify-between text-sm bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-control">
                                                 <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT QĐ/ngày</span>
                                                 <span className="font-bold text-amber-700 dark:text-amber-400">{(valDTQD / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
                                             </div>
@@ -1611,8 +1611,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         return <div className="mb-4" />;
                     })()}
                     <div className="flex justify-end gap-3">
-                        <Button type="button" variant="unstyled" size="none" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</Button>
-                        <Button type="button" variant="unstyled" size="none" onClick={() => handleTargetSave()} className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-semibold">Lưu</Button>
+                        <Button type="button" variant="unstyled" size="none" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-control transition-colors">Hủy</Button>
+                        <Button type="button" variant="unstyled" size="none" onClick={() => handleTargetSave()} className="px-6 py-2 bg-sky-600 text-white rounded-control hover:bg-sky-700 transition-colors font-semibold">Lưu</Button>
                     </div>
                 </div>
             </Modal>
@@ -1635,7 +1635,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             type="time"
                             value={tempOpenHour}
                             onChange={(e) => setTempOpenHour(e.target.value)}
-                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-sky-500 text-base"
+                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 rounded-popup bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-sky-500 text-base"
                         />
                     </div>
                     <div>
@@ -1646,7 +1646,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             type="time"
                             value={tempCloseHour}
                             onChange={(e) => setTempCloseHour(e.target.value)}
-                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-sky-500 text-base"
+                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 rounded-popup bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold focus:ring-2 focus:ring-sky-500 text-base"
                         />
                     </div>
                     <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">

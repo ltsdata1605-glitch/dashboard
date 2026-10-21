@@ -132,7 +132,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
           </form>
 
           {error && (
-            <div className="p-4 bg-amber-50 text-amber-700 rounded-lg text-sm border border-amber-100">
+            <div className="p-4 bg-amber-50 text-amber-700 rounded-control text-sm border border-amber-100">
               {error}
             </div>
           )}
@@ -140,7 +140,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Danh sách người dùng ({users.length})</h3>
             {users.length > 0 ? (
-              <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+              <div className="divide-y divide-slate-100 border border-slate-100 rounded-popup overflow-hidden">
                 {users.map((u) => (
                   <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                     <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                 ))}
               </div>
             ) : (
-              <div className="border-2 border-dashed border-slate-100 rounded-xl">
+              <div className="border-2 border-dashed border-slate-100 rounded-popup">
                 <EmptyState icon={<AppIcon name="users" size="lg" />} title="Chưa có dữ liệu tìm kiếm" />
               </div>
             )}

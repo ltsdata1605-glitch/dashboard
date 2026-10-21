@@ -120,7 +120,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                         ref={popoverRef}
                         onClick={stopPropagation}
                         onMouseDown={stopPropagation}
-                        className="sm:hidden fixed z-[9999] bottom-0 left-0 right-0 w-full rounded-t-2xl shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-3 cursor-default text-left"
+                        className="sm:hidden fixed z-[9999] bottom-0 left-0 right-0 w-full rounded-t-card shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-3 cursor-default text-left"
                     >
                         <div className="flex justify-center mb-2">
                             <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></div>
@@ -144,7 +144,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                             {filteredOptions.length > 0 ? (
                                 <>
                                     {filteredOptions.slice(0, 200).map(option => (
-                                        <label key={option} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
+                                        <label key={option} className="flex items-center justify-between p-1.5 rounded-control hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
                                             <span className="text-xs text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
                                             <Switch size="sm" checked={selected.includes(option)} onChange={() => toggleOption(option)} label={option} />
                                         </label>
@@ -165,7 +165,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                     <div 
                         onClick={stopPropagation}
                         onMouseDown={stopPropagation}
-                        className="hidden sm:block rounded-xl shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-2.5 cursor-default text-left"
+                        className="hidden sm:block rounded-popup shadow-xl bg-white dark:bg-slate-800 ring-1 ring-black/5 dark:ring-white/10 p-2.5 cursor-default text-left"
                         style={desktopStyle}
                     >
                         <div className="mb-2">
@@ -186,7 +186,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                             {filteredOptions.length > 0 ? (
                                 <>
                                     {filteredOptions.slice(0, 200).map(option => (
-                                        <label key={option} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
+                                        <label key={option} className="flex items-center justify-between p-1.5 rounded-control hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
                                             <span className="text-xs text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
                                             <Switch size="sm" checked={selected.includes(option)} onChange={() => toggleOption(option)} label={option} />
                                         </label>

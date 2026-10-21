@@ -347,7 +347,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
 
 
   const renderHeader = () => (
-    <div className="mb-4 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+    <div className="mb-4 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-control border border-slate-200 dark:border-slate-700">
         <div className="flex justify-between items-start">
             <div>
                 <p className="font-bold text-[17px] text-slate-800 dark:text-slate-100 leading-7">{employeeName}</p>
@@ -490,7 +490,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
   );
 
   const renderConfirmationView = (title: string, message: React.ReactNode, onConfirm: () => void) => (
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-lg text-center">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-control text-center">
         <h4 className="font-bold text-amber-800 dark:text-amber-400">{title}</h4>
         <div className="text-sm text-amber-700 dark:text-amber-300 my-3">{message}</div>
         <div className="flex justify-center gap-2 mt-4">
@@ -521,7 +521,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
           <div className="max-h-60 overflow-y-auto pr-1 space-y-2 custom-scroll">
               {swapCandidates.length > 0 ? (
                   swapCandidates.map(staff => (
-                      <div key={staff.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-all flex justify-between items-center group shadow-sm">
+                      <div key={staff.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-all flex justify-between items-center group shadow-sm">
                           <div>
                               <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{staff.name.split(' - ')[1] || staff.name}</p>
                               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase">{staff.department}</p>
@@ -541,7 +541,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                       </div>
                   ))
               ) : (
-                  <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
+                  <div className="bg-slate-50 dark:bg-slate-800/60 rounded-popup border border-dashed border-slate-300 dark:border-slate-600">
                       <EmptyState
                           icon={<AppIcon name="search" size="lg" />}
                           title="Không tìm thấy nhân viên phù hợp"
@@ -572,7 +572,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
 
   const renderSuggestionView = () => {
     return (
-     <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 p-4 rounded-lg text-center">
+     <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 p-4 rounded-control text-center">
         <h4 className="font-bold text-sky-700 dark:text-sky-400">Đề xuất thay thế</h4>
         {isLoading && <div className="flex justify-center items-center p-4"><div className="spinner"></div></div>}
         {!isLoading && (
@@ -639,7 +639,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
         checkAndProceed([{ employeeId: info.employeeId, newShift: pendingShift! }], () => onSave(pendingShift!));
     }
     return (
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-lg text-center">
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-control text-center">
           <h4 className="font-bold text-amber-800 dark:text-amber-400">Cảnh báo trùng lặp</h4>
           <p className="text-sm text-amber-700 dark:text-amber-300 my-2">Ca đặc biệt <strong>({pendingShift?.role})</strong> đã đủ số lượng yêu cầu cho ngày hôm nay. Bạn vẫn muốn thêm?</p>
           <div className="flex justify-center gap-2 mt-3">
@@ -651,7 +651,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
   }
 
   const renderStaffingWarningView = () => (
-      <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4 rounded-lg text-center">
+      <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4 rounded-control text-center">
           <h4 className="font-bold text-rose-800 dark:text-rose-400">Cảnh báo thiếu hụt nhân sự!</h4>
           <p className="text-sm text-rose-700 dark:text-rose-300 my-2">Sau khi thay đổi, nhân sự ngày này sẽ dưới 70% yêu cầu. Bạn có chắc chắn muốn tiếp tục?</p>
           <div className="flex justify-center gap-2 mt-3">
@@ -671,7 +671,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
     return (
         <div className="mt-4 border-t border-slate-200 dark:border-slate-700 pt-3">
             <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Lịch sử thay đổi</h4>
-            <div className="max-h-24 overflow-y-auto text-[11px] space-y-1 pr-2 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 custom-scroll font-medium">
+            <div className="max-h-24 overflow-y-auto text-[11px] space-y-1 pr-2 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-popup border border-slate-100 dark:border-slate-700 custom-scroll font-medium">
                 {swapHistory.map((h, i) => (
                     <p key={`swap-${i}`}><span className="text-slate-400 dark:text-slate-500 font-mono">{h.date}:</span> Đổi <span className="line-through opacity-60">{h.from}</span> &rarr; <span className="font-bold text-slate-700 dark:text-slate-300">{h.to}</span></p>
                 ))}

@@ -308,7 +308,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             onDragEnter={handleDragEnter}
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, mainHeader)}
-                            className="group/row relative flex flex-col md:flex-row md:items-center gap-2 p-2 sm:px-3 sm:py-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-xs transition-all duration-200 cursor-grab active:cursor-grabbing"
+                            className="group/row relative flex flex-col md:flex-row md:items-center gap-2 p-2 sm:px-3 sm:py-2 bg-white dark:bg-slate-900 rounded-control border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-xs transition-all duration-200 cursor-grab active:cursor-grabbing"
                         >
                             {/* Cột trái: Tên Nhóm + Badge + Công cụ nhóm */}
                             <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-56 shrink-0">
@@ -394,7 +394,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                     <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="min-h-11 sm:min-h-0 py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
                         <AppIcon name="reset" size="md" /> Khôi phục mặc định
                     </Button>
-                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="min-h-11 sm:min-h-0 py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[11px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
+                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="min-h-11 sm:min-h-0 py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-control sm:rounded-popup shadow-md text-[11px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
                         Hoàn tất <AppIcon name="check" size="md" className="ml-1" />
                     </Button>
                 </div>

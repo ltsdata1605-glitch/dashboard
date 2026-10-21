@@ -409,16 +409,16 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 lg:p-2 rounded-control text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             <AppIcon name="addCircle" size="md" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 lg:p-2 rounded-control text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             <AppIcon name="settings" size="md" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-control text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors">
                             <AppIcon name="delete" size="md" />
                         </Button>
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 rounded-control text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
                         </Button>
                     </div>

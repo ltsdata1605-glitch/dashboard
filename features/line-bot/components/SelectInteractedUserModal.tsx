@@ -145,7 +145,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 </span>
             }
             controls={
-                <Button variant="ghost" onClick={onRefresh} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl" title="Làm mới danh sách">
+                <Button variant="ghost" onClick={onRefresh} className="p-2 text-slate-400 hover:text-slate-600 rounded-popup" title="Làm mới danh sách">
                     <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
                 </Button>
             }
@@ -162,7 +162,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="py-1 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl"
+                        className="py-1 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-popup"
                     >
                         Đóng
                     </Button>
@@ -183,7 +183,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Tìm kiếm theo Tên, LINE User ID, Nhóm LINE..."
-                            className="h-auto pl-10 pr-4 bg-slate-50 border-slate-200 !rounded-2xl text-xs font-medium transition-all py-2 focus-visible:ring-2 focus-visible:ring-sky-500/20"
+                            className="h-auto pl-10 pr-4 bg-slate-50 border-slate-200 !rounded-card text-xs font-medium transition-all py-2 focus-visible:ring-2 focus-visible:ring-sky-500/20"
                         />
                         {searchTerm && (
                             <Button
@@ -204,7 +204,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('ALL')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ALL'
                                     ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -222,7 +222,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('NON_ADMIN')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'NON_ADMIN'
                                     ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -241,7 +241,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('GROUP')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'GROUP'
                                     ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -260,7 +260,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             variant="unstyled"
                             size="none"
                             onClick={() => setChannelFilter('DIRECT')}
-                            className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                            className={`px-3 py-1.5 rounded-popup transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'DIRECT'
                                     ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -286,7 +286,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                         </div>
                     ) : filteredUsers.length === 0 ? (
                         <div className="py-12 px-4 text-center space-y-3">
-                            <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-500 flex items-center justify-center mx-auto">
+                            <div className="w-12 h-12 rounded-card bg-sky-50 dark:bg-sky-950/40 text-sky-500 flex items-center justify-center mx-auto">
                                 <AppIcon name="users" size="xl" />
                             </div>
                             <div>
@@ -310,7 +310,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             return (
                                 <div
                                     key={user.lineUserId}
-                                    className={`p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                                    className={`p-3.5 rounded-card border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                                         isExisting
                                             ? 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800/60 opacity-90'
                                             : 'bg-white dark:bg-slate-800/80 border-slate-200/90 dark:border-slate-700/80 hover:border-sky-300 dark:hover:border-sky-600 shadow-sm hover:shadow'
@@ -420,7 +420,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                     {/* Right action: Existing Badge or Add as Admin */}
                                     <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
                                         {isExisting ? (
-                                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-popup text-emerald-700 dark:text-emerald-300 text-xs font-bold">
                                                 <AppIcon name="userCheck" size="sm" />
                                                 <span>
                                                     Đã là Admin (
@@ -443,7 +443,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     onChange={e =>
                                                         handleRoleChange(user.lineUserId, e.target.value as AdminRole)
                                                     }
-                                                    className="h-auto py-1.5 pl-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+                                                    className="h-auto py-1.5 pl-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold text-slate-700"
                                                 >
                                                     <option value="APPROVER">Duyệt cấp mã</option>
                                                     <option value="SUPER_ADMIN">Toàn quyền</option>
@@ -455,7 +455,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     variant="primary"
                                                     onClick={() => handleAddAdmin(user)}
                                                     disabled={isSubmitting}
-                                                    className="py-1.5 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center gap-1.5 whitespace-nowrap"
+                                                    className="py-1.5 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-popup shadow-sm flex items-center gap-1.5 whitespace-nowrap"
                                                 >
                                                     {isSubmitting ? (
                                                         <AppIcon name="refresh" size="sm" spin />

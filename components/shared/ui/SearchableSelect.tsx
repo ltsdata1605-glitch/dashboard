@@ -52,7 +52,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-sky-500 focus:ring-sky-500 text-xs sm:text-sm"
+                    className="w-full h-9 sm:h-11 block rounded-control border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-sky-500 focus:ring-sky-500 text-xs sm:text-sm"
                 >
                     <span className={`truncate ${value ? 'text-slate-800 dark:text-slate-100' : 'text-slate-500'}`}>
                         {displayValue}

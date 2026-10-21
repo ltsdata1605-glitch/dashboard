@@ -194,11 +194,11 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     : 'border-slate-200/90 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
             } ${
                 isDragging ? 'opacity-40 scale-95 shadow-none' : 'shadow-2xs hover:shadow-xs'
-            } rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing select-none hover:-translate-y-0.5`}
+            } rounded-card transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing select-none hover:-translate-y-0.5`}
             title={metric.parentName ? `${metric.displayTitle} (${metric.parentName}) — Kéo thả để sắp xếp` : `${metric.displayTitle} — Kéo thả để sắp xếp`}
         >
             {/* Vạch nhận diện đỉnh thẻ — dải gradient bo tròn ôm khít theo góc bo 16px của thẻ */}
-            <div className={`kpi-top-accent h-[2.5px] sm:h-[3px] w-full shrink-0 rounded-t-2xl ${theme.topAccent}`} />
+            <div className={`kpi-top-accent h-[2.5px] sm:h-[3px] w-full shrink-0 rounded-t-card ${theme.topAccent}`} />
 
             <div className="p-1 sm:p-2 flex flex-col justify-between flex-1 min-h-[58px] sm:min-h-[70px]">
                 {/* Header: Dot màu + Tên ngành hàng (in hoa rõ ràng) + Nút X */}

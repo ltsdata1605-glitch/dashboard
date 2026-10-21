@@ -144,7 +144,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
     return (
         <div className="space-y-5">
             {/* Group Selector */}
-            <div className="p-4 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+            <div className="p-4 bg-white dark:bg-slate-800/80 rounded-card border border-slate-200/80 dark:border-slate-700/80 space-y-3">
                 <div className="flex items-center gap-2">
                     <AppIcon name="settings" size="md" className="text-slate-600" />
                     <h3 className="font-bold text-slate-900 dark:text-white">Chọn Nhóm để Cấu Hình</h3>
@@ -153,7 +153,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                     aria-label="Chọn nhóm để cấu hình"
                     value={selectedGroupId}
                     onChange={(e) => setSelectedGroupId(e.target.value)}
-                    className="h-auto pl-3 py-3 bg-slate-50 border-slate-200 rounded-xl text-base text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                    className="h-auto pl-3 py-3 bg-slate-50 border-slate-200 rounded-popup text-base text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                 >
                     <option value="">-- Chọn nhóm --</option>
                     {groups.map(group => (
@@ -167,7 +167,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
             {/* Feature Toggles */}
             {currentConfig && currentGroup && (
                 <div className="space-y-3">
-                    <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900/40">
+                    <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-card border border-emerald-200 dark:border-emerald-900/40">
                         <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-900 dark:text-emerald-200">
                             <AppIcon name="users" size="sm" className="shrink-0" />Nhóm: <span className="font-bold">{currentGroup.groupName}</span>
                         </p>
@@ -177,7 +177,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                         {FEATURE_LIST.map(feature => (
                             <div
                                 key={feature.key}
-                                className="p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl flex items-start justify-between gap-3"
+                                className="p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-popup flex items-start justify-between gap-3"
                             >
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                                     variant="unstyled"
                                     size="none"
                                     onClick={() => handleToggleFeature(feature.key)}
-                                    className={`ycx-hit px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-all shrink-0 hover:shadow-sm ${
+                                    className={`ycx-hit px-3 py-1 rounded-control text-xs font-bold whitespace-nowrap cursor-pointer transition-all shrink-0 hover:shadow-sm ${
                                         currentConfig.features[feature.key]
                                             ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60'
                                             : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/60'

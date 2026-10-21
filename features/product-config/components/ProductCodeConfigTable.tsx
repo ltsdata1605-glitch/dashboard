@@ -238,7 +238,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
 
             {/* Modal/Form thêm mới */}
             {isAdding && (
-                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-lg space-y-2.5">
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-control space-y-2.5">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
                             <AppIcon name="add" size="xs" /> Thêm mới Mã Sản Phẩm
@@ -326,7 +326,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
             )}
 
             {/* Bảng dữ liệu chuẩn 5 cột khớp 100% Hình 1 */}
-            <div className="overflow-x-auto border border-slate-200 rounded-lg">
+            <div className="overflow-x-auto border border-slate-200 rounded-control">
                 <table className="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr className="bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider">

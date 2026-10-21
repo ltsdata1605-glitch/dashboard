@@ -348,7 +348,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     size="none"
                     type="button"
                     onClick={() => setStatusFilter('ALL')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-slate-400 dark:border-t-slate-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-popup sm:rounded-card border border-t-[3px] border-t-slate-400 dark:border-t-slate-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'ALL'
                             ? 'bg-slate-100/90 dark:bg-slate-800 border-sky-500/80 ring-1 ring-sky-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs'
@@ -356,7 +356,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 >
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400 truncate pr-1">Tổng mã trong kho</span>
-                        <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-lg shrink-0">
+                        <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-control shrink-0">
                             <AppIcon name="coupon" size="sm" />
                         </div>
                     </div>
@@ -371,7 +371,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     size="none"
                     type="button"
                     onClick={() => setStatusFilter('UNUSED')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-emerald-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-popup sm:rounded-card border border-t-[3px] border-t-emerald-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'UNUSED'
                             ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-2xs'
@@ -379,7 +379,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 >
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400 truncate pr-1">Chưa dùng (khả dụng)</span>
-                        <div className="p-1 sm:p-1.5 bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
+                        <div className="p-1 sm:p-1.5 bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-control shrink-0">
                             <AppIcon name="success" size="sm" />
                         </div>
                     </div>
@@ -396,7 +396,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     size="none"
                     type="button"
                     onClick={() => setStatusFilter('SENT')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-sky-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-popup sm:rounded-card border border-t-[3px] border-t-sky-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'SENT'
                             ? 'bg-sky-50/70 dark:bg-sky-950/40 border-sky-500 ring-1 ring-sky-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-sky-300 dark:hover:border-sky-700 shadow-2xs'
@@ -404,7 +404,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 >
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400 truncate pr-1">Đã phát thành công</span>
-                        <div className="p-1 sm:p-1.5 bg-sky-100/80 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
+                        <div className="p-1 sm:p-1.5 bg-sky-100/80 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-control shrink-0">
                             <AppIcon name="clock" size="sm" />
                         </div>
                     </div>
@@ -421,7 +421,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     size="none"
                     type="button"
                     onClick={() => setStatusFilter('REVOKED')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-amber-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-popup sm:rounded-card border border-t-[3px] border-t-amber-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'REVOKED'
                             ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-500 ring-1 ring-amber-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-700 shadow-2xs'
@@ -429,7 +429,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 >
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400 truncate pr-1">Đã thu hồi về kho</span>
-                        <div className="p-1 sm:p-1.5 bg-amber-100/80 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
+                        <div className="p-1 sm:p-1.5 bg-amber-100/80 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-control shrink-0">
                             <AppIcon name="reset" size="sm" />
                         </div>
                     </div>
@@ -444,7 +444,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
             {/* Low stock warning banner */}
             {isLowStock && (
-                <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5 shadow-2xs">
+                <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-popup flex items-center gap-2.5 shadow-2xs">
                     <AppIcon name="warning" size="md" className="text-amber-600 shrink-0" />
                     <div className="text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
                         <span className="font-bold">Cảnh báo tồn kho thấp: </span>
@@ -455,7 +455,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
             {/* Revoked coupons restore banner */}
             {stockSummary.revoked > 0 && (
-                <div className="p-2.5 bg-sky-50 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-2xs">
+                <div className="p-2.5 bg-sky-50 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-800/60 rounded-popup flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-2xs">
                     <div className="flex items-center gap-2">
                         <AppIcon name="info" size="md" className="text-sky-600 shrink-0" />
                         <div className="text-[11px] sm:text-xs text-sky-800 dark:text-sky-300">
@@ -467,7 +467,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             variant="primary"
                             size="sm"
                             onClick={onRestoreRevokedCoupons}
-                            className="shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg shadow-2xs cursor-pointer flex items-center justify-center gap-1 self-end sm:self-auto"
+                            className="shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs px-3 py-1.5 rounded-control shadow-2xs cursor-pointer flex items-center justify-center gap-1 self-end sm:self-auto"
                         >
                             <AppIcon name="reset" size="xs" />
                             Khôi phục về Chưa dùng
@@ -491,7 +491,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             )}
 
             {/* Controls bar: Tự động co giãn theo màn hình, phong cách Report BI */}
-            <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
+            <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
                 {/* Nhóm bộ lọc & tìm kiếm bên trái */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full lg:w-auto">
                     <div className="relative w-full sm:w-[180px] lg:w-[200px] xl:w-[240px] shrink-0">
@@ -504,7 +504,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             placeholder="Tìm mã, MĐH, người nhận, SP..."
-                            className="h-8 pl-7.5 pr-6 bg-slate-50 border-slate-200 rounded-lg text-sm sm:text-xs text-slate-800"
+                            className="h-8 pl-7.5 pr-6 bg-slate-50 border-slate-200 rounded-control text-sm sm:text-xs text-slate-800"
                         />
                         {searchQuery && (
                             <Button
@@ -541,7 +541,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             aria-label="Lọc theo loại PMH"
                             value={typeFilter}
                             onChange={e => setTypeFilter(e.target.value)}
-                            className="h-8 pl-2 bg-slate-50 border-slate-200 rounded-lg text-[11px] sm:text-xs font-semibold text-slate-700 max-w-[110px] truncate"
+                            className="h-8 pl-2 bg-slate-50 border-slate-200 rounded-control text-[11px] sm:text-xs font-semibold text-slate-700 max-w-[110px] truncate"
                         >
                             <option value="ALL">Tất cả loại</option>
                             {availableTypes.map(t => (
@@ -558,7 +558,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onRefresh}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg shrink-0 transition-colors active:scale-95"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-control shrink-0 transition-colors active:scale-95"
                         title="Làm mới"
                     >
                         <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
@@ -587,7 +587,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             </div>
 
             {/* Unified Coupons Table - Bảng Quản Lý Mã & Lịch Sử Hợp Nhất (Chuẩn Report BI) */}
-            <div className="bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
+            <div className="bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
                 {/* BẢNG ở MỌI cỡ màn — "Bảng luôn là bảng" (CLAUDE.md mục 2, chủ dự án chốt 2026-10-02). Trước đây điện thoại là danh sách
                     thẻ (2026-10-07) — trái quy tắc (GĐ9 2026-10-14 bỏ). Điện thoại: ẩn cột "#", GHIM cột Mã Coupon bên trái và cột Thao tác
                     bên phải (copy / thu hồi không phải cuộn ngang), giữa cuộn ngang trong khung; trang 5 dòng nên không cần khung cuộn dọc. */}
@@ -748,7 +748,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 message={
                     <div className="space-y-2 text-left text-xs">
                         <p className="text-slate-500">Kho hiện có: <strong className="text-rose-600 font-bold">{coupons.length} mã coupon</strong></p>
-                        <p className="text-slate-600 leading-relaxed bg-rose-50/50 p-3 rounded-xl border border-rose-100">
+                        <p className="text-slate-600 leading-relaxed bg-rose-50/50 p-3 rounded-popup border border-rose-100">
                             Hành động này sẽ <strong>xoá vĩnh viễn toàn bộ {coupons.length} mã coupon</strong> trong kho của bạn khỏi cơ sở dữ liệu. Sau khi xoá sẽ không thể khôi phục lại. Bạn có chắc chắn muốn thực hiện?
                         </p>
                     </div>

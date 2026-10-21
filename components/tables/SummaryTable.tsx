@@ -225,7 +225,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
            <div className={`relative p-2 sm:p-6 bg-white dark:bg-slate-800 rounded-b-none transition-opacity duration-200 ${isPending || isExpanding ? 'opacity-60' : 'opacity-100'}`}>
               {isExpanding && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px]">
-                      <div className="flex flex-col items-center p-5 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">
+                      <div className="flex flex-col items-center p-5 bg-white dark:bg-slate-800 rounded-card shadow-xl border border-slate-100 dark:border-slate-700">
                           <AppIcon name="loading" size="state" spin className="text-sky-700 mb-3" />
                           <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Đang chuẩn bị khung dữ liệu bảng...</span>
                       </div>

@@ -49,7 +49,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                         <Select 
                             value={compMode} 
                             onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
-                            className="text-xs font-semibold text-sky-700 bg-white border border-slate-200 rounded-lg shadow-2xs focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 py-1 pl-2.5 pr-7 cursor-pointer hover:bg-slate-50 transition-colors !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full lg:w-auto"
+                            className="text-xs font-semibold text-sky-700 bg-white border border-slate-200 rounded-control shadow-2xs focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 py-1 pl-2.5 pr-7 cursor-pointer hover:bg-slate-50 transition-colors !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full lg:w-auto"
                         >
                             <option value="day_adjacent">Ngày (Liền kề)</option>
                             <option value="day_same_period">Ngày (CK tháng trước)</option>
@@ -72,7 +72,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 type="date" 
                                 value={selectedDate} 
                                 onChange={e => setSelectedDate(e.target.value)} 
-                                className="text-xs py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
+                                className="text-xs py-1 px-2 rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
                             />
                         </div>
                     )}
@@ -83,7 +83,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 type="month" 
                                 value={selectedMonth} 
                                 onChange={e => setSelectedMonth(e.target.value)} 
-                                className="text-xs py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
+                                className="text-xs py-1 px-2 rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
                             />
                         </div>
                     )}
@@ -180,13 +180,13 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
 
                     {compMode === 'custom_range' && (
                         <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full lg:flex lg:w-auto">
-                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 h-8.5 sm:h-9">
+                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700 h-8.5 sm:h-9">
                                 <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 shrink-0">Kỳ A:</span>
                                 <Input type="date" value={customRangeA.start} onChange={e => setCustomRangeA(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
                                 <span className="text-slate-400 text-xs shrink-0">-</span>
                                 <Input type="date" value={customRangeA.end} onChange={e => setCustomRangeA(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
                             </div>
-                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 h-8.5 sm:h-9">
+                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700 h-8.5 sm:h-9">
                                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0">Kỳ B:</span>
                                 <Input type="date" value={customRangeB.start} onChange={e => setCustomRangeB(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
                                 <span className="text-slate-400 text-xs shrink-0">-</span>
@@ -195,7 +195,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                         </div>
                     )}
                 </div>
-                <div className="flex text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                <div className="flex text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2 py-1 rounded-control border border-slate-100 dark:border-slate-700/50">
                     <AppIcon name="info" size="xs" className="mt-0.5 text-sky-400 shrink-0" />
                     <span>
                         {compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :

@@ -91,12 +91,12 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                     <div className="grid grid-cols-2 gap-2">
                         <div>
                             <label htmlFor="lead-name" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Tên khách</label>
-                            <Input id="lead-name" placeholder="Nguyễn Văn A" value={name} onChange={e => setName(e.target.value)} className="h-9 rounded text-[13px]" />
+                            <Input id="lead-name" placeholder="Nguyễn Văn A" value={name} onChange={e => setName(e.target.value)} className="h-9 text-[13px]" />
                         </div>
                         <div>
                             <label htmlFor="lead-phone" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Số điện thoại</label>
                             <Input id="lead-phone" type="tel" inputMode="numeric" placeholder="09xx…" value={phone}
-                                onChange={e => setPhone(e.target.value.replace(/\D/g, ''))} className="h-9 rounded text-[13px] tabular-nums" />
+                                onChange={e => setPhone(e.target.value.replace(/\D/g, ''))} className="h-9 text-[13px] tabular-nums" />
                         </div>
                     </div>
                     <div>
@@ -106,20 +106,20 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                 const on = picked.includes(label);
                                 return (
                                     <Button key={label} variant="secondary" size="sm" onClick={() => togglePick(label)} aria-pressed={on}
-                                        className={`rounded h-8 px-2.5 text-[12px] ${on ? 'border-sky-400 bg-sky-50 text-sky-700' : ''}`}>
+                                        className={`h-8 px-2.5 text-[12px] ${on ? 'border-sky-400 bg-sky-50 text-sky-700' : ''}`}>
                                         {label}
                                     </Button>
                                 );
                             })}
                         </div>
-                        <Input placeholder="Sản phẩm khác…" value={customProduct} onChange={e => setCustomProduct(e.target.value)} className="h-8 rounded text-[13px] mt-1.5" aria-label="Sản phẩm khác" />
+                        <Input placeholder="Sản phẩm khác…" value={customProduct} onChange={e => setCustomProduct(e.target.value)} className="h-8 text-[13px] mt-1.5" aria-label="Sản phẩm khác" />
                     </div>
                     <div>
                         <label htmlFor="lead-notes" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Ghi chú</label>
-                        <Input id="lead-notes" placeholder="Ghi chú khách hàng…" value={notes} onChange={e => setNotes(e.target.value)} className="h-8 rounded text-[13px]"
+                        <Input id="lead-notes" placeholder="Ghi chú khách hàng…" value={notes} onChange={e => setNotes(e.target.value)} className="h-8 text-[13px]"
                             onKeyDown={e => { if (e.key === 'Enter') submit(); }} />
                     </div>
-                    <Button variant="primary" onClick={submit} disabled={!canAdd} leftIcon={<AppIcon name="add" size="md" />} className="w-full rounded h-10 lg:h-9" data-testid="btn-add-lead"
+                    <Button variant="primary" onClick={submit} disabled={!canAdd} leftIcon={<AppIcon name="add" size="md" />} className="w-full h-10 lg:h-9" data-testid="btn-add-lead"
                         title={canAdd ? undefined : Object.values(errors).filter(Boolean).join(' · ')}>
                         Thêm khách
                     </Button>
@@ -136,10 +136,10 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                             <div className="relative hidden sm:block">
                                 <AppIcon name="search" size="xs" className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <Input placeholder="Tìm nhanh…" value={search} onChange={e => setSearch(e.target.value)} aria-label="Tìm khách hàng"
-                                    className="h-6 w-40 rounded pl-6 pr-2 text-[12px]" fullWidth={false} />
+                                    className="h-6 w-40 pl-6 pr-2 text-[12px]" fullWidth={false} />
                             </div>
                             {leads.length > 0 && (
-                                <Button variant="secondary" size="sm" className="h-6 px-2 rounded text-[11px]" leftIcon={<AppIcon name="share" size="xs" />}
+                                <Button variant="secondary" size="sm" className="h-6 px-2 text-[11px]" leftIcon={<AppIcon name="share" size="xs" />}
                                     onClick={() => shareElementAsImage(listRef.current, `khach-hang-${new Date().toISOString().slice(0, 10)}.png`, 'Danh sách khách hàng')}>
                                     Xuất ảnh
                                 </Button>
@@ -153,7 +153,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                     </div>
                 )}
                 <div className="sm:hidden px-2 py-1.5 border-b border-slate-100">
-                    <Input placeholder="Tìm nhanh…" value={search} onChange={e => setSearch(e.target.value)} className="h-8 rounded text-[13px]" aria-label="Tìm khách hàng" />
+                    <Input placeholder="Tìm nhanh…" value={search} onChange={e => setSearch(e.target.value)} className="h-8 text-[13px]" aria-label="Tìm khách hàng" />
                 </div>
                 <div ref={listRef} className="bg-white">
                     {filtered.length === 0 ? (
@@ -187,7 +187,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                                     Zalo
                                                 </a>
                                                 <Select value={l.status} onChange={e => onUpdate({ ...l, status: e.target.value as LeadStatus, statusDetails: DETAIL_LABEL[e.target.value as LeadStatus] ? l.statusDetails : '', updatedAt: Date.now() })}
-                                                    aria-label="Trạng thái" fullWidth={false} className="h-7 lg:h-6 rounded px-2 pr-7 py-0 text-[12px] w-[122px]">
+                                                    aria-label="Trạng thái" fullWidth={false} className="h-7 lg:h-6 px-2 pr-7 py-0 text-[12px] w-[122px]">
                                                     {LEAD_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </Select>
                                                 <Button variant="unstyled" size="none" onClick={() => setPendingDelete(l)} title="Xoá khách" aria-label={`Xoá ${l.name}`}
@@ -200,7 +200,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                             <div className="mt-1 flex items-center gap-2">
                                                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 shrink-0">{detailLabel}</span>
                                                 <Input value={l.statusDetails} onChange={e => onUpdate({ ...l, statusDetails: e.target.value, updatedAt: Date.now() })}
-                                                    placeholder="Nhập…" aria-label={detailLabel} className="h-7 lg:h-6 rounded text-[12px]" />
+                                                    placeholder="Nhập…" aria-label={detailLabel} className="h-7 lg:h-6 text-[12px]" />
                                             </div>
                                         )}
                                     </li>

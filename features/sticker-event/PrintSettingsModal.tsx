@@ -23,7 +23,7 @@ const CheckboxOption: React.FC<{
         checked={checked}
         onChange={(e) => onChange(id, e.target.checked)}
         label={label}
-        wrapperClassName="flex gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+        wrapperClassName="flex gap-3 p-3 bg-slate-50 rounded-control hover:bg-slate-100 transition-colors"
         labelClassName="font-medium text-slate-800"
     />
 );
@@ -37,7 +37,7 @@ const FontUploadSection: React.FC<{
 }> = ({ title, fontName, onUpload, onRemove, inputRef }) => (
     <div className="mb-4">
         <h4 className="text-sm font-semibold text-slate-600 mb-2">{title}</h4>
-        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <div className="p-3 bg-slate-50 rounded-control border border-slate-200">
             {fontName ? (
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

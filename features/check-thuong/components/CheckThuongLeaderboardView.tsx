@@ -174,7 +174,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
     if (!competitionData || competitionData.length === 0) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 mb-3">
+                <div className="p-4 rounded-card bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 mb-3">
                     <AppIcon name="alert" size="state" />
                 </div>
                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
@@ -199,7 +199,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                 {/* TIÊU ĐỀ TRANG */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 mb-3.5">
                     <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 shadow-xs shadow-amber-500/20 shrink-0">
+                        <div className="p-2 rounded-popup bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 shadow-xs shadow-amber-500/20 shrink-0">
                             <AppIcon name="trophy" size="lg" />
                         </div>
                         <div>

@@ -36,7 +36,7 @@ interface DashboardProps {
 const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ onNavigate, message }) => (
     <FeatureLandingLayout>
         <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
+            <div className="w-9 h-9 rounded-control bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
                 <AppIcon name="upload" size="lg" />
             </div>
             <div className="text-left flex-1">
@@ -50,7 +50,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
             size="none"
             type="button"
             onClick={onNavigate}
-            className="w-full relative group/dropzone flex flex-col items-center justify-center min-h-[120px] border-2 border-dashed border-slate-200 dark:border-slate-700/60 hover:border-sky-400/50 dark:hover:border-sky-500/50 rounded-xl cursor-pointer bg-slate-50/50 dark:bg-slate-800/20 hover:bg-sky-50/30 dark:hover:bg-sky-950/20 transition-all duration-300 overflow-hidden p-4"
+            className="w-full relative group/dropzone flex flex-col items-center justify-center min-h-[120px] border-2 border-dashed border-slate-200 dark:border-slate-700/60 hover:border-sky-400/50 dark:hover:border-sky-500/50 rounded-popup cursor-pointer bg-slate-50/50 dark:bg-slate-800/20 hover:bg-sky-50/30 dark:hover:bg-sky-950/20 transition-all duration-300 overflow-hidden p-4"
         >
             <div className="w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-sky-100 text-slate-400 group-hover/dropzone:text-sky-500">
                 <AppIcon name="upload" size="lg" />
@@ -458,7 +458,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                     onStartAutoSync={handleStartAutoSync}
                 >
                     <div className="py-12 px-6 sm:py-16 sm:px-8 border-t border-slate-200 dark:border-slate-700/60 bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-900/40 dark:to-slate-900/20 flex flex-col items-center justify-center text-center">
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 shadow-sm">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-card bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 shadow-sm">
                             <AppIcon name="clock" size="state" />
                         </div>
                         <h3 className="text-base sm:text-[17px] font-bold text-slate-800 dark:text-slate-100 sm:leading-7">

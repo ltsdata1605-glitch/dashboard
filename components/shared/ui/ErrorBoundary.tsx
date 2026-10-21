@@ -68,7 +68,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
         errMsg.includes('failed to load or has no default export');
 
       return (
-        <div className="p-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
+        <div className="p-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-popup text-center">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 mb-4">
             <AppIcon name="warning" size="xl" />
           </div>
@@ -90,7 +90,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 this.setState({ hasError: false, error: null });
               }
             }}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-control transition-colors text-sm font-medium"
           >
             {isChunkLoadError ? 'Tải lại trang' : 'Thử lại'}
           </Button>

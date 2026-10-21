@@ -41,7 +41,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
     return (
         <div className="flex flex-col">
             {isSettingsOpen ? (
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-4 text-left">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-popup border border-slate-200 dark:border-slate-700 p-4 mb-4 text-left">
                     <div className="mb-4">
                         <label htmlFor="config-url" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
                             Nguồn cấu hình sản phẩm
@@ -62,12 +62,12 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
             ) : (
                 <>
                     {/* Switch/Segmented Control */}
-                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4 relative z-10">
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-popup mb-4 relative z-10">
                         <Button
                             type="button"
                             variant="unstyled" size="none"
                             onClick={() => setUploadType('realtime')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            className={`flex-1 py-2 text-xs font-bold rounded-control transition-all ${
                                 uploadType === 'realtime'
                                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -79,7 +79,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             type="button"
                             variant="unstyled" size="none"
                             onClick={() => setUploadType('historical')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            className={`flex-1 py-2 text-xs font-bold rounded-control transition-all ${
                                 uploadType === 'historical'
                                     ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -90,7 +90,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                     </div>
 
                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                        <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
+                        <div className="w-9 h-9 rounded-control bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
                             <AppIcon name="database" size="md" />
                         </div>
                         <div className="text-left flex-1">
@@ -115,7 +115,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                 <>
                     <label
                         htmlFor="file-upload"
-                        className={`relative group/dropzone flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 overflow-hidden
+                        className={`relative group/dropzone flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed rounded-popup cursor-pointer transition-all duration-300 overflow-hidden
                             ${isDragging 
                                 ? 'bg-sky-50/50 dark:bg-sky-900/20 border-sky-500 scale-[1.01] shadow-inner' 
                                 : 'bg-slate-50/50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 hover:border-sky-400/50 hover:bg-sky-50/30 dark:hover:bg-sky-900/10'

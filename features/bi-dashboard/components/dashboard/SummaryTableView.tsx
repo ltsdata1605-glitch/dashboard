@@ -278,7 +278,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] relative shrink-0 ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] relative shrink-0 ${
                     isSupermarketFilterOpen
                         ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                         : hiddenSupermarkets.length > 0
@@ -332,7 +332,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] shrink-0 ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] shrink-0 ${
                     isColumnSelectorOpen
                         ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -397,7 +397,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                     variant="unstyled"
                     size="none"
                     onClick={() => setUseAdjustedTarget(!useAdjustedTarget)}
-                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] relative shrink-0 ${
+                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] relative shrink-0 ${
                         useAdjustedTarget
                             ? 'border border-sky-300 dark:border-sky-700 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-semibold shadow-2xs'
                             : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

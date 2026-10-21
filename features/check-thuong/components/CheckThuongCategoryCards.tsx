@@ -51,7 +51,7 @@ export const CheckThuongCategoryCards: React.FC<CheckThuongCategoryCardsProps> =
                     <div
                         key={group.key}
                         id={`group-section-${group.key}`}
-                        className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs"
+                        className="rounded-popup border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs"
                     >
                         {/* Group Header */}
                         <div className="px-4 py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 flex items-center justify-between">
@@ -108,7 +108,7 @@ export const CheckThuongCategoryCards: React.FC<CheckThuongCategoryCardsProps> =
                                     <div
                                         key={`${categoryName}-${index}`}
                                         onClick={() => onSelectCategory(categoryName, channel)}
-                                        className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group/card"
+                                        className="rounded-popup border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group/card"
                                     >
                                         {/* Card Title */}
                                         <div className={`px-3 py-1.5 border-b border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between ${pastelStyle}`}>

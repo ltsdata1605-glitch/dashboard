@@ -39,7 +39,7 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status }) => {
     const isProcessing = status.type === 'info' && status.progress < 100;
 
     return (
-        <div className={`p-4 mb-6 rounded-lg border-l-4 shadow-md ${classes.bg} ${classes.border} ${classes.text}`} role="alert">
+        <div className={`p-4 mb-6 rounded-control border-l-4 shadow-md ${classes.bg} ${classes.border} ${classes.text}`} role="alert">
             <div className="flex items-center">
                 {/* Trước 2026-10-06: class w-6 h-6 bị inline style 20px của Icon cũ đè mất — ra 20px chứ không 24px. */}
                 <AppIcon name={classes.icon} size="lg" className={`mr-3 ${classes.iconColor} ${isProcessing ? 'animate-pulse' : ''}`} />

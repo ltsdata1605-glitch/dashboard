@@ -37,7 +37,7 @@ const SuggestionModal: React.FC<SuggestionModalProps> = ({ suggestions, onAccept
 
       <div className="space-y-3">
         {suggestions.map((suggestion, index) => (
-          <div key={index} className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
+          <div key={index} className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-control border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
             <div className="flex-grow">
               <p className="font-semibold text-slate-800 dark:text-slate-200">
                 Đổi ca <span className={`font-bold ${suggestion.type === 'kho' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{getRoleName(suggestion.type)}</span> ngày <span className="text-sky-600 dark:text-sky-400">{suggestion.dateString}</span>

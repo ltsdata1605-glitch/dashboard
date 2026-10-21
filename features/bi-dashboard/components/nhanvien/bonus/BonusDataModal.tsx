@@ -56,7 +56,7 @@ export const BonusDataModal: React.FC<{
                     <span className="text-slate-500 dark:text-slate-400">Cập nhật:</span>
                     <span className="text-sky-600 dark:text-sky-400">{employee.name}</span>
                     {remainingInBatch && remainingInBatch > 0 ? (
-                        <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-bold rounded-lg uppercase whitespace-nowrap">Batch Mode</span>
+                        <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-bold rounded-control uppercase whitespace-nowrap">Batch Mode</span>
                     ) : null}
                 </span>
             }

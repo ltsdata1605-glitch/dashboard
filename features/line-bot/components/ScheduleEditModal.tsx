@@ -193,7 +193,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Ví dụ: Báo cáo tồn kho sáng 6h..."
-                            className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs"
+                            className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs"
                             required
                         />
                     </div>
@@ -209,7 +209,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 type="time"
                                 value={time}
                                 onChange={e => setTime(e.target.value)}
-                                className="block h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono"
+                                className="block h-auto p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-mono"
                                 required
                             />
                         </div>
@@ -222,7 +222,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 aria-label="Trạng thái"
                                 value={active ? '1' : '0'}
                                 onChange={e => setActive(e.target.value === '1')}
-                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
+                                className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold"
                             >
                                 <option value="1">Đang bật (Hoạt động)</option>
                                 <option value="0">Tạm tắt</option>
@@ -240,7 +240,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             aria-label="Chu kỳ lặp"
                             value={repeatType}
                             onChange={e => handleRepeatTypeChange(e.target.value as ScheduleRepeatType)}
-                            className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus-visible:ring-2 focus-visible:ring-sky-500/20"
+                            className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold text-slate-800 focus-visible:ring-2 focus-visible:ring-sky-500/20"
                         >
                             <option value="DAILY">Hàng ngày (Mỗi ngày)</option>
                             <option value="CUSTOM">Tùy chọn thứ trong tuần (Nhiều thứ)</option>
@@ -262,7 +262,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 value={specificDate}
                                 min={new Date().toISOString().slice(0, 10)}
                                 onChange={e => setSpecificDate(e.target.value)}
-                                className="block h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold font-mono"
+                                className="block h-auto p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold font-mono"
                                 required
                             />
                             <p className="flex items-start gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 mt-1">
@@ -301,7 +301,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                             type="button"
                                             key={d.val}
                                             onClick={() => toggleDay(d.val)}
-                                            className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                                            className={`flex-1 py-1.5 text-xs font-bold rounded-control border transition-all ${
                                                 selected
                                                     ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                                                     : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
@@ -323,14 +323,14 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             aria-label="Đối tượng nhận tin"
                             value={targetType}
                             onChange={e => setTargetType(e.target.value as any)}
-                            className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold mb-2"
+                            className="h-auto pl-2.5 py-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold mb-2"
                         >
                             <option value="ALL_GROUPS">Tất cả các nhóm đã lưu</option>
                             <option value="SPECIFIC_GROUPS">Chọn nhóm cụ thể</option>
                         </Select>
 
                         {targetType === 'SPECIFIC_GROUPS' && (
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-popup border border-slate-200 dark:border-slate-700 space-y-2">
                                 {groups.length === 0 ? (
                                     <div className="space-y-2 py-1">
                                         <p className="flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
@@ -364,7 +364,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                         {groups.map(g => (
                                             <Checkbox
                                                 key={g.groupId}
-                                                wrapperClassName="flex text-xs text-slate-700 hover:bg-slate-100 p-1 rounded-lg transition-colors"
+                                                wrapperClassName="flex text-xs text-slate-700 hover:bg-slate-100 p-1 rounded-control transition-colors"
                                                 labelClassName="inline-flex items-center gap-2 text-xs text-slate-700"
                                                 label={
                                                     <>
@@ -408,7 +408,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                                         placeholder="Dán Group ID (ví dụ: c...)"
                                                         value={manualGroupId}
                                                         onChange={e => setManualGroupId(e.target.value)}
-                                                        className="h-auto p-1.5 text-xs border-slate-200 rounded-lg font-mono"
+                                                        className="h-auto p-1.5 text-xs border-slate-200 rounded-control font-mono"
                                                     />
                                                     <Input
                                                         dense
@@ -418,7 +418,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                                         placeholder="Tên nhóm (tuỳ chọn)"
                                                         value={manualGroupName}
                                                         onChange={e => setManualGroupName(e.target.value)}
-                                                        className="h-auto w-32 p-1.5 text-xs border-slate-200 rounded-lg"
+                                                        className="h-auto w-32 p-1.5 text-xs border-slate-200 rounded-control"
                                                     />
                                                     <Button
                                                         variant="unstyled"
@@ -435,7 +435,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                                             }
                                                         }}
                                                         disabled={!manualGroupId.trim()}
-                                                        className="ycx-hit px-2.5 py-1 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                                                        className="ycx-hit px-2.5 py-1 text-xs font-bold bg-emerald-600 text-white rounded-control hover:bg-emerald-700 disabled:opacity-50"
                                                     >
                                                         Thêm
                                                     </Button>
@@ -480,20 +480,20 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             value={messageTemplate}
                             onChange={e => setMessageTemplate(e.target.value)}
                             placeholder="Nhập nội dung thông báo..."
-                            className="min-h-0 p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs"
+                            className="min-h-0 p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs"
                             required
                         />
                     </div>
 
                     <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/50 modal-bleed-x modal-bleed-b mt-4">
-                        <Button variant="ghost" type="button" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
+                        <Button variant="ghost" type="button" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-control">
                             Huỷ
                         </Button>
                         <Button
                             variant="primary"
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm"
+                            className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-control shadow-sm"
                         >
                             {isSubmitting ? 'Đang lưu...' : 'Lưu Lịch Hẹn'}
                         </Button>

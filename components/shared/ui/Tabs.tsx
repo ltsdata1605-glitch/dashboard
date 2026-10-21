@@ -127,7 +127,7 @@ export const Tabs = React.memo<TabsProps>(({
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0 snap-center',
+                'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-control transition-all shrink-0 snap-center',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive

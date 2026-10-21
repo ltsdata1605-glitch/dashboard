@@ -110,17 +110,17 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
         <div className="space-y-2.5 sm:space-y-3.5">
             {/* Top Stats - 3 Thẻ trên 1 hàng siêu gọn gàng */}
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-                <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
+                <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
                     <div>
                         <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 block font-semibold truncate">Tổng Mã Lọc</span>
                         <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stats.total}</span>
                     </div>
-                    <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
+                    <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-control shrink-0">
                         <AppIcon name="coupon" size="sm" />
                     </div>
                 </div>
 
-                <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
+                <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
                     <div>
                         <span className="text-[11px] sm:text-xs text-emerald-600 dark:text-emerald-400 block font-semibold truncate">Đã Sử Dụng</span>
                         <div className="flex items-baseline gap-1">
@@ -130,24 +130,24 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             </span>
                         </div>
                     </div>
-                    <div className="p-1 sm:p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
+                    <div className="p-1 sm:p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-control shrink-0">
                         <AppIcon name="success" size="sm" />
                     </div>
                 </div>
 
-                <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
+                <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
                     <div>
                         <span className="text-[11px] sm:text-xs text-amber-600 dark:text-amber-400 block font-semibold truncate">Chưa Sử Dụng</span>
                         <span className="text-base sm:text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{stats.unused}</span>
                     </div>
-                    <div className="p-1 sm:p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
+                    <div className="p-1 sm:p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-control shrink-0">
                         <AppIcon name="clock" size="sm" />
                     </div>
                 </div>
             </div>
 
             {/* Filter & Action Toolbar */}
-            <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
+            <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
                 {/* Search Bar */}
                 <div className="relative w-full sm:w-[220px] lg:w-[260px] shrink-0">
                     {/* z-10: Input tự bọc <div relative> vẽ SAU icon nên sẽ che icon nếu không nâng lớp */}
@@ -159,7 +159,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Tìm mã, NV, loại PMH, người dùng..."
-                        className="h-8 pl-7.5 pr-6 bg-slate-50 border-slate-200 rounded-lg text-sm sm:text-xs text-slate-800 font-medium"
+                        className="h-8 pl-7.5 pr-6 bg-slate-50 border-slate-200 rounded-control text-sm sm:text-xs text-slate-800 font-medium"
                     />
                     {searchQuery && (
                         <Button
@@ -176,7 +176,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
 
                 {/* Filter Pills & Actions */}
                 <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap ml-auto lg:ml-0 min-w-0 max-w-full">
-                    <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-lg border border-slate-200/70 dark:border-slate-700/70 min-w-0 max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
+                    <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-control border border-slate-200/70 dark:border-slate-700/70 min-w-0 max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
                         <Button
                             variant="unstyled"
                             size="none"
@@ -220,7 +220,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         size="none"
                         onClick={loadData}
                         disabled={isLoading}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-control border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
                         title="Làm mới danh sách"
                     >
                         <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
@@ -232,7 +232,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             size="none"
                             onClick={() => setHoiXoaHet(true)}
                             disabled={isDeleting}
-                            className="h-8 w-8 p-0 flex items-center justify-center text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg border border-rose-200/80 active:scale-95 transition-all"
+                            className="h-8 w-8 p-0 flex items-center justify-center text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-control border border-rose-200/80 active:scale-95 transition-all"
                             title="Xóa toàn bộ lịch sử lọc"
                         >
                             <AppIcon name="delete" size="sm" />
@@ -242,7 +242,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
             </div>
 
             {/* List / Table */}
-            <div className="bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
+            <div className="bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
                 {isLoading ? (
                     <div className="p-8 text-center text-slate-400 flex flex-col items-center gap-2">
                         <AppIcon name="refresh" size="lg" spin className="text-sky-500" />

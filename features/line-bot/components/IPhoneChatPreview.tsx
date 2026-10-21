@@ -168,13 +168,13 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
 
                     {/* 3. iOS Mode Segmented Tabs */}
                     <div className="px-3 pt-2 pb-1.5 bg-slate-200/60 dark:bg-slate-900/60 border-b border-slate-200/60 dark:border-slate-800">
-                        <div className="grid grid-cols-4 gap-1 p-1 bg-slate-300/60 dark:bg-slate-800/80 rounded-xl text-[9px]">
+                        <div className="grid grid-cols-4 gap-1 p-1 bg-slate-300/60 dark:bg-slate-800/80 rounded-popup text-[9px]">
                             <Button
                                 variant="unstyled"
                                 size="none"
                                 type="button"
                                 onClick={() => onTabChange('filter')}
-                                className={`py-1 rounded-lg font-bold transition-all text-center ${
+                                className={`py-1 rounded-control font-bold transition-all text-center ${
                                     previewTab === 'filter'
                                         ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-xs'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -187,7 +187,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 size="none"
                                 type="button"
                                 onClick={() => onTabChange('tk')}
-                                className={`py-1 rounded-lg font-bold transition-all text-center ${
+                                className={`py-1 rounded-control font-bold transition-all text-center ${
                                     previewTab === 'tk'
                                         ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -200,7 +200,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 size="none"
                                 type="button"
                                 onClick={() => onTabChange('issue')}
-                                className={`py-1 rounded-lg font-bold transition-all text-center ${
+                                className={`py-1 rounded-control font-bold transition-all text-center ${
                                     previewTab === 'issue'
                                         ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -213,7 +213,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 size="none"
                                 type="button"
                                 onClick={() => onTabChange('hd')}
-                                className={`py-1 rounded-lg font-bold transition-all text-center ${
+                                className={`py-1 rounded-control font-bold transition-all text-center ${
                                     previewTab === 'hd'
                                         ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -264,7 +264,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <div className="bg-[#06C755] text-white p-2.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[88%] font-mono text-[10.5px] whitespace-pre-wrap leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-150">
+                                    <div className="bg-[#06C755] text-white p-2.5 rounded-card rounded-tr-xs shadow-xs max-w-[88%] font-mono text-[10.5px] whitespace-pre-wrap leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-150">
 {`[Tin nhắn chuyển tiếp từ Nhóm]:
 ${targetName}
 ➜ PMH ${mockType1} : ${mockCode1}
@@ -291,7 +291,7 @@ ${otherName}
                                         </div>
 
                                         {/* Card 1: Khớp chuẩn 100% Hình 2 */}
-                                        <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                        <div className="rounded-card rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
                                             <div className="px-3 py-2 bg-[#0284C7] text-white flex items-center justify-between shadow-2xs">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-xs">🎁</span>
@@ -311,7 +311,7 @@ ${otherName}
                                                     </div>
                                                 </div>
 
-                                                <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800">
                                                     <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
                                                         {mockProd1}
                                                     </div>
@@ -320,7 +320,7 @@ ${otherName}
                                                 <div className="flex justify-center pt-0.5">
                                                     <div
                                                         onClick={() => handleCopyCode(mockCode1, mockType1, 1)}
-                                                        className={`w-full py-2 px-3 rounded-xl transition-all cursor-pointer select-none text-center flex items-center justify-center gap-1.5 font-bold text-xs ${
+                                                        className={`w-full py-2 px-3 rounded-popup transition-all cursor-pointer select-none text-center flex items-center justify-center gap-1.5 font-bold text-xs ${
                                                             copiedCode === mockCode1
                                                                 ? 'bg-emerald-600 text-white shadow-sm'
                                                                 : 'bg-[#06C755] hover:bg-[#05b34c] text-white shadow-xs'
@@ -343,7 +343,7 @@ ${otherName}
                                         </div>
 
                                         {/* Card 2: PMH MM300 */}
-                                        <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                        <div className="rounded-card rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
                                             <div className="px-3 py-2 bg-[#0284C7] text-white flex items-center justify-between shadow-2xs">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-xs">🎁</span>
@@ -363,7 +363,7 @@ ${otherName}
                                                     </div>
                                                 </div>
 
-                                                <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800">
                                                     <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
                                                         {mockProd2}
                                                     </div>
@@ -372,7 +372,7 @@ ${otherName}
                                                 <div className="flex justify-center pt-0.5">
                                                     <div
                                                         onClick={() => handleCopyCode(mockCode2, mockType2, 2)}
-                                                        className={`w-full py-2 px-3 rounded-xl transition-all cursor-pointer select-none text-center flex items-center justify-center gap-1.5 font-bold text-xs ${
+                                                        className={`w-full py-2 px-3 rounded-popup transition-all cursor-pointer select-none text-center flex items-center justify-center gap-1.5 font-bold text-xs ${
                                                             copiedCode === mockCode2
                                                                 ? 'bg-emerald-600 text-white shadow-sm'
                                                                 : 'bg-[#06C755] hover:bg-[#05b34c] text-white shadow-xs'
@@ -396,7 +396,7 @@ ${otherName}
 
                                         {/* Card 3 (nếu có người thứ 2): PMH SHD4607 */}
                                         {secondName !== firstName && (
-                                            <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                            <div className="rounded-card rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
                                                 <div className="px-3 py-2 bg-[#06C755] text-white flex items-center justify-between shadow-2xs">
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="text-xs">🎁</span>
@@ -416,7 +416,7 @@ ${otherName}
                                                         </div>
                                                     </div>
 
-                                                    <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                    <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800">
                                                         <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
                                                             🛍️ Bếp hồng ngoại Sunhouse SHD4607
                                                         </div>
@@ -425,7 +425,7 @@ ${otherName}
                                                     <div className="flex justify-center pt-0.5">
                                                         <div
                                                             onClick={() => handleCopyCode('VWQU13YUQX', 'SHD4607', 3)}
-                                                            className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
+                                                            className={`group relative px-4 py-1.5 rounded-popup border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
                                                                 copiedCode === 'VWQU13YUQX'
                                                                     ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
                                                                     : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
@@ -463,7 +463,7 @@ ${otherName}
 
                                 {usedCouponInfo && (
                                     <div className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-200 mt-2">
-                                        <div className="bg-[#06C755] text-white py-2 px-3 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-sans text-[11px] leading-relaxed border border-emerald-400/30">
+                                        <div className="bg-[#06C755] text-white py-2 px-3 rounded-card rounded-tr-xs shadow-xs max-w-[85%] font-sans text-[11px] leading-relaxed border border-emerald-400/30">
                                             <div>👉 PMH {usedCouponInfo.cardIndex} đã được sử dụng lúc <span className="font-bold">{usedCouponInfo.time}</span>!</div>
                                             <div className="text-white/90">↳ User: <span className="font-bold">{firstName}</span></div>
                                         </div>
@@ -476,13 +476,13 @@ ${otherName}
                         {previewTab === 'tk' && (
                             <>
                                 {/* Sub-filters inside chat */}
-                                <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs rounded-xl shadow-2xs text-[10px]">
+                                <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs rounded-popup shadow-2xs text-[10px]">
                                     <Button
                                         variant="unstyled"
                                         size="none"
                                         type="button"
                                         onClick={() => onTkModeChange('all')}
-                                        className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
+                                        className={`flex-1 py-0.5 rounded-control font-bold text-center transition-all ${
                                             tkMode === 'all'
                                                 ? 'bg-amber-500 text-white shadow-xs'
                                                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -495,7 +495,7 @@ ${otherName}
                                         size="none"
                                         type="button"
                                         onClick={() => onTkModeChange('event')}
-                                        className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
+                                        className={`flex-1 py-0.5 rounded-control font-bold text-center transition-all ${
                                             tkMode === 'event'
                                                 ? 'bg-emerald-600 text-white shadow-xs'
                                                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -508,7 +508,7 @@ ${otherName}
                                         size="none"
                                         type="button"
                                         onClick={() => onTkModeChange('gvgs')}
-                                        className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
+                                        className={`flex-1 py-0.5 rounded-control font-bold text-center transition-all ${
                                             tkMode === 'gvgs'
                                                 ? 'bg-sky-600 text-white shadow-xs'
                                                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -519,7 +519,7 @@ ${otherName}
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <div className="bg-[#06C755] text-white px-3 py-1.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[80%] font-mono font-bold text-xs">
+                                    <div className="bg-[#06C755] text-white px-3 py-1.5 rounded-card rounded-tr-xs shadow-xs max-w-[80%] font-mono font-bold text-xs">
                                         {tkMode === 'all' ? 'tk' : tkMode === 'event' ? 'tk event' : 'tk gvgs'}
                                         <div className="text-[8px] text-emerald-100 text-right mt-0.5">13:48 ✓✓</div>
                                     </div>
@@ -529,7 +529,7 @@ ${otherName}
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
                                         <AppIcon name="bot" size="xs" />
                                     </div>
-                                    <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-1.5">
+                                    <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-card rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-1.5">
                                         <div className="flex items-center justify-between">
                                             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                                                 <span>BOT LINE</span>
@@ -609,13 +609,13 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                         {previewTab === 'issue' && (
                             <>
                                 {/* Sub-filters inside chat */}
-                                <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs rounded-xl shadow-2xs text-[10px]">
+                                <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs rounded-popup shadow-2xs text-[10px]">
                                     <Button
                                         variant="unstyled"
                                         size="none"
                                         type="button"
                                         onClick={() => onIssueModeChange('event')}
-                                        className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
+                                        className={`flex-1 py-0.5 rounded-control font-bold text-center transition-all ${
                                             issueMode === 'event'
                                                 ? 'bg-emerald-600 text-white shadow-xs'
                                                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -628,7 +628,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                         size="none"
                                         type="button"
                                         onClick={() => onIssueModeChange('gvgs')}
-                                        className={`flex-1 py-0.5 rounded-lg font-bold text-center transition-all ${
+                                        className={`flex-1 py-0.5 rounded-control font-bold text-center transition-all ${
                                             issueMode === 'gvgs'
                                                 ? 'bg-[#BE123C] text-white shadow-xs'
                                                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -639,7 +639,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <div className={`text-white px-3 py-1.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-mono text-xs font-bold ${issueMode === 'event' ? 'bg-[#06C755]' : 'bg-[#BE123C]'}`}>
+                                    <div className={`text-white px-3 py-1.5 rounded-card rounded-tr-xs shadow-xs max-w-[85%] font-mono text-xs font-bold ${issueMode === 'event' ? 'bg-[#06C755]' : 'bg-[#BE123C]'}`}>
                                         {issueMode === 'event' ? 'e4 12345678' : 'gv2 87654321'}
                                         <div className="text-[8px] text-white/80 text-right mt-0.5">13:48 ✓✓</div>
                                     </div>
@@ -651,7 +651,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                     </div>
                                     
                                     {/* LINE Flex Message Card (Bubble) */}
-                                    <div className="w-full max-w-[92%] rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
+                                    <div className="w-full max-w-[92%] rounded-card rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
                                         {/* Flex Header */}
                                         <div className={`px-3 py-2 ${issueMode === 'event' ? 'bg-[#06C755]' : 'bg-[#BE123C]'} text-white flex items-center justify-between shadow-2xs`}>
                                             <div className="flex items-center gap-1.5">
@@ -679,7 +679,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                             </div>
 
                                             {/* Thông tin sản phẩm & MĐH */}
-                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800 space-y-1">
+                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800 space-y-1">
                                                 <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
                                                     🛍️ {issueMode === 'event' ? 'Bếp gas đôi Sunhouse SHB3105MD' : 'Nồi cơm nắp gài Toshiba RC-18JH1TVN(N) 1.8L'}
                                                 </div>
@@ -693,7 +693,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                             <div className="flex justify-center pt-0.5">
                                                 <div
                                                     onClick={() => handleCopyCode(activeCouponCode)}
-                                                    className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
+                                                    className={`group relative px-4 py-1.5 rounded-popup border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
                                                         copiedCode === activeCouponCode
                                                             ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
                                                             : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
@@ -734,7 +734,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                         {previewTab === 'hd' && (
                             <>
                                 <div className="flex justify-end">
-                                    <div className="bg-[#06C755] text-white px-3 py-1.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[80%] font-mono font-bold text-xs">
+                                    <div className="bg-[#06C755] text-white px-3 py-1.5 rounded-card rounded-tr-xs shadow-xs max-w-[80%] font-mono font-bold text-xs">
                                         hd
                                         <div className="text-[8px] text-emerald-100 text-right mt-0.5">13:48 ✓✓</div>
                                     </div>
@@ -744,7 +744,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
                                         <AppIcon name="bot" size="xs" />
                                     </div>
-                                    <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-2">
+                                    <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-card rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-2">
                                         <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
                                             <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-sans">
                                                 <AppIcon name="guide" size="xs" />
@@ -754,7 +754,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                         </div>
 
                                         <div className="space-y-2 font-mono text-[10px] leading-relaxed">
-                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800 space-y-0.5">
+                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800 space-y-0.5">
                                                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1 font-sans text-[10.5px]">
                                                     <span>📊 1. KIỂM TRA TỒN KHO MÃ:</span>
                                                 </div>
@@ -769,7 +769,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                 </div>
                                             </div>
 
-                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800 space-y-0.5">
+                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800 space-y-0.5">
                                                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1 font-sans text-[10.5px]">
                                                     <span>⚡ 2. XIN NHẬN MÃ (1-CHẠM TỰ COPY):</span>
                                                 </div>
@@ -784,7 +784,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                 </div>
                                             </div>
 
-                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800 space-y-0.5">
+                                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-popup border border-slate-100 dark:border-slate-800 space-y-0.5">
                                                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1 font-sans text-[10.5px]">
                                                     <span>🔄 3. HỦY MÃ (NẾU KHÔNG DÙNG):</span>
                                                 </div>
@@ -841,7 +841,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                             </Button>
 
                             {/* Fake input text box */}
-                            <div className="flex-1 py-1 px-3 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
+                            <div className="flex-1 py-1 px-3 bg-slate-100 dark:bg-slate-800 rounded-card flex items-center justify-between text-slate-400 dark:text-slate-500 text-[11px]">
                                 <span className="truncate">
                                     {previewTab === 'filter'
                                         ? 'Dán tin nhắn chuyển tiếp...'

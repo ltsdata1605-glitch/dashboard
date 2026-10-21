@@ -247,6 +247,15 @@ function countOffScaleRadius(content, file = '') {
   if (!file.endsWith('.tsx')) return 0;
   return (content.match(/\brounded(?:-[trbl]{1,2})?-(?:3xl|\[(?!var\()[^\]]+\])/g) || []).length;
 }
+/**
+ * legacyRadius (GĐ10 bước 4, 2026-10-21): lớp bo góc KIỂU CŨ `rounded-lg` / `rounded-xl` / `rounded-2xl` (kể cả cạnh `rounded-t-xl`,
+ * biến thể `sm:rounded-lg`, `!rounded-2xl`). 905 chỗ đã đổi sang token CÙNG GIÁ TRỊ — lg 8px → `rounded-control`, xl 12px →
+ * `rounded-popup`, 2xl 16px → `rounded-card` (hoặc `rounded-overlay`) — giao diện không đổi. Mốc 0: lớp cũ mới là đỏ ngay.
+ */
+function countLegacyRadius(content, file = '') {
+  if (!/\.tsx?$/.test(file)) return 0;
+  return (content.match(/(?<![\w-])rounded(?:-(?:t|r|b|l|tl|tr|br|bl|s|e|ss|se|es|ee))?-(?:lg|xl|2xl)(?![\w-])/g) || []).length;
+}
 
 /**
  * offScaleText (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3): cỡ chữ NGOÀI thang 10 bậc của lớp Apple. Thang (px):
@@ -268,7 +277,7 @@ function countOffScaleText(content, file = '') {
   return n;
 }
 
-const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji', 'rawOverlay', 'tinyText', 'offScaleRadius', 'offScaleText'];
+const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji', 'rawOverlay', 'tinyText', 'offScaleRadius', 'offScaleText', 'legacyRadius'];
 
 function computeViolations() {
   const files = walk(ROOT, []);
@@ -288,6 +297,7 @@ function computeViolations() {
       tinyText: countTinyText(content, relPath(file)),
       offScaleRadius: countOffScaleRadius(content, relPath(file)),
       offScaleText: countOffScaleText(content, relPath(file)),
+      legacyRadius: countLegacyRadius(content, relPath(file)),
     };
     if (METRIC_KEYS.some((k) => counts[k])) {
       result[relPath(file)] = counts;
@@ -391,6 +401,6 @@ if (require.main === module) {
 module.exports = {
   countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar,
   countIconDirectImport, countIconNumericSize, countIconLegacyCall, countIconRawSvg, countIconEmoji,
-  countRawOverlay, countTinyText, countOffScaleRadius, countOffScaleText,
+  countRawOverlay, countTinyText, countOffScaleRadius, countOffScaleText, countLegacyRadius,
   computeViolations, saveBaseline, METRIC_KEYS,
 };

@@ -117,7 +117,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                         />
                     </div>
 
-                    <div className="p-2.5 bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/60 rounded-xl text-[11px] text-sky-800 dark:text-sky-300 space-y-1">
+                    <div className="p-2.5 bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/60 rounded-popup text-[11px] text-sky-800 dark:text-sky-300 space-y-1">
                         <div className="flex items-center gap-1 font-semibold">
                             <AppIcon name="sparkles" size="xs" />
                             <span>Cách lấy API Key miễn phí (mất 30 giây):</span>

@@ -164,7 +164,7 @@ export default function CouponConverterView() {
                     </Button>
                     
                     {showGuide && (
-                        <div className="mt-6 max-w-4xl mx-auto rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div className="mt-6 max-w-4xl mx-auto rounded-popup overflow-hidden border border-slate-200 dark:border-slate-700 shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
                             <img 
                                 src="/Tuts/Coupon.png" 
                                 alt="Hướng dẫn sử dụng" 
@@ -175,7 +175,7 @@ export default function CouponConverterView() {
                 </header>
 
                 {errorMessage && (
-                    <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0 rounded-lg">
+                    <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0 rounded-control">
                         <div className="flex items-center gap-3">
                             <AppIcon name="warning" size="xl" className="text-rose-500" />
                             <div>
@@ -195,7 +195,7 @@ export default function CouponConverterView() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-grow">
                     {/* Input Section */}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-xl">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-popup">
                           <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                               <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 leading-7">
                                   <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />
@@ -244,7 +244,7 @@ export default function CouponConverterView() {
                                       value={inputText}
                                       onChange={handleInputChange}
                                       onPaste={handleContentPaste}
-                                      className="w-full h-full min-h-[200px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all resize-none custom-scrollbar rounded-lg"
+                                      className="w-full h-full min-h-[200px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all resize-none custom-scrollbar rounded-control"
                                       placeholder="Dán dữ liệu thô vào đây...&#10;Hệ thống sẽ tự động định dạng và sao chép kết quả."
                                   />
                               </div>
@@ -252,7 +252,7 @@ export default function CouponConverterView() {
                     </div>
 
                     {/* Output Section */}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group rounded-xl">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group rounded-popup">
                         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 relative z-10">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-[17px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 leading-7">
@@ -278,7 +278,7 @@ export default function CouponConverterView() {
                         
                         {/* min-h trên điện thoại (GĐ7): khung xếp 1 cột không có chiều cao từ lưới → lớp kết quả `absolute inset-0` xẹp
                             thành một vạch mỏng, người dùng iPhone không thấy kết quả. Laptop chiều cao theo cột Nguồn dữ liệu. */}
-                        <div className="relative flex-grow min-h-[260px] lg:min-h-0 m-4 sm:m-6 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden z-10 rounded-lg">
+                        <div className="relative flex-grow min-h-[260px] lg:min-h-0 m-4 sm:m-6 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden z-10 rounded-control">
                             <div className="absolute inset-0 overflow-auto p-5 custom-scrollbar">
                                 <pre className="text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
                                     {outputText ? (

@@ -1,13 +1,10 @@
 import React from 'react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from './utils';
 import { AppIcon } from './icon/AppIcon';
 import type { IconName } from './icon/iconRegistry';
 
-/** Utility to merge tailwind classes safely */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// MỘT cn() cho cả bộ thành phần dùng chung (tailwind-merge đã khai token bo góc — xem ./utils). Giữ export cho nơi đang import từ Button.
+export { cn };
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tinted' | 'danger' | 'destructive' | 'ghost' | 'outline' | 'success' | 'inline-link' | 'unstyled';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'none';
@@ -92,10 +89,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sm: 'h-8 max-sm:min-h-11 pointer-coarse:min-h-11 px-3 text-xs rounded-control',
       md: 'h-9 max-sm:min-h-11 pointer-coarse:min-h-11 px-4 text-sm rounded-control',
       lg: 'h-11 px-6 text-base rounded-control',
-      // Cỡ nút icon: h-8 w-8 gọn gàng, bo rounded-lg thanh lịch cả trên mobile và desktop (chủ dự án, f0a5558 — bỏ min-44 vì
+      // Cỡ nút icon: h-8 w-8 gọn gàng, bo 8px (rounded-control) thanh lịch cả trên mobile và desktop (chủ dự án, f0a5558 — bỏ min-44 vì
       // nút phình làm "mobile icon squishing"). GĐ9: giữ ĐÚNG cỡ nhìn thấy đó, chỉ nới vùng chạm vô hình 44×44 bằng `ycx-hit`
       // (styles.css — màn hẹp hoặc cảm ứng), không đổi bố cục. Nút cạnh nhau sát hơn 12px thì vùng chạm chồng nhẹ ở khe.
-      icon: 'ycx-hit h-8 w-8 rounded-lg p-0',
+      icon: 'ycx-hit h-8 w-8 rounded-control p-0',
       none: '',
     };
 

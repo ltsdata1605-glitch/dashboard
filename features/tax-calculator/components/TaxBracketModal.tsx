@@ -65,7 +65,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
 
                 {/* Body table */}
                 <div className="overflow-y-auto p-4 space-y-4">
-                    <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 overflow-hidden shadow-2xs">
+                    <div className="rounded-popup border border-slate-200/80 dark:border-slate-700/80 overflow-hidden shadow-2xs">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead className="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                                 <tr>
@@ -115,7 +115,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                         </table>
                     </div>
 
-                    <div className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-popup text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
                         <p><strong className="text-slate-700 dark:text-slate-200">Ghi chú:</strong> Thu nhập tính thuế = Tổng thu nhập chịu thuế - (Giảm trừ bản thân 15.5tr + Giảm trừ người phụ thuộc 6.2tr/người + Bảo hiểm bắt buộc 10.5% + Đoàn phí công đoàn).</p>
                     </div>
                 </div>

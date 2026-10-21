@@ -412,7 +412,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
           <Button
             variant="unstyled" size="none"
             onClick={checkServerHealth}
-            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 rounded-control hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             title="Kiểm tra kết nối server"
           >
             <AppIcon name="refresh" size="md" className="text-slate-500" />
@@ -455,7 +455,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {/* Config Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Sites Config */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 p-4">
           <h2 className="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
             <AppIcon name="web" size="md" className="text-sky-500" />
             Cấu hình trang web
@@ -469,7 +469,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
             <select 
               value={mainSite}
               onChange={(e) => setMainSite(e.target.value)}
-              className="min-h-11 sm:min-h-0 mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+              className="min-h-11 sm:min-h-0 mt-1 w-full px-3 py-2 rounded-control border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
             >
               {sites.map(s => (
                 <option key={s.key} value={s.key}>{s.name} — {s.url}</option>
@@ -486,7 +486,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               {sites.filter(s => s.key !== mainSite).map(site => (
                 <label 
                   key={site.key}
-                  className={`min-h-11 sm:min-h-0 flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition ${
+                  className={`min-h-11 sm:min-h-0 flex items-center gap-3 px-3 py-2 rounded-control border cursor-pointer transition ${
                     site.enabled 
                       ? 'border-sky-200 bg-sky-50/50 dark:border-sky-800 dark:bg-sky-900/20' 
                       : 'border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'
@@ -509,7 +509,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
         </div>
 
         {/* Product Input */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 p-4">
           <h2 className="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
             <AppIcon name="spreadsheet" size="md" className="text-emerald-500" />
             Nhập danh sách sản phẩm
@@ -552,7 +552,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Paste danh sách sản phẩm vào đây (mỗi dòng 1 sản phẩm)&#10;&#10;Hoặc paste từ Excel (Nhóm hàng ⇥ Mã SP ⇥ Tên sản phẩm)..."
               rows={4}
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 placeholder:text-slate-400"
+              className="w-full px-3 py-2.5 rounded-control border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm resize-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 placeholder:text-slate-400"
             />
             <Button
               variant="secondary"
@@ -569,7 +569,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
 
       {/* Product List Preview */}
       {products.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
             <h3 className="font-medium text-slate-800 dark:text-slate-200 inline-flex items-center gap-1.5">
               <AppIcon name="checklist" size="sm" className="text-slate-500" />Danh sách sản phẩm ({products.length} sản phẩm)
@@ -655,7 +655,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
 
       {/* Error */}
       {error && (
-        <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-popup p-4 flex items-start gap-3">
           <AppIcon name="alert" size="lg" className="text-rose-500 mt-0.5" />
           <div>
             <p className="font-medium text-rose-800 dark:text-rose-300">Lỗi</p>
@@ -666,7 +666,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
 
       {/* Results Table */}
       {results.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-wrap gap-2">
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <AppIcon name="success" size="lg" className="text-emerald-500" />
@@ -800,8 +800,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {/* Empty state */}
       {products.length === 0 && results.length === 0 && (
         <div className="relative group my-4">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
-          <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-xl border border-slate-200 dark:border-slate-700/60 p-10 text-center">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-card blur-lg opacity-50 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
+          <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-popup border border-slate-200 dark:border-slate-700/60 p-10 text-center">
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-100 dark:border-sky-500/20">
               <AppIcon name="search" size="xl" />
             </div>

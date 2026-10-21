@@ -376,7 +376,7 @@ export default function GlobalAutoSyncDock() {
                 data-userscript={ycxScript.checked ? (ycxScript.installed ? (ycxScript.version || '?') : 'none') : 'checking'}
                 className={`preserve-rounded hidden lg:flex flex-col fixed right-4 xl:right-7 top-[72px] z-40 transition-all duration-300 ease-out no-print hide-on-export select-none animate-in fade-in slide-in-from-right-4 ${
                     isDockCollapsed ? 'w-auto p-1.5' : 'w-[224px] p-3 gap-2.5'
-                } rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.18),0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.1)]`}
+                } rounded-card bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.18),0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.1)]`}
             >
                 {isDockCollapsed ? (
                     <div className="preserve-rounded flex flex-col items-center gap-2">
@@ -387,7 +387,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={moDock}
                             title="Mở rộng bảng Auto Sync"
                             aria-label="Mở rộng khung Auto Sync YCX"
-                            className="preserve-rounded p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                            className="preserve-rounded p-2 rounded-popup text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
                             <AppIcon name="chevronLeft" size="md" />
                         </Button>
@@ -397,7 +397,7 @@ export default function GlobalAutoSyncDock() {
                             size="none"
                             onClick={() => handleStartBiSync('realtime')}
                             title="Tự động Realtime (Report BI)"
-                            className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            className="preserve-rounded relative p-2.5 rounded-popup bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
                             <AppIcon name="quick" size="md" className="fill-amber-200" />{lich['bi-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </Button>
@@ -407,7 +407,7 @@ export default function GlobalAutoSyncDock() {
                             size="none"
                             onClick={() => handleStartBiSync('luyke')}
                             title="Tự động Luỹ kế (Report BI)"
-                            className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            className="preserve-rounded relative p-2.5 rounded-popup bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
                             <AppIcon name="trendUp" size="md" />{lich['bi-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </Button>
@@ -417,7 +417,7 @@ export default function GlobalAutoSyncDock() {
                             size="none"
                             onClick={handleTriggerAutoBonus}
                             title={bonusStatus.isBusy ? `Tự động Đổ Thưởng (${bonusStatus.label || 'Đang chạy'})` : 'Tự động Đổ Thưởng'}
-                            className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-600 via-sky-600 to-sky-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                            className={`preserve-rounded relative p-2.5 rounded-popup bg-gradient-to-br from-sky-600 via-sky-600 to-sky-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 bonusStatus.isBusy ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
@@ -430,7 +430,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title={ycxDangChay && ycxMode === 'realtime' ? 'Tự động YCX Realtime (Đang chạy...)' : 'Tự động YCX Realtime (Phân Tích)'}
                             aria-label="Tự động YCX Realtime"
-                            className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-700 to-sky-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                            className={`preserve-rounded relative p-2.5 rounded-popup bg-gradient-to-br from-sky-700 via-sky-700 to-sky-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 ycxDangChay && ycxMode === 'realtime' ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
@@ -443,7 +443,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => setYcxLuyKePickerOpen(true)}
                             title={ycxDangChay && ycxMode === 'luyke' ? 'Tự động YCX Luỹ kế (Đang chạy...)' : 'Tự động YCX Luỹ kế (Phân Tích, 01 → hôm qua / chọn tháng)'}
                             aria-label="Tự động YCX Luỹ kế"
-                            className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-700 via-emerald-700 to-emerald-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                            className={`preserve-rounded relative p-2.5 rounded-popup bg-gradient-to-br from-emerald-700 via-emerald-700 to-emerald-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 ycxDangChay && ycxMode === 'luyke' ? 'ring-2 ring-emerald-400 animate-pulse' : ''
                             }`}
                         >
@@ -456,7 +456,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={handleOpenTnbData}
                             title={tnbCode ? `Tự động TNB Data (Mã: ${tnbCode})` : 'Tự động TNB Data (Sức Khỏe Siêu Thị)'}
                             aria-label="Tự động TNB Data"
-                            className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-800 to-slate-900 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            className="preserve-rounded relative p-2.5 rounded-popup bg-gradient-to-br from-sky-700 via-sky-800 to-slate-900 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
                             <AppIcon name="database" size="md" className="text-sky-100" />
                         </Button>
@@ -496,7 +496,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleStartBiSync('realtime')}
                             aria-label="Tự động Realtime (Report BI)"
                             title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_4px_14px_rgba(245,158,11,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(245,158,11,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-popup font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_4px_14px_rgba(245,158,11,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(245,158,11,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
@@ -525,7 +525,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleStartBiSync('luyke')}
                             aria-label="Tự động Luỹ kế (Report BI)"
                             title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_4px_14px_rgba(16,185,129,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-popup font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_4px_14px_rgba(16,185,129,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
@@ -554,7 +554,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={handleTriggerAutoBonus}
                             aria-label="Tự động Đổ Thưởng"
                             title="Tự động thu thập điểm và đổ thưởng nhân viên từ HRM qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:from-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_4px_14px_rgba(147,51,234,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(147,51,234,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-popup font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:from-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_4px_14px_rgba(147,51,234,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(147,51,234,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
@@ -585,7 +585,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title="Tự động xuất & nạp file YCX Realtime từ report.mwgroup.vn (báo cáo 77)"
                             aria-label="Tự động YCX Realtime"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_4px_14px_rgba(3,105,161,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(3,105,161,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-popup font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_4px_14px_rgba(3,105,161,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(3,105,161,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
@@ -617,7 +617,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => setYcxLuyKePickerOpen(true)}
                             title="Tự động xuất & nạp file YCX Luỹ kế (01 → hôm qua hoặc chọn tháng) từ report.mwgroup.vn (báo cáo 77). Ngày 01 sẽ chạy Realtime."
                             aria-label="Tự động YCX Luỹ kế"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_4px_14px_rgba(4,120,87,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(4,120,87,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-popup font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_4px_14px_rgba(4,120,87,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(4,120,87,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
@@ -648,7 +648,7 @@ export default function GlobalAutoSyncDock() {
                             onClick={handleOpenTnbData}
                             title="Tự động tra cứu dữ liệu Sức Khỏe Siêu Thị trên admintnb.com/data bằng mã bảo mật"
                             aria-label="Tự động TNB Data"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 hover:from-sky-600 hover:to-slate-800 active:from-sky-800 active:to-slate-900 border border-sky-400/40 shadow-[0_4px_14px_rgba(3,105,161,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(3,105,161,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-popup font-bold text-white bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 hover:from-sky-600 hover:to-slate-800 active:from-sky-800 active:to-slate-900 border border-sky-400/40 shadow-[0_4px_14px_rgba(3,105,161,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(3,105,161,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">

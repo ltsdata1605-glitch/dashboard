@@ -56,7 +56,7 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                                 borderLeftColor: styling.border,
                                 backgroundColor: isSelected ? styling.glow : undefined
                             }}
-                            className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 border-l-[3px] sm:border-l-4 text-left transition-all hover:shadow-md cursor-pointer relative overflow-hidden group flex flex-col justify-between min-h-[56px] sm:min-h-[72px] ${
+                            className={`p-2 sm:p-3 rounded-control sm:rounded-popup border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 border-l-[3px] sm:border-l-4 text-left transition-all hover:shadow-md cursor-pointer relative overflow-hidden group flex flex-col justify-between min-h-[56px] sm:min-h-[72px] ${
                                 isSelected ? 'ring-2 ring-sky-500 shadow-sm' : ''
                             }`}
                         >

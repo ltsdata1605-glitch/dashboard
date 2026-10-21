@@ -56,7 +56,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
             <div className="absolute -bottom-28 -right-28 w-60 h-60 bg-sky-400/20 dark:bg-sky-500/30 rounded-full blur-[60px] pointer-events-none animate-pulse"></div>
 
             {/* Ultra-Modern White Glassmorphism Modal Card */}
-            <div className="relative w-full max-w-[340px] sm:max-w-[420px] bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-white backdrop-blur-3xl border border-white/80 dark:border-slate-800 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1),0_10px_25px_-5px_rgba(59,130,246,0.12)] rounded-xl p-6 sm:p-8 flex flex-col items-center overflow-hidden transition-all duration-300">
+            <div className="relative w-full max-w-[340px] sm:max-w-[420px] bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-white backdrop-blur-3xl border border-white/80 dark:border-slate-800 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1),0_10px_25px_-5px_rgba(59,130,246,0.12)] rounded-popup p-6 sm:p-8 flex flex-col items-center overflow-hidden transition-all duration-300">
 
                 {/* Top Glowing Sky Gradient Line */}
                 <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-transparent via-sky-500 to-transparent opacity-80"></div>
@@ -79,7 +79,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     ></div>
 
                     {/* Glowing Core Capsule */}
-                    <div className="relative bg-gradient-to-br from-sky-600 via-sky-600 to-sky-500 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-sky-500/30 flex items-center justify-center text-white ring-4 ring-sky-50 dark:ring-slate-800 transform rotate-3">
+                    <div className="relative bg-gradient-to-br from-sky-600 via-sky-600 to-sky-500 w-10 h-10 sm:w-12 sm:h-12 rounded-card shadow-lg shadow-sky-500/30 flex items-center justify-center text-white ring-4 ring-sky-50 dark:ring-slate-800 transform rotate-3">
                         <AppIcon name="cpu" size="lg" className="animate-pulse hidden sm:block" />
                         <AppIcon name="cpu" size="md" className="animate-pulse sm:hidden" />
                     </div>
@@ -106,7 +106,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                 <div className="w-full space-y-3 relative z-10">
                     {/* Metrics Bar */}
                     <div className="flex items-center justify-between px-1">
-                        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
+                        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-popup bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
                             <AppIcon name="clock" size="sm" className="text-sky-700" />
                             <div className="flex items-baseline gap-1">
                                 <span className="text-sm sm:text-base font-mono font-bold text-sky-700 dark:text-sky-400 tabular-nums">
@@ -118,7 +118,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
+                        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-popup bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
                             <div className="flex items-baseline gap-0.5">
                                 <span className="text-sm sm:text-base font-mono font-bold text-sky-700 dark:text-sky-400 tabular-nums">
                                     {progressPercent}

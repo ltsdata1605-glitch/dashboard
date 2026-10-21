@@ -28,7 +28,7 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
     return (
         <div
             ref={bannerRef}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-900 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-800 text-white p-3.5 sm:p-5 md:p-6 shadow-xl shadow-sky-950/20 border border-sky-500/20"
+            className="relative overflow-hidden rounded-card bg-gradient-to-br from-sky-900 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-800 text-white p-3.5 sm:p-5 md:p-6 shadow-xl shadow-sky-950/20 border border-sky-500/20"
         >
             {/* GĐ7: bỏ 2 quầng sáng blur 256px trang trí (quyết định A22 — tốn GPU/pin trên máy siêu thị & iPhone; nằm tràn ra ngoài
                 thẻ nên còn làm test "không cắt ngang" báo nhầm). Nền chuyển màu của thẻ giữ nguyên. */}
@@ -49,7 +49,7 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
                         onClick={onExportBanner}
                         title="Xuất ảnh báo cáo tổng hợp"
                         aria-label="Xuất ảnh báo cáo tổng hợp"
-                        className="ycx-hit p-1 sm:p-1.5 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white transition-all cursor-pointer no-print hide-on-export backdrop-blur-sm"
+                        className="ycx-hit p-1 sm:p-1.5 rounded-control bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white transition-all cursor-pointer no-print hide-on-export backdrop-blur-sm"
                     >
                         <AppIcon name="image" size="xs" />
                     </Button>
@@ -73,7 +73,7 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
                     </p>
                 </div>
 
-                <div className="flex flex-col items-end bg-white/10 dark:bg-black/20 backdrop-blur-md px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 shadow-inner shrink-0">
+                <div className="flex flex-col items-end bg-white/10 dark:bg-black/20 backdrop-blur-md px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-control sm:rounded-popup border border-white/20 shadow-inner shrink-0">
                     <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5">
                         <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-white/20 flex items-center justify-center">
                             <AppIcon name="check" size="xs" />

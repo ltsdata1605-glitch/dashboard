@@ -212,7 +212,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
       <div
         ref={captureRef}
         data-testid="tax-result-panel"
-        className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs relative overflow-hidden transition-all duration-200"
+        className="bg-white dark:bg-slate-800/90 rounded-card border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs relative overflow-hidden transition-all duration-200"
       >
         {/* Lớp lót chỉ dùng khi chụp ảnh: uiService ép padding của khối gốc về 0, nên nếu không có
             lớp này thì các khối con dính sát mép và viền trái/phải bị cắt trong ảnh. */}
@@ -220,7 +220,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
         {/* Header kết quả */}
         <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100 dark:border-slate-700/50">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <div className="w-7 h-7 rounded-control bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
               <AppIcon name="trendDown" size="md" />
             </div>
             <div>
@@ -380,7 +380,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* HERO CARD: Kết quả chính gọn gàng */}
         {hasProxy ? (
-          <div className="bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent dark:from-emerald-950/30 dark:via-sky-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-3.5 mb-3">
+          <div className="bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent dark:from-emerald-950/30 dark:via-sky-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-popup p-3.5 mb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider bg-emerald-100/90 dark:bg-emerald-900/50 px-1.5 py-0.2 rounded mb-1">
@@ -410,7 +410,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-slate-50/90 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 mb-3">
+          <div className="bg-slate-50/90 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-popup p-3.5 mb-3">
             {/* Header phân định rõ: Không phát sinh nhận thay */}
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-200/70 dark:border-slate-800">
               <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
@@ -450,7 +450,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             </div>
 
             {/* Dòng cảnh báo chống hiểu lầm */}
-            <div className="mt-2.5 pt-2 border-t border-slate-200/70 dark:border-slate-800/50 flex items-start gap-1.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/80 dark:border-amber-900/50 leading-relaxed">
+            <div className="mt-2.5 pt-2 border-t border-slate-200/70 dark:border-slate-800/50 flex items-start gap-1.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 p-2 rounded-control border border-amber-200/80 dark:border-amber-900/50 leading-relaxed">
               <AppIcon name="alert" size="sm" className="mt-0.5 text-amber-600" />
               <span>
                 <strong>Lưu ý:</strong> Bạn <strong>không có khoản nhận thay thưởng/khoán</strong> trong kỳ này. Số tiền <strong>{maskValue(formatVnd(totalTaxWithProxy))}</strong> là Thuế TNCN cá nhân bạn phải nộp theo bảng lương (<strong>KHÔNG PHẢI</strong> tiền được hoàn thuế nhận thay).
@@ -461,7 +461,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* Chi tiết khoản nhận thay — chỉ in trong ảnh xuất để thủ quỹ đối chiếu từng khoản */}
         {maskIncomeForExport && hasProxy && proxyItems.length > 0 && (
-          <div className="mb-3 border border-amber-200 dark:border-amber-800/60 rounded-xl overflow-clip">
+          <div className="mb-3 border border-amber-200 dark:border-amber-800/60 rounded-popup overflow-clip">
             <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800/60 text-xs font-bold text-amber-800 dark:text-amber-300">
               Các khoản nhận thay ({proxyItems.length} khoản)
             </div>
@@ -487,7 +487,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
         {/* BẢNG SO SÁNH ĐỐI CHIẾU */}
         {/* overflow-clip (không phải overflow-hidden): uiService xoá viền của mọi khối
             .overflow-hidden khi xuất ảnh, làm bảng mất viền trái/phải trong ảnh. */}
-        <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-clip mb-3">
+        <div className="border border-slate-200 dark:border-slate-700/60 rounded-popup overflow-clip mb-3">
           <div className="bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
               <AppIcon name="layers" size="sm" className="text-sky-500" />
@@ -603,11 +603,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* Mã QR trong ảnh xuất: gửi ảnh cho thủ quỹ là quét được để hoàn lại tiền thuế */}
         {maskIncomeForExport && qrDataUrl && (
-          <div className="mb-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/20 flex items-center gap-3">
+          <div className="mb-2 p-2.5 rounded-popup border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/20 flex items-center gap-3">
             <img
               src={qrDataUrl}
               alt="Mã VietQR hoàn lại tiền thuế nhận thay"
-              className="w-24 h-24 object-contain bg-white rounded-lg border border-emerald-200 p-1 shrink-0"
+              className="w-24 h-24 object-contain bg-white rounded-control border border-emerald-200 p-1 shrink-0"
             />
             <div className="min-w-0">
               <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
@@ -635,7 +635,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* Ghi chú chỉ xuất hiện trong ảnh: giải thích các dấu chấm thay cho số thu nhập */}
         {maskIncomeForExport && (
-          <div className="mb-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mb-2 px-2.5 py-1.5 rounded-control bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400">
             Thông tin thu nhập đã được ẩn khi xuất ảnh.
           </div>
         )}

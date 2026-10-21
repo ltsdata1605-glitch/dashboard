@@ -43,7 +43,7 @@ const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payl
     }
 
     return (
-        <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans z-50 min-w-[180px]">
+        <div className="p-3 shadow-xl rounded-popup bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans z-50 min-w-[180px]">
             <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 text-xs">{label}</div>
             <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-3 text-xs mb-1">
                 <span>{metricName}:</span>
@@ -499,7 +499,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           <Button
               variant="unstyled" size="none"
               onClick={() => setDisplayMode(prev => prev === 'chart' ? 'calendar' : 'chart')}
-              className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+              className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${
                   displayMode === 'calendar'
                       ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                       : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -513,7 +513,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             variant="unstyled" size="none"
             onClick={handleExportClick}
             disabled={isExporting}
-            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${
               isExporting
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
               : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -588,7 +588,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                     </div>
                     {savedCalendars.length > 0 && (
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar hide-on-export">
-                            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-control sm:rounded-popup shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                                 {savedCalendars.map((cal) => {
                                     const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
                                     const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
@@ -610,7 +610,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             variant="unstyled" size="none"
                                             key={cal.id}
                                             onClick={() => setActiveCalendarTab(cal.id)}
-                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
+                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-control transition-all ${
                                                 isActive
                                                 ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-400 shadow-sm border border-sky-200 dark:border-sky-700'
                                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'

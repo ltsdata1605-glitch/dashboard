@@ -121,7 +121,7 @@ const NavItem = React.memo(({
                 title={item.label}
                 aria-label={item.label}
                 className={`
-                    relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 group cursor-pointer
+                    relative flex items-center justify-center w-11 h-11 rounded-popup transition-all duration-200 group cursor-pointer
                     ${isButtonHighlighted
                         ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 font-semibold shadow-xs'
                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400'
@@ -157,7 +157,7 @@ const NavItem = React.memo(({
                     {/* Invisible hover bridge to eliminate gap */}
                     <div className="absolute -left-2 top-0 bottom-0 w-4" />
 
-                    <div className="py-1.5 px-1.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl min-w-[160px] flex flex-col space-y-0.5 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="py-1.5 px-1.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-card shadow-xl min-w-[160px] flex flex-col space-y-0.5 animate-in fade-in zoom-in-95 duration-150">
                         <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 mb-0.5">
                             {item.label}
                         </div>
@@ -176,7 +176,7 @@ const NavItem = React.memo(({
                                     }
                                 }}
                                 className={`
-                                    flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer
+                                    flex items-center gap-2 px-2.5 py-1.5 rounded-control text-xs font-semibold text-left transition-colors cursor-pointer
                                     ${activeTab === sub.id 
                                         ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400' 
                                         : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -193,7 +193,7 @@ const NavItem = React.memo(({
 
             {/* Tooltip for items without subItems */}
             {!hasSubItems && isHovered && (
-                <div className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap pointer-events-none transition-all duration-150 z-[220] animate-in fade-in zoom-in-95">
+                <div className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-control shadow-xl whitespace-nowrap pointer-events-none transition-all duration-150 z-[220] animate-in fade-in zoom-in-95">
                     {item.label}
                 </div>
             )}
@@ -241,7 +241,7 @@ export default function Sidebar() {
                 <aside
                     data-testid="desktop-nav-menu"
                     className={cn(
-                        "hidden lg:flex fixed top-[72px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]",
+                        "hidden lg:flex fixed top-[72px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-card shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]",
                         "origin-top transition-[opacity,transform] duration-[180ms] ease-out motion-reduce:transition-none",
                         shown ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-2 scale-95",
                     )}
@@ -281,7 +281,7 @@ export default function Sidebar() {
                             onClick={() => setActiveTab('settings')}
                             title="Cài đặt & Phân quyền"
                             aria-label="Cài đặt & Phân quyền"
-                            className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                            className="relative flex items-center justify-center w-11 h-11 rounded-popup transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                         >
                             <div className="w-[34px] h-[34px] rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shadow-xs">
                                 {user?.photoURL ? (
@@ -298,7 +298,7 @@ export default function Sidebar() {
                         <div className="absolute left-full bottom-0 pl-3 z-[230] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-150 scale-95 group-hover:scale-100 origin-bottom-left">
                             {/* Invisible bridge covering gap between avatar and card */}
                             <div className="absolute -left-2 top-0 bottom-0 w-4" />
-                            <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-2xl min-w-[210px] flex flex-col gap-2.5">
+                            <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-card shadow-2xl min-w-[210px] flex flex-col gap-2.5">
                                 <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
                                     <div className="w-9 h-9 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shrink-0">
                                         {user?.photoURL ? (
@@ -336,14 +336,14 @@ export default function Sidebar() {
                                     <Button
                                         variant="unstyled" size="none"
                                         onClick={() => setActiveTab('settings')}
-                                        className="flex-1 py-1.5 px-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 text-xs font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors text-center cursor-pointer"
+                                        className="flex-1 py-1.5 px-2.5 rounded-popup bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 text-xs font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors text-center cursor-pointer"
                                     >
                                         Phân quyền
                                     </Button>
                                     <Button
                                         variant="unstyled" size="none"
                                         onClick={() => logout()}
-                                        className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                                        className="p-1.5 rounded-popup text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                                         title="Đăng xuất"
                                         aria-label="Đăng xuất"
                                     >

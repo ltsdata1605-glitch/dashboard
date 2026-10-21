@@ -106,6 +106,12 @@ describe('GĐ4 — chuẩn thiết kế (B): luật chặn lệch chuẩn mới'
         expect(r.countOffScaleRadius('rounded-3xl rounded-t-3xl rounded-[12px]', 'a.tsx')).toBe(3);
         expect(r.countOffScaleRadius('rounded-card rounded-xl rounded-[var(--card-radius)] rounded-full', 'a.tsx')).toBe(0);
     });
+    it('legacyRadius: đếm rounded-lg/xl/2xl kiểu cũ (cạnh, biến thể, !), không đếm token/md/full/none/3xl', () => {
+        expect(r.countLegacyRadius('rounded-lg sm:rounded-xl rounded-t-2xl !rounded-2xl hover:rounded-tl-lg', 'a.tsx')).toBe(5);
+        expect(r.countLegacyRadius("const c = 'px-2 rounded-xl';", 'b.ts')).toBe(1);
+        expect(r.countLegacyRadius('rounded-control rounded-card rounded-popup rounded-overlay rounded-md rounded-full rounded-none rounded-3xl rounded', 'a.tsx')).toBe(0);
+        expect(r.countLegacyRadius('rounded-lg', 'styles.css')).toBe(0);
+    });
 });
 
 describe('offScaleText — cỡ chữ ngoài thang 10 bậc (GĐ3 2026-10-11; bậc 44 kpi-xl 2026-10-21)', () => {

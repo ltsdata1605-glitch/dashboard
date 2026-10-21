@@ -112,7 +112,7 @@ export const StatCard = React.memo<StatCardProps>(({
         {/* Icon */}
         {icon && (
           <div className={cn(
-            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ml-3',
+            'w-10 h-10 rounded-popup flex items-center justify-center shrink-0 ml-3',
             colors.bg, colors.icon
           )}>
             {icon}

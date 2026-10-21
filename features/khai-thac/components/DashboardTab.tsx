@@ -71,7 +71,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
         <div className="space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Tabs items={RANGE_ITEMS} activeId={range} onChange={id => onRangeChange(id as DashboardRange)} variant="segment" size="sm" />
-                <Button variant="secondary" size="sm" className="rounded h-8" leftIcon={<AppIcon name="share" size="sm" />}
+                <Button variant="secondary" size="sm" className="h-8" leftIcon={<AppIcon name="share" size="sm" />}
                     onClick={() => shareElementAsImage(captureRef.current, `bieu-do-${new Date().toISOString().slice(0, 10)}.png`, 'Báo cáo doanh số cá nhân')}>
                     Xuất ảnh
                 </Button>
@@ -88,8 +88,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
 
                 {filtered.length === 0 ? (
                     <div className="relative group my-2">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-xl blur-lg opacity-40 group-hover:opacity-80 transition duration-700 pointer-events-none"></div>
-                        <div className="relative bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 px-4 py-10 text-center">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-popup blur-lg opacity-40 group-hover:opacity-80 transition duration-700 pointer-events-none"></div>
+                        <div className="relative bg-white/90 backdrop-blur-md rounded-control border border-slate-200 px-4 py-10 text-center">
                             <p className="text-[13px] text-slate-500">Chưa có đơn hàng nào {RANGE_LABEL[range]}. Bấm <b className="text-sky-600">Báo cáo</b> ở tab Nhập báo cáo để ghi nhận.</p>
                         </div>
                     </div>

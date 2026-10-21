@@ -158,7 +158,7 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
                 <div
                     ref={dropdownRef}
                     style={dropdownStyles}
-                    className="absolute bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm overflow-hidden"
+                    className="absolute bg-white dark:bg-slate-800 rounded-popup shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm overflow-hidden"
                 >
                     <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/30">
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tùy chọn Font</span>
@@ -171,7 +171,7 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
                                     variant="unstyled" size="none"
                                     key={font.value}
                                     onClick={() => handleSelectFont(font.value)}
-                                    className={`min-h-11 sm:min-h-0 justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
+                                    className={`min-h-11 sm:min-h-0 justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-control transition-colors ${isSelected
                                         ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
                                         : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                         }`}

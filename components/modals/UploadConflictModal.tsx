@@ -74,7 +74,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
             <div className="modal-bleed flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
+                    <div className="w-12 h-12 rounded-popup bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
                         <AppIcon name="warning" size="xl" className="animate-pulse" />
                     </div>
                     <div>
@@ -88,7 +88,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                 </div>
 
                 {/* Details Section */}
-                <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800/80 rounded-xl p-4 space-y-3 text-xs">
+                <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800/80 rounded-popup p-4 space-y-3 text-xs">
                     <div>
                         <span className="block text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
                             Tệp mới tải lên
@@ -110,7 +110,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         </span>
                         <div className="space-y-2.5 max-h-[120px] overflow-y-auto pr-1 scrollbar-thin">
                             {conflicts.map((conflict, idx) => (
-                                <div key={idx} className="flex flex-col gap-1 text-[11px] bg-white dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                                <div key={idx} className="flex flex-col gap-1 text-[11px] bg-white dark:bg-slate-900/50 p-2 rounded-control border border-slate-100 dark:border-slate-800">
                                     <div className="flex items-center justify-between gap-2">
                                         <span className="font-bold text-slate-700 dark:text-slate-300 max-w-[200px] inline-flex items-center gap-1 min-w-0" title={conflict.conflictingFilename}>
                                             <AppIcon name="report" size="xs" className="text-slate-500 shrink-0" />
@@ -156,7 +156,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             type="button"
                             variant="unstyled" size="none"
                             onClick={() => handleSelect('overwrite_deactivate')}
-                            className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-amber-50/40 dark:bg-slate-800/40 dark:hover:bg-amber-950/10 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
+                            className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-amber-50/40 dark:bg-slate-800/40 dark:hover:bg-amber-950/10 border border-slate-200 dark:border-slate-800 rounded-popup text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-amber-500 transition-colors">
                                 1
@@ -176,7 +176,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             type="button"
                             variant="unstyled" size="none"
                             onClick={() => handleSelect('merge_all')}
-                            className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-rose-50/20 dark:bg-slate-800/40 dark:hover:bg-rose-950/5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
+                            className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-rose-50/20 dark:bg-slate-800/40 dark:hover:bg-rose-950/5 border border-slate-200 dark:border-slate-800 rounded-popup text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-rose-500 transition-colors">
                                 2
@@ -212,7 +212,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         type="button"
                         variant="unstyled" size="none"
                         onClick={() => onResolve('cancel')}
-                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-bold uppercase tracking-wider text-[11px] rounded-xl active:scale-[0.97] transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-bold uppercase tracking-wider text-[11px] rounded-popup active:scale-[0.97] transition-all flex items-center gap-1.5"
                     >
                         <AppIcon name="close" size="sm" />
                         Hủy nạp file

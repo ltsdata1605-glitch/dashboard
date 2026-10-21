@@ -750,7 +750,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         onSelectIndividual={onSelectIndividual}
                     />
                     <div className="overflow-x-auto hide-scrollbar touch-auto">
-                        <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-none sm:rounded-lg overflow-hidden">
+                        <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-none sm:rounded-control overflow-hidden">
                             <table className="w-full table-fixed border-collapse compact-export-table">
                                 <thead>
                                     <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">

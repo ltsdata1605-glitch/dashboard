@@ -440,7 +440,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         {/* Overlay for scanning frame */}
         {!scanResult && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="w-[85%] h-[50%] border-4 border-dashed border-white/70 rounded-2xl relative flex flex-col justify-between">
+              <div className="w-[85%] h-[50%] border-4 border-dashed border-white/70 rounded-card relative flex flex-col justify-between">
                   {/* Glowing laser line to indicate scanning */}
                   <div className="absolute left-1 right-1 h-0.5 bg-rose-500 shadow-[0_0_8px_#ef4444] animate-laser"></div>
               </div>

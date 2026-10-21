@@ -65,9 +65,9 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
         >
             <div className="modal-bleed">
             {/* Header */}
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-2xl">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-card">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
+                    <div className="w-10 h-10 rounded-popup bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
                         <AppIcon name="warning" size="lg" className="animate-bounce" />
                     </div>
                     <div>
@@ -79,21 +79,21 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         </p>
                     </div>
                 </div>
-                <Button variant="unstyled" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <Button variant="unstyled" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-popup transition-colors">
                     <AppIcon name="close" size="md" />
                 </Button>
             </div>
 
             {/* Content */}
             <div className="p-5 bg-white dark:bg-slate-900 space-y-4">
-                <div className="p-3.5 bg-amber-50/50 dark:bg-amber-955/10 rounded-xl border border-amber-100/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                <div className="p-3.5 bg-amber-50/50 dark:bg-amber-955/10 rounded-popup border border-amber-100/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                     <p className="font-semibold mb-1 inline-flex items-center gap-1"><AppIcon name="idea" size="xs" className="text-amber-600" />Ảnh hưởng đến báo cáo:</p>
                     <p>Các dòng doanh thu thuộc nhóm hàng này sẽ bị <strong>bỏ qua hoàn toàn</strong> trong tất cả các thẻ KPI, bảng tổng hợp và biểu đồ xu hướng để tránh tính toán sai lệch nhóm.</p>
                 </div>
 
                 {/* Table list */}
                 {unconfiguredGroups.length > 0 ? (
-                    <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                    <div className="border border-slate-100 dark:border-slate-800 rounded-popup overflow-hidden shadow-sm">
                         <div className="max-h-[250px] overflow-auto custom-scrollbar">
                             <table className="min-w-[400px] md:w-full text-left border-collapse text-xs">
                                 <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 sticky top-0 font-bold border-b border-slate-100 dark:border-slate-800">
@@ -149,7 +149,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         </div>
                     </div>
                 ) : (
-                    <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-850 rounded-xl text-slate-500 dark:text-slate-400">
+                    <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-850 rounded-popup text-slate-500 dark:text-slate-400">
                         <AppIcon name="success" size="state" className="mx-auto text-emerald-500 mb-2" />
                         <p className="font-semibold text-xs text-slate-700 dark:text-slate-300">Không có nhóm hàng mới cần cấu hình</p>
                         <p className="text-[11px] mt-0.5">Tất cả các nhóm hàng trong dữ liệu đều đã được cấu hình hoặc đã được loại bỏ.</p>
@@ -162,7 +162,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         <h4 className="font-bold text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                             Danh sách nhóm đã loại bỏ ({ignoredUnconfiguredGroups.length})
                         </h4>
-                        <div className="border border-slate-100 dark:border-slate-850 rounded-xl overflow-hidden bg-slate-50/30 dark:bg-slate-900/10">
+                        <div className="border border-slate-100 dark:border-slate-850 rounded-popup overflow-hidden bg-slate-50/30 dark:bg-slate-900/10">
                             <div className="max-h-[150px] overflow-auto custom-scrollbar">
                                 <table className="min-w-[400px] md:w-full text-left border-collapse text-xs">
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
@@ -217,7 +217,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         variant="unstyled" size="none"
                         onClick={handleCopyAllRows}
                         disabled={unconfiguredGroups.length === 0}
-                        className={`px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-300/30 dark:shadow-none active:scale-95'}`}
+                        className={`px-4 py-2.5 text-xs font-bold rounded-popup shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-300/30 dark:shadow-none active:scale-95'}`}
                     >
                         <AppIcon name="copy" size="sm" />
                         <span>Sao chép toàn bộ dòng mới</span>
@@ -227,7 +227,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         href={EDITABLE_CONFIG_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-popup shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <AppIcon name="externalLink" size="sm" />
                         <span>Mở file Google Sheets cấu hình</span>

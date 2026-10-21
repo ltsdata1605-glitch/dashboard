@@ -80,8 +80,8 @@ export const TnbDataConfigModal: React.FC<TnbDataConfigModalProps> = ({
             }
         >
             <div className="space-y-4 text-slate-700 text-sm">
-                <div className="p-3.5 rounded-xl bg-sky-50 border border-sky-200 flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-sky-600 text-white shrink-0 mt-0.5 shadow-sm">
+                <div className="p-3.5 rounded-popup bg-sky-50 border border-sky-200 flex items-start gap-3">
+                    <div className="p-2 rounded-control bg-sky-600 text-white shrink-0 mt-0.5 shadow-sm">
                         <AppIcon name="database" size="sm" />
                     </div>
                     <div className="min-w-0 flex-1 space-y-1">
@@ -123,7 +123,7 @@ export const TnbDataConfigModal: React.FC<TnbDataConfigModalProps> = ({
                             rightIcon={code ? 'close' : undefined}
                             onRightIconClick={() => setCode('')}
                             rightIconLabel="Xóa mã"
-                            className="h-11 pl-3.5 font-mono text-base font-bold tracking-widest text-slate-800 border-2 border-sky-300 rounded-xl focus-visible:border-sky-600 focus-visible:ring-3 focus-visible:ring-sky-500/20 transition-all uppercase placeholder:font-sans placeholder:normal-case placeholder:font-medium placeholder:tracking-normal placeholder:text-slate-400"
+                            className="h-11 pl-3.5 font-mono text-base font-bold tracking-widest text-slate-800 border-2 border-sky-300 rounded-popup focus-visible:border-sky-600 focus-visible:ring-3 focus-visible:ring-sky-500/20 transition-all uppercase placeholder:font-sans placeholder:normal-case placeholder:font-medium placeholder:tracking-normal placeholder:text-slate-400"
                         />
                     </div>
                     <p className="text-xs text-slate-500">

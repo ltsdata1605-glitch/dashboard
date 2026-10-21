@@ -26,9 +26,9 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
         >
             <div className="modal-bleed">
             {/* Header */}
-            <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-card">
                 <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-control sm:rounded-popup bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center">
                         <AppIcon name="history" size="lg" />
                     </div>
                     <div>
@@ -36,7 +36,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                         <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</p>
                     </div>
                 </div>
-                <Button variant="unstyled" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-1.5 sm:p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl transition-colors">
+                <Button variant="unstyled" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-1.5 sm:p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-control sm:rounded-popup transition-colors">
                     <AppIcon name="close" size="md" />
                 </Button>
             </div>

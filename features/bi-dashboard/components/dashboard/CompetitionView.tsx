@@ -288,7 +288,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="unstyled"
                 size="none"
                 onClick={handleCopyCommentary}
-                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] ${
                     copiedCommentary
                         ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 shadow-2xs font-semibold'
                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -308,7 +308,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="unstyled"
                 size="none"
                 onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded shrink-0 flex items-center justify-center transition-all duration-150 active:scale-[0.94] ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded shrink-0 flex items-center justify-center transition-all duration-150 active:scale-[0.94] ${
                     groupingMode === 'configured'
                         ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -329,7 +329,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     variant="unstyled"
                     size="none"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className={`ycx-hit relative w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded shrink-0 flex items-center justify-center transition-all duration-150 active:scale-[0.94] ${
+                    className={`ycx-hit relative w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded shrink-0 flex items-center justify-center transition-all duration-150 active:scale-[0.94] ${
                         isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
                             ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                             : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -345,7 +345,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 </Button>
 
                 {isColumnSelectorOpen && (
-                    <div className="absolute right-0 mt-2 w-[540px] max-w-[92vw] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[100] overflow-hidden text-left animate-in fade-in-50 zoom-in-95 duration-150">
+                    <div className="absolute right-0 mt-2 w-[540px] max-w-[92vw] bg-white dark:bg-slate-800 rounded-card shadow-2xl border border-slate-200 dark:border-slate-700 z-[100] overflow-hidden text-left animate-in fade-in-50 zoom-in-95 duration-150">
                         {/* Header của Popup */}
                         <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/60 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80">
                             <div className="flex items-center gap-2">
@@ -386,7 +386,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                         value={programFilterSearch}
                                         onChange={(e) => setProgramFilterSearch(e.target.value)}
                                         placeholder="Tìm tên chương trình..."
-                                        className="h-auto pl-8 pr-3 py-1.5 text-xs bg-slate-50 border-slate-200 rounded-lg text-slate-800 focus-visible:ring-0"
+                                        className="h-auto pl-8 pr-3 py-1.5 text-xs bg-slate-50 border-slate-200 rounded-control text-slate-800 focus-visible:ring-0"
                                     />
                                 </div>
 
@@ -397,7 +397,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                             <div
                                                 key={opt.key}
                                                 onClick={() => toggleProgram(opt.key)}
-                                                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
+                                                className="flex items-center justify-between px-2.5 py-1.5 rounded-control hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
                                             >
                                                 <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate pr-2" title={opt.label}>
                                                     {opt.label}
@@ -440,7 +440,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                             <div
                                                 key={header}
                                                 onClick={() => toggleColumn(header)}
-                                                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
+                                                className="flex items-center justify-between px-2.5 py-1.5 rounded-control hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors select-none"
                                             >
                                                 <span className="flex items-center gap-1.5 min-w-0 pr-2">
                                                     {/* Số thứ tự = vị trí cột trên bảng, giúp thấy ngay thứ tự đang bật */}
@@ -470,7 +470,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="unstyled"
                 size="none"
                 onClick={handleOpenTargetThiDua}
-                className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 title="Cấu hình Thi đua"
             >
                 <AppIcon name="settings" size="md" />
@@ -503,7 +503,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 <div className="px-1 sm:px-4 pb-4 pt-1 w-full">
                     {/* Thanh trạng thái bộ lọc thẻ KPI khi đang lọc */}
                     {kpiFilter !== 'all' && (
-                        <div className="flex items-center justify-between px-3 py-1.5 mb-2 bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/70 dark:border-sky-800/70 rounded-xl text-xs transition-all animate-in fade-in-50 duration-150">
+                        <div className="flex items-center justify-between px-3 py-1.5 mb-2 bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/70 dark:border-sky-800/70 rounded-popup text-xs transition-all animate-in fade-in-50 duration-150">
                             <div className="flex items-center gap-1.5 text-sky-900 dark:text-sky-200 font-medium">
                                 <AppIcon name="filter" size="sm" className="text-sky-600 dark:text-sky-400" />
                                 <span>

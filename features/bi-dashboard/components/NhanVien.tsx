@@ -494,8 +494,8 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
             {/* Khi chưa có danh sách nhân viên từ Phân Tích: Yêu cầu người dùng cập nhật */}
             {!hasAnalysisEmployees ? (
-                <div className="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-8 sm:p-12 text-center space-y-5 shadow-xs">
-                    <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
+                <div className="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800/60 rounded-card p-8 sm:p-12 text-center space-y-5 shadow-xs">
+                    <div className="w-16 h-16 mx-auto rounded-card bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
                         <AppIcon name="users" size="state" />
                     </div>
                     <div className="max-w-md mx-auto space-y-2">
@@ -519,7 +519,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 </div>
             ) : (
                 /* 3. Tab Switcher — MỘT khung viền duy nhất bọc chung tab switcher + nội dung */
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-card shadow-sm">
                     <div className="px-4 sm:px-5 pt-3">
                         <Tabs
                             items={NAV_TABS.map(({ tab, label }) => ({ id: tab, label }))}

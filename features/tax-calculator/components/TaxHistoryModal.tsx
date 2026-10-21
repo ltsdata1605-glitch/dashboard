@@ -269,7 +269,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                 {group.records.map(rec => (
                                     <div
                                         key={rec.id || rec.createdAt}
-                                        className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-sky-50/40 dark:hover:bg-sky-950/20 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                                        className="p-3 rounded-popup border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-sky-50/40 dark:hover:bg-sky-950/20 transition-all flex items-center justify-between gap-3 shadow-2xs"
                                     >
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-1.5 flex-wrap">

@@ -168,13 +168,13 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                             <p className="text-slate-500">Đang tải danh sách người dùng...</p>
                         </div>
                     ) : error ? (
-                        <div className="bg-rose-50 text-rose-600 p-4 rounded-lg text-center">
+                        <div className="bg-rose-50 text-rose-600 p-4 rounded-control text-center">
                             {error}
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {users.map((user) => (
-                                <div key={user.uid} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                                <div key={user.uid} className="flex items-center justify-between p-4 rounded-popup border border-slate-200 hover:bg-slate-50 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2 rounded-full ${user.role === 'admin' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'}`}>
                                             {user.role === 'admin' ? <AppIcon name="securityAlert" size="lg" /> : <AppIcon name="security" size="lg" />}

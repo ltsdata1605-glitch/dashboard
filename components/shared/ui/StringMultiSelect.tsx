@@ -132,7 +132,7 @@ const StringMultiSelect: React.FC<StringMultiSelectProps> = ({
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`ycx-hit relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${
+                    className={`ycx-hit relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors shrink-0 ${
                         isOpen || isFiltered
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold'
                             : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -189,7 +189,7 @@ const StringMultiSelect: React.FC<StringMultiSelectProps> = ({
                         top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + 4 : 0,
                         left: containerRef.current ? Math.min(containerRef.current.getBoundingClientRect().left, window.innerWidth - 260) : 0,
                     }}
-                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col w-max max-w-[85vw] sm:max-w-[90vw]"
+                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-popup shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col w-max max-w-[85vw] sm:max-w-[90vw]"
                 >
                     {/* Search Field */}
                     <div className="p-1.5 sm:p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -244,7 +244,7 @@ const StringMultiSelect: React.FC<StringMultiSelectProps> = ({
                                             variant="unstyled" size="none"
                                             key={option}
                                             onClick={() => handleToggleOption(option)}
-                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all justify-start ${
+                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-control transition-all justify-start ${
                                                 isSelected
                                                 ? 'bg-sky-50/60 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'

@@ -334,10 +334,10 @@ export const TaxCalculatorView: React.FC = () => {
       showHistorySidebar ? 'max-w-[1560px]' : 'max-w-[1100px]'
     }`}>
       {/* HEADER: Gọn gàng & Hiện đại */}
-      <div className="bg-white dark:bg-slate-800/90 border-b sm:border border-slate-200 dark:border-slate-700/60 sm:rounded-2xl p-3.5 sm:p-4 mb-3 sm:mb-4 shadow-xs">
+      <div className="bg-white dark:bg-slate-800/90 border-b sm:border border-slate-200 dark:border-slate-700/60 sm:rounded-card p-3.5 sm:p-4 mb-3 sm:mb-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-2.5">
-            <div className="hidden lg:flex w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white items-center justify-center shadow-sm">
+            <div className="hidden lg:flex w-9 h-9 rounded-popup bg-gradient-to-br from-sky-500 to-sky-600 text-white items-center justify-center shadow-sm">
               <AppIcon name="calculator" size="md" />
             </div>
             <div>
@@ -384,7 +384,7 @@ export const TaxCalculatorView: React.FC = () => {
                     { icon: <AppIcon name="exportImage" size="md" className="text-sky-600" />, duration: 6000 }
                   );
                 }}
-                className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"
+                className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-control transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"
               >
                 <AppIcon name="exportImage" size="md" className="text-sky-600" />
                 <span className="hidden sm:inline">Nút Chụp ảnh</span>

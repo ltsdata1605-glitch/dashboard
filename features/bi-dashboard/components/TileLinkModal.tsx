@@ -149,7 +149,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
             }
         >
             <div className="space-y-4 py-1 text-sm text-slate-700 dark:text-slate-300">
-                <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-2.5">
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-control border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-2.5">
                     <AppIcon name="link" size="md" className="text-sky-600 mt-0.5" />
                     <div className="text-xs leading-relaxed space-y-1">
                         <p className="font-semibold text-slate-800 dark:text-slate-200">

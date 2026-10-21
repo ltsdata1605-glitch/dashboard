@@ -253,7 +253,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={expandAll}
-                        className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150 active:scale-[0.94] shrink-0"
+                        className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-150 active:scale-[0.94] shrink-0"
                         title="Mở rộng tất cả"
                         aria-label="Mở rộng tất cả"
                     >
@@ -262,7 +262,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={collapseAll}
-                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center border border-transparent transition-all duration-150 active:scale-[0.94] shrink-0 ${hasAnyExpanded ? 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
+                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center border border-transparent transition-all duration-150 active:scale-[0.94] shrink-0 ${hasAnyExpanded ? 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
                         title="Thu gọn tất cả"
                         aria-label="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
@@ -280,7 +280,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsFilterOpen(prev => !prev)}
-                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] relative shrink-0 ${
+                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] relative shrink-0 ${
                         isFilterOpen
                             ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                             : (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0)
@@ -296,7 +296,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     )}
                 </Button>
                 {isFilterOpen && (
-                    <div className={`absolute right-0 mt-2 ${hasTreeData ? 'w-[580px] max-w-[92vw]' : 'w-72 max-w-[90vw]'} bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 text-left animate-in fade-in zoom-in-95 duration-150`}>
+                    <div className={`absolute right-0 mt-2 ${hasTreeData ? 'w-[580px] max-w-[92vw]' : 'w-72 max-w-[90vw]'} bg-white dark:bg-slate-800 rounded-control shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 text-left animate-in fade-in zoom-in-95 duration-150`}>
                         {/* Popup Header */}
                         <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-700">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Bộ lọc hiển thị</span>
@@ -434,7 +434,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] shrink-0 ${
+                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center transition-all duration-150 active:scale-[0.94] shrink-0 ${
                         isColumnSelectorOpen
                             ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                             : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -445,11 +445,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <AppIcon name="settings" size="md" />
                 </Button>
                 {isColumnSelectorOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-card shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                         <div className="grid gap-0.5">
                             {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng').map((h) => (
-                                <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                <div key={h} className="flex items-center justify-between px-2 py-1 rounded-control hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <label
                                         htmlFor={`col-toggle-ind-${h}`}
                                         className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"

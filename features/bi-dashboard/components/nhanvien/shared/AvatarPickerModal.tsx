@@ -114,7 +114,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
 
                 {/* Sub-bar / Tabs & Filters */}
                 <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/30 dark:bg-slate-800/20">
-                    <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold">
+                    <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-control text-xs font-semibold">
                         <Button
                             variant="unstyled"
                             size="none"
@@ -206,7 +206,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                             type="button"
                                             disabled={isProcessing}
                                             onClick={() => handleSelectCartoon(avatar)}
-                                            className={`group relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                                            className={`group relative flex flex-col items-center justify-center p-2 rounded-popup transition-all duration-200 cursor-pointer ${
                                                 isSelected
                                                     ? 'bg-sky-50 dark:bg-sky-950/40 ring-2 ring-sky-500 scale-105 shadow-sm'
                                                     : 'hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105'
@@ -248,7 +248,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                 variant="primary"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isProcessing}
-                                className="px-5 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-md hover:shadow-lg transition-all"
+                                className="px-5 py-2 text-sm font-semibold rounded-popup bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-md hover:shadow-lg transition-all"
                             >
                                 <AppIcon name="upload" size="md" className="mr-2" />
                                 {isProcessing ? 'Đang xử lý...' : 'Chọn file từ thiết bị'}

@@ -94,10 +94,10 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             />
 
             {/* Google Account & Warehouse Linkage Card */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/90 via-sky-50/50 to-sky-50/40 dark:from-sky-950/30 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-xs space-y-3">
+            <div className="p-4 sm:p-5 rounded-card bg-gradient-to-r from-sky-50/90 via-sky-50/50 to-sky-50/40 dark:from-sky-950/30 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-xs space-y-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-sky-600 text-white shadow-xs shrink-0">
+                        <div className="p-2.5 rounded-popup bg-sky-600 text-white shadow-xs shrink-0">
                             <AppIcon name="department" size="lg" />
                         </div>
                         <div>
@@ -116,7 +116,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 shadow-2xs w-full sm:w-auto">
+                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-popup border border-sky-200 dark:border-sky-800 shadow-2xs w-full sm:w-auto">
                             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Mã Kho:</span>
                             <Input
                                 dense
@@ -148,7 +148,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             </div>
 
             {/* Webhook URL Box */}
-            <div className="p-5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 space-y-2.5">
+            <div className="p-5 rounded-card bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 space-y-2.5">
                 <div className="flex items-center justify-between">
                     <a
                         href="https://manager.line.biz/account/@428gkuok/setting/messaging-api"
@@ -165,7 +165,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 {/* Ô Webhook URL có nút sao chép bên trong và bấm vào ô tự động copy */}
                 <div
                     onClick={handleCopyWebhook}
-                    className="relative group cursor-pointer bg-white dark:bg-slate-900 rounded-xl border border-sky-200/80 dark:border-sky-800/80 p-3 pr-28 transition-all hover:border-sky-400 dark:hover:border-sky-500 shadow-xs"
+                    className="relative group cursor-pointer bg-white dark:bg-slate-900 rounded-popup border border-sky-200/80 dark:border-sky-800/80 p-3 pr-28 transition-all hover:border-sky-400 dark:hover:border-sky-500 shadow-xs"
                     title="Bấm vào để tự động sao chép Webhook URL"
                 >
                     <div className="font-mono text-xs text-slate-700 dark:text-slate-300 break-all select-all">
@@ -178,7 +178,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             e.stopPropagation();
                             handleCopyWebhook();
                         }}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-control text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
                             copiedUrl
                                 ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                 : 'bg-sky-100 dark:bg-sky-900/60 hover:bg-sky-200 dark:hover:bg-sky-800 text-sky-700 dark:text-sky-300'
@@ -196,7 +196,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             </div>
 
             {/* Form Fields */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
+            <div className="p-5 rounded-card bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <AppIcon name="apiKey" size="md" className="text-emerald-500" />
                     <span>Khoá API & Bí mật Channel</span>
@@ -235,7 +235,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             onBlur={() => setTokenFocused(false)}
                             onChange={e => setToken(e.target.value)}
                             placeholder={tokenFocused ? (tokenSaved ? 'Dán Channel access token mới vào đây để thay (để trống thì giữ nguyên)...' : 'Dán Channel access token (long-lived) từ LINE Developers...') : ''}
-                            className={`min-h-0 p-3 rounded-xl text-xs font-mono transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 ${
+                            className={`min-h-0 p-3 rounded-popup text-xs font-mono transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 ${
                                 tokenSaved && !token.trim() && !tokenFocused
                                     ? 'bg-emerald-50 border border-emerald-300 dark:bg-slate-900 dark:border-emerald-700/80 text-slate-800 dark:text-slate-200'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
@@ -245,7 +245,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             <div
                                 data-testid="line-token-saved"
                                 onClick={() => tokenInputRef.current?.focus()}
-                                className="absolute inset-0 rounded-xl p-3 bg-emerald-50 dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 flex items-start gap-2.5 cursor-text select-none shadow-xs"
+                                className="absolute inset-0 rounded-popup p-3 bg-emerald-50 dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 flex items-start gap-2.5 cursor-text select-none shadow-xs"
                             >
                                 <AppIcon name="success" size="md" className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                                 <div className="leading-snug">
@@ -322,7 +322,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             onBlur={() => setSecretFocused(false)}
                             onChange={e => setSecret(e.target.value)}
                             placeholder={secretFocused ? (secretSaved ? 'Dán Channel secret mới vào đây để thay (để trống thì giữ nguyên)...' : 'Dán Channel secret từ tab Basic settings...') : ''}
-                            className={`h-auto p-3 rounded-xl text-xs font-mono transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 ${
+                            className={`h-auto p-3 rounded-popup text-xs font-mono transition-all focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 ${
                                 secretSaved && !secret.trim() && !secretFocused
                                     ? 'bg-emerald-50 border border-emerald-300 dark:bg-slate-900 dark:border-emerald-700/80 text-slate-800 dark:text-slate-200'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
@@ -332,7 +332,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             <div
                                 data-testid="line-secret-saved"
                                 onClick={() => secretInputRef.current?.focus()}
-                                className="absolute inset-0 rounded-xl px-3 py-2 bg-emerald-50 dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 flex items-center gap-2 cursor-text select-none shadow-xs"
+                                className="absolute inset-0 rounded-popup px-3 py-2 bg-emerald-50 dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 flex items-center gap-2 cursor-text select-none shadow-xs"
                             >
                                 <AppIcon name="success" size="md" className="shrink-0 text-emerald-600 dark:text-emerald-400" />
                                 <div className="leading-snug truncate">
@@ -385,7 +385,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         value={liffId}
                         onChange={e => setLiffId(e.target.value)}
                         placeholder="2011679071-BclvutpD"
-                        className="h-auto p-3 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                        className="h-auto p-3 bg-slate-50 border-slate-200 rounded-popup text-xs font-mono text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                     />
                     <p className="flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
                         <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" /><span>Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 PMH 1 đã được sử dụng lúc HH:mm!\n↳ User: [Tên]"</em></span>
@@ -394,13 +394,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             </div>
 
             {/* Automation & Rules */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
+            <div className="p-5 rounded-card bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <AppIcon name="viewOptions" size="md" className="text-sky-500" />
                     <span>Quy tắc tự động hoá & Cấp phát mã</span>
                 </h4>
 
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-popup border border-slate-200/60 dark:border-slate-700/60">
                     <div>
                         <span id="bot-tu-duyet" className="text-xs font-bold text-slate-800 dark:text-white block">Tự động duyệt đơn (Auto-Approve)</span>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -420,7 +420,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         value={approvalCmd}
                         onChange={e => setApprovalCmd(e.target.value)}
                         placeholder="DUYỆT"
-                        className="h-auto sm:w-64 p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold uppercase text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                        className="h-auto sm:w-64 p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold uppercase text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                     />
                     <span className="text-[11px] text-slate-500 block mt-1">
                         Chỉ các Admin được khai báo mới có quyền gửi lệnh này để Bot phát mã.

@@ -473,7 +473,7 @@ Link: ${url}`;
                 onClick={toggleAllDetails}
                 title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}
                 aria-label={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}
-                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
             >
                 <AppIcon name={isAllExpanded ? 'collapseAll' : 'expandAll'} size="md" />
             </Button>
@@ -484,7 +484,7 @@ Link: ${url}`;
                 disabled={isExporting}
                 title="Xuất ảnh toàn bộ danh sách"
                 aria-label="Xuất ảnh toàn bộ danh sách"
-                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 shrink-0"
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 shrink-0"
             >
                 <AppIcon name={isExporting ? 'loading' : 'exportImage'} size="md" spin={isExporting} />
             </Button>
@@ -514,7 +514,7 @@ Link: ${url}`;
             <div className="modal-bleed p-4 sm:p-8 bg-white dark:bg-slate-900" ref={modalBodyRef}>
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
-                        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
+                        <div className="bg-white dark:bg-slate-800 rounded-control sm:rounded-popup shadow p-3 sm:p-5">
                             <h4 className="type-headline font-semibold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 text-center">Tỷ trọng ngành hàng chưa xuất</h4>
                              {/* Tối đa 4 cột: 6 cột ở laptop 1366px chỉ còn ~135px/ô → tên ngành cắt "Gia d…", "Phụ ki…"
                                  dù cả hàng còn trống (dữ liệu thật 2026-09-28). */}
@@ -527,7 +527,7 @@ Link: ${url}`;
                                     return (
                                         <div
                                             key={item.name}
-                                            className={`bg-slate-50 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-lg border-l-4 ${tone.border} flex items-center gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5`}
+                                            className={`bg-slate-50 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-control border-l-4 ${tone.border} flex items-center gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5`}
                                         >
                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${tone.bg} flex flex-shrink-0 items-center justify-center ${tone.text}`}>
                                                 <AppIcon name={resolveIconName(icon) ?? 'help'} size="md" />
@@ -547,7 +547,7 @@ Link: ${url}`;
                         <div className="mt-4">
                             {creatorData.map(creator => (
                                 <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-900 overflow-hidden" open>
-                                <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
+                                <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-control mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
                                         <p className="font-bold text-sm sm:text-[17px] text-sky-950 dark:text-sky-100 pl-1">{creator.name}</p>
                                         <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[11px] sm:text-sm font-semibold">
                                             <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-rose-700 dark:text-rose-400">{formatCurrency(creator.totalRevenue)}</span></span>

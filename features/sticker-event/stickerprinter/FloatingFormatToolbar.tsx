@@ -480,7 +480,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
     return (
         <div 
-            className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-lg shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
+            className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-control shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
             style={{ 
                 top: `${toolbarPos.top}px`, 
                 left: `${toolbarPos.left}px` 
@@ -496,7 +496,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                     size="sm"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
-                    className="text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
+                    className="text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
                 >
                     Font <span className="text-[11px] opacity-75">▼</span>
                 </Button>
@@ -504,7 +504,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 {activeMenu === 'font' && (
                     <div 
                         onMouseDown={(e) => e.preventDefault()}
-                        className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[150px] max-h-[200px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden ${
+                        className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-control shadow-2xl py-1 flex flex-col min-w-[150px] max-h-[200px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden ${
                             showDropdownBelow ? 'top-full mt-2' : 'bottom-full mb-2'
                         }`}
                     >

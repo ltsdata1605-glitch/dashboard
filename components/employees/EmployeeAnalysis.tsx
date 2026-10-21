@@ -222,18 +222,18 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             variant="unstyled" size="none"
                             onClick={() => setIsSettingsOpen(prev => !prev)} 
                             title="Tùy chọn hiển thị" 
-                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         >
                             <AppIcon name="settings" size="md" />
                         </Button>
                         {isSettingsOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                            <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-popup sm:rounded-card shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                 <h4 className="font-bold text-xs sm:text-sm mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>
                                 <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                     {allAvailableTabs.map(tab => (
-                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2.5 rounded-control sm:rounded-popup hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                             <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2">
-                                                <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md sm:rounded-lg text-slate-500">
+                                                <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md sm:rounded-control text-slate-500">
                                                     <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="sm" />
                                                 </div>
                                                 {tab.label}

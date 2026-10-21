@@ -187,28 +187,28 @@ const StatusTile: React.FC<{
 
     const themeColors = {
         emerald: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600 rounded-xl',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600 rounded-popup',
             text: 'text-emerald-800 dark:text-emerald-200',
             iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700',
-            ring: 'border-emerald-500 ring-2 ring-emerald-500/20 rounded-xl'
+            ring: 'border-emerald-500 ring-2 ring-emerald-500/20 rounded-popup'
         },
         sky: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600 rounded-xl',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600 rounded-popup',
             text: 'text-sky-800 dark:text-sky-200',
             iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
-            ring: 'border-sky-500 ring-2 ring-sky-500/20 rounded-xl'
+            ring: 'border-sky-500 ring-2 ring-sky-500/20 rounded-popup'
         },
         rose: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600 rounded-xl',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600 rounded-popup',
             text: 'text-rose-800 dark:text-rose-200',
             iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700',
-            ring: 'border-rose-500 ring-2 ring-rose-500/20 rounded-xl'
+            ring: 'border-rose-500 ring-2 ring-rose-500/20 rounded-popup'
         },
         amber: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600 rounded-xl',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600 rounded-popup',
             text: 'text-amber-800 dark:text-amber-200',
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
-            ring: 'border-amber-500 ring-2 ring-amber-500/20 rounded-xl'
+            ring: 'border-amber-500 ring-2 ring-amber-500/20 rounded-popup'
         },
     };
 
@@ -221,13 +221,13 @@ const StatusTile: React.FC<{
                 onClick={handleTileClick}
                 title={readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để tự động dán dữ liệu từ Clipboard'}
                 className={`
-                    transition-colors duration-200 relative overflow-hidden border rounded-xl shadow-2xs
+                    transition-colors duration-200 relative overflow-hidden border rounded-popup shadow-2xs
                     ${readOnly ? 'cursor-default' : 'cursor-pointer'}
                     ${isPasting
                         ? `p-2.5 bg-white dark:bg-slate-800 flex flex-col ${currentTheme.ring}`
                         : hasData
                             ? `${currentTheme.wrapper} p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2`
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2'}
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-popup p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2'}
                 `}
             >
                 {isPasting ? (
@@ -257,7 +257,7 @@ const StatusTile: React.FC<{
                 ) : (
                     <>
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                            <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
+                            <div className={`p-1.5 rounded-control shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <AppIcon name="upload" size="md" />}
                             </div>
                             <div className="min-w-0 flex-1 flex flex-col justify-center">
@@ -286,7 +286,7 @@ const StatusTile: React.FC<{
                                         e.stopPropagation();
                                         onOpenLinkModal();
                                     }}
-                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-control transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
                                     title="Chỉnh sửa liên kết"
                                     aria-label="Chỉnh sửa liên kết"
                                 >
@@ -306,7 +306,7 @@ const StatusTile: React.FC<{
                                             onOpenLinkModal?.();
                                         }
                                     }}
-                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-control transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
                                     title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                                     aria-label="Mở liên kết báo cáo"
                                 >
@@ -322,7 +322,7 @@ const StatusTile: React.FC<{
                                         e.stopPropagation();
                                         onClear(title);
                                     }}
-                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-control transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
                                     title="Xoá"
                                     aria-label="Xoá dữ liệu"
                                 >
@@ -1042,7 +1042,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             <Button
                                                 variant="unstyled" size="none"
                                                 onClick={() => setActiveSupermarket(sm)}
-                                                className={`h-8 shrink-0 pl-3 pr-2.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 ${
+                                                className={`h-8 shrink-0 pl-3 pr-2.5 rounded-control text-xs font-bold transition-all border flex items-center gap-1.5 ${
                                                     activeSupermarket === sm
                                                         ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
                                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
@@ -1076,7 +1076,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => setIsAddingSupermarket(true)}
-                                    className="h-8 shrink-0 px-3 rounded-lg text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1.5 transition-all"
+                                    className="h-8 shrink-0 px-3 rounded-control text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1.5 transition-all"
                                     title="Thêm siêu thị mới để cấu hình và dán dữ liệu"
                                 >
                                     <AppIcon name="add" size="md" />
@@ -1095,7 +1095,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         />
                     </Card>
                 ) : (
-                    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-6 flex flex-col items-center justify-center text-center">
+                    <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-card border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-6 flex flex-col items-center justify-center text-center">
                         <EmptyState
                             icon={<AppIcon name="upload" size="xl" />}
                             title="Chưa có danh sách siêu thị"
@@ -1104,7 +1104,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsAddingSupermarket(true)}
-                            className="min-h-11 sm:min-h-0 mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+                            className="min-h-11 sm:min-h-0 mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-control shadow-sm flex items-center gap-1.5 transition-colors"
                         >
                             <AppIcon name="add" size="md" />
                             <span>+ Thêm siêu thị thủ công</span>

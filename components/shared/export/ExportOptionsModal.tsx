@@ -65,7 +65,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
 
                 {/* Header */}
                 <div className="px-4 pt-4 pb-2 text-center sm:text-left flex flex-col items-center sm:items-start relative z-10 w-full">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/50 dark:to-sky-900/50 flex items-center justify-center mb-2 shadow-sm">
+                    <div className="w-10 h-10 rounded-popup bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/50 dark:to-sky-900/50 flex items-center justify-center mb-2 shadow-sm">
                         <AppIcon name="exportImage" size="lg" className="text-sky-700" />
                     </div>
                     <h3 className="type-headline font-bold text-slate-900 dark:text-white">Xuất ảnh báo cáo</h3>
@@ -78,10 +78,10 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     <Button
                         variant="unstyled" size="none"
                         onClick={onDownload}
-                        className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-900/20 active:scale-[0.98] transition-all group"
+                        className="w-full flex items-center justify-between p-3 rounded-popup bg-slate-50 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-900/20 active:scale-[0.98] transition-all group"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <div className="w-10 h-10 rounded-control bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                 <AppIcon name="download" size="lg" />
                             </div>
                             <div className="text-left">
@@ -99,10 +99,10 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                         <Button
                             variant="unstyled" size="none"
                             onClick={onShare}
-                            className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.98] transition-all group"
+                            className="w-full flex items-center justify-between p-3 rounded-popup bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.98] transition-all group"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                <div className="w-10 h-10 rounded-control bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                     <AppIcon name="share" size="lg" />
                                 </div>
                                 <div className="text-left">
@@ -118,7 +118,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
 
                     {/* Bot LINE Auto-Export Config Card */}
                     {resolvedAreaId && (
-                        <div className="p-3 rounded-xl border border-sky-100 dark:border-sky-900/50 bg-sky-50/50 dark:bg-sky-950/20 space-y-2 mt-2">
+                        <div className="p-3 rounded-popup border border-sky-100 dark:border-sky-900/50 bg-sky-50/50 dark:bg-sky-950/20 space-y-2 mt-2">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-1.5 text-sky-800 dark:text-sky-300 font-bold text-[12px]">
                                     <AppIcon name="bot" size="xs" />
@@ -133,7 +133,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                     size="none"
                                     onClick={() => handleToggleBot('realtime')}
                                     aria-pressed={!!botSetting.realtime}
-                                    className={`ycx-hit flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                                    className={`ycx-hit flex-1 py-1 px-2 rounded-control text-[11px] font-semibold border transition-all text-center ${
                                         botSetting.realtime
                                             ? 'bg-sky-600 border-sky-600 text-white shadow-xs'
                                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
@@ -147,7 +147,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                     size="none"
                                     onClick={() => handleToggleBot('luyke')}
                                     aria-pressed={!!botSetting.luyke}
-                                    className={`ycx-hit flex-1 py-1 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                                    className={`ycx-hit flex-1 py-1 px-2 rounded-control text-[11px] font-semibold border transition-all text-center ${
                                         botSetting.luyke
                                             ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
                                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
@@ -163,7 +163,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     <Button
                         variant="unstyled" size="none"
                         onClick={onClose}
-                        className="w-full mt-1 py-2.5 rounded-xl text-[12px] font-bold text-slate-500 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
+                        className="w-full mt-1 py-2.5 rounded-popup text-[12px] font-bold text-slate-500 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
                     >
                         Quay lại
                     </Button>

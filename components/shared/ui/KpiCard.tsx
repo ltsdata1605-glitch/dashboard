@@ -129,7 +129,7 @@ ACTIVE_RING_STYLES.cyan = ACTIVE_RING_STYLES.sky;
 
 /**
  * KPI Card chuẩn "Executive Modern" — squircle icon, gradient top accent,
- * thanh tiến độ dạng viên nang (pill) bo tròn, thẻ bo góc mềm mại rounded-2xl,
+ * thanh tiến độ dạng viên nang (pill) bo tròn, thẻ bo góc mềm mại rounded-card (16px),
  * micro status indicator thông minh và hiệu ứng hover mượt mà.
  */
 export const KpiCard: React.FC<KpiCardProps> = ({
@@ -173,7 +173,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 {/* Hàng 1: Icon squircle + Title + Micro Status Dot */}
                 <div className="@container flex items-center justify-between gap-1.5 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
-                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${style.iconBg} ${style.iconText}`}>
+                        <div className={`w-7 h-7 rounded-popup flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${style.iconBg} ${style.iconText}`}>
                             <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
                         </div>
                         <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={titleText}>

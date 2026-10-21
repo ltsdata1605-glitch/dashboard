@@ -225,7 +225,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
 
     if (loading) {
         return (
-            <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+            <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-popup border border-dashed border-slate-200 dark:border-slate-800">
                 Đang tải dữ liệu theo tháng...
             </div>
         );

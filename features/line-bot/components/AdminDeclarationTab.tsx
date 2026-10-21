@@ -103,7 +103,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
     return (
         <div className="space-y-6 w-full">
             {/* Guide box */}
-            <div className="p-4 bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 rounded-2xl space-y-2">
+            <div className="p-4 bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 rounded-card space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300">
                     <AppIcon name="help" size="md" />
                     <span>Cách lấy LINE User ID của Quản lý / Admin</span>
@@ -117,7 +117,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
             </div>
 
             {/* Add form */}
-            <div className="p-5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
+            <div className="p-5 bg-white dark:bg-slate-800/80 rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <AppIcon name="securityOk" size="md" className="text-emerald-500" />
@@ -128,7 +128,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         variant="outline"
                         type="button"
                         onClick={() => setIsSelectModalOpen(true)}
-                        className="px-3 py-1.5 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 border border-sky-200 dark:border-sky-800/80 rounded-xl flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
+                        className="px-3 py-1.5 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 border border-sky-200 dark:border-sky-800/80 rounded-popup flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
                     >
                         <AppIcon name="users" size="sm" className="text-sky-600" />
                         <span>Chọn từ tương tác BOT</span>
@@ -151,7 +151,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Ví dụ: Sơn (QL K910)"
-                            className="h-auto p-2 bg-slate-50 border-slate-200 rounded-xl text-xs"
+                            className="h-auto p-2 bg-slate-50 border-slate-200 rounded-popup text-xs"
                             required
                         />
                     </div>
@@ -179,7 +179,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             value={lineUserId}
                             onChange={e => setLineUserId(e.target.value)}
                             placeholder="U272dcb226f9..."
-                            className="h-auto p-2 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono"
+                            className="h-auto p-2 bg-slate-50 border-slate-200 rounded-popup text-xs font-mono"
                             required
                         />
                     </div>
@@ -192,7 +192,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             aria-label="Vai trò phân quyền"
                             value={role}
                             onChange={e => setRole(e.target.value as AdminRole)}
-                            className="h-auto pl-2 py-2 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
+                            className="h-auto pl-2 py-2 bg-slate-50 border-slate-200 rounded-popup text-xs font-semibold"
                         >
                             <option value="APPROVER">Duyệt cấp mã (Lệnh DUYỆT)</option>
                             <option value="SUPER_ADMIN">Toàn quyền (Quản trị cao nhất)</option>
@@ -205,7 +205,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             variant="primary"
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-2 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-xl shadow-2xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                            className="w-full py-2 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-popup shadow-2xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                         >
                             <AppIcon name="add" size="md" />
                             <span>{isSubmitting ? 'Đang thêm...' : 'Thêm Admin'}</span>
@@ -215,12 +215,12 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
             </div>
 
             {/* Admin Table */}
-            <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
+            <div className="bg-white dark:bg-slate-800/80 rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
                 <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-800 dark:text-white">
                         Danh Sách Admin Được Cấp Quyền ({admins.length})
                     </span>
-                    <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1 text-slate-400 rounded-lg hover:text-sky-600" title="Làm mới">
+                    <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1 text-slate-400 rounded-control hover:text-sky-600" title="Làm mới">
                         <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                 </div>
@@ -268,7 +268,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                                     variant="ghost"
                                                     onClick={() => handleTestPush(a)}
                                                     disabled={testingId === a.id}
-                                                    className="p-1.5 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-lg"
+                                                    className="p-1.5 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-control"
                                                     title="Gửi tin nhắn test"
                                                 >
                                                     <AppIcon name="send" size="sm" className={testingId === a.id ? 'animate-spin' : ''} />
@@ -276,7 +276,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                                 <Button
                                                     variant="ghost"
                                                     onClick={() => onDeleteAdmin(a.id)}
-                                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-control"
                                                     title="Xoá"
                                                 >
                                                     <AppIcon name="delete" size="sm" />

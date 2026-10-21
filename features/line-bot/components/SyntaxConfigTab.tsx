@@ -160,7 +160,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                         setPreviewTab('filter');
                     }}
                     title="Click vào khu vực này để xem trước mô phỏng lọc PMH trên iPhone"
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-4 ${
+                    className={`p-5 rounded-card border transition-all cursor-pointer space-y-4 ${
                         previewTab === 'filter'
                             ? 'bg-white dark:bg-slate-800/90 border-emerald-400 dark:border-emerald-500 ring-2 ring-emerald-500/50 shadow-lg shadow-emerald-500/10'
                             : 'bg-white/90 dark:bg-slate-800/70 border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-xs'
@@ -183,7 +183,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             <Button
                                 variant="secondary"
                                 onClick={() => setIsSelectUserModalOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-xl transition-all shadow-2xs"
+                                className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-popup transition-all shadow-2xs"
                                 title="Mở danh sách người dùng bot trong nhóm hoặc chat riêng để chọn nhanh"
                             >
                                 <AppIcon name="users" size="sm" />
@@ -204,7 +204,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                             Danh sách tên người nhận hợp lệ:
                         </label>
-                        <div className="flex flex-wrap gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 min-h-[44px]">
+                        <div className="flex flex-wrap gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-popup border border-slate-200 dark:border-slate-700 min-h-[44px]">
                             {filterNames.map((name) => {
                                 const isSelected = name === previewSelectedName;
                                 return (
@@ -214,7 +214,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             setPreviewSelectedName(name);
                                             setPreviewTab('filter');
                                         }}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs group cursor-pointer transition-all ${
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold shadow-2xs group cursor-pointer transition-all ${
                                             isSelected
                                                 ? 'bg-emerald-600 text-white border border-emerald-600 ring-2 ring-emerald-400 font-bold'
                                                 : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
@@ -264,12 +264,12 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     }
                                 }}
                                 placeholder="Nhập tên người nhận (ví dụ: Lê Sơn, Boss)..."
-                                className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                                className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-medium text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                             />
                             <Button
                                 variant="secondary"
                                 onClick={handleAddName}
-                                className="flex items-center gap-1 px-3 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl"
+                                className="flex items-center gap-1 px-3 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-popup"
                             >
                                 <AppIcon name="add" size="sm" />
                                 <span>Thêm</span>
@@ -277,7 +277,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             <Button
                                 variant="secondary"
                                 onClick={() => setIsSelectUserModalOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-xl shadow-2xs whitespace-nowrap"
+                                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-popup shadow-2xs whitespace-nowrap"
                                 title="Mở danh sách thành viên trong nhóm hoặc nhắn riêng với Bot để chọn"
                             >
                                 <AppIcon name="users" size="sm" />
@@ -311,7 +311,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             key={u.lineUserId}
                                             type="button"
                                             onClick={() => handleAddDirectName(u.displayName)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 border border-slate-200/80 dark:border-slate-700 hover:border-emerald-300 rounded-lg text-[11px] font-medium transition-all group shadow-2xs"
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 border border-slate-200/80 dark:border-slate-700 hover:border-emerald-300 rounded-control text-[11px] font-medium transition-all group shadow-2xs"
                                             title={`Click để thêm nhanh: ${u.displayName}`}
                                         >
                                             <AppIcon name="add" size="xs" className="text-slate-400 group-hover:text-emerald-600" />
@@ -331,7 +331,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             variant="primary"
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-popup shadow-xs disabled:opacity-50"
                         >
                             <AppIcon name="save" size="sm" />
                             <span>{isSaving ? 'Đang lưu...' : 'Lưu Danh Sách Tên Lọc'}</span>
@@ -340,7 +340,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                 </div>
 
                 {/* 2. CÚ PHÁP TRA CỨU TỒN KHO & NHẬN MÃ (Hệ thống "tk" Mới) */}
-                <div className="p-5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
+                <div className="p-5 bg-white dark:bg-slate-800/80 rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <AppIcon name="command" size="md" className="text-emerald-500" />
@@ -358,7 +358,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 setPreviewTab('tk');
                                 setTkMode('all');
                             }}
-                            className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                            className={`p-3.5 rounded-popup border transition-all cursor-pointer space-y-2 ${
                                 previewTab === 'tk' && tkMode === 'all'
                                     ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-400 dark:border-amber-500 ring-2 ring-amber-500/50 shadow-md shadow-amber-500/10'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/20'
@@ -396,7 +396,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     setPreviewTab('tk');
                                     setTkMode('event');
                                 }}
-                                className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                                className={`p-3.5 rounded-popup border transition-all cursor-pointer space-y-2 ${
                                     previewTab === 'tk' && tkMode === 'event'
                                         ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-500 ring-2 ring-emerald-500/50 shadow-md shadow-emerald-500/10'
                                         : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/20'
@@ -433,7 +433,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     setPreviewTab('tk');
                                     setTkMode('gvgs');
                                 }}
-                                className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                                className={`p-3.5 rounded-popup border transition-all cursor-pointer space-y-2 ${
                                     previewTab === 'tk' && tkMode === 'gvgs'
                                         ? 'bg-sky-50/70 dark:bg-sky-950/40 border-sky-400 dark:border-sky-500 ring-2 ring-sky-500/50 shadow-md shadow-sky-500/10'
                                         : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/20'
@@ -470,7 +470,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             onClick={() => {
                                 setPreviewTab('issue');
                             }}
-                            className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                            className={`p-3.5 rounded-popup border transition-all cursor-pointer space-y-2 ${
                                 previewTab === 'issue'
                                     ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-500 ring-2 ring-emerald-500/50 shadow-md shadow-emerald-500/10'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/20'
@@ -538,7 +538,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             onClick={() => {
                                 setPreviewTab('hd');
                             }}
-                            className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${
+                            className={`p-3.5 rounded-popup border transition-all cursor-pointer space-y-2 ${
                                 previewTab === 'hd'
                                     ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-400 dark:border-amber-500 ring-2 ring-amber-500/50 shadow-md shadow-amber-500/10'
                                     : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/20'

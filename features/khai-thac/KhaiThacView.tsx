@@ -285,11 +285,11 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
                         <>
                             <Input autoFocus placeholder="Mã - Tên (VD: 21707 - Sơn)" value={nameInput} onChange={e => setNameInput(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') commitName(); }} fullWidth={false} aria-label="Tên nhân viên"
-                                className="h-8 rounded w-56 text-[13px]" data-testid="staff-name-input" />
+                                className="h-8 w-56 text-[13px]" data-testid="staff-name-input" />
                             <Button variant="primary" size="icon" className="h-8 w-8 rounded" onClick={commitName} aria-label="Lưu tên"><AppIcon name="check" size="sm" /></Button>
                         </>
                     ) : (
-                        <Button variant="secondary" size="sm" className="h-8 rounded gap-1.5" onClick={() => { setNameInput(draft.staffName); setEditingName(true); }} title="Đổi tên nhân viên" data-testid="staff-name">
+                        <Button variant="secondary" size="sm" className="h-8 gap-1.5" onClick={() => { setNameInput(draft.staffName); setEditingName(true); }} title="Đổi tên nhân viên" data-testid="staff-name">
                             <span className="font-semibold text-slate-800">{draft.staffName || 'Chưa có tên'}</span>
                             <AppIcon name="edit" size="xs" className="text-slate-400" />
                         </Button>

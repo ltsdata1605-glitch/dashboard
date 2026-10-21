@@ -172,7 +172,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 </Button>
                 <Button 
                     onClick={addCurrentPage}
-                    className="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-transform shadow-md shadow-sky-500/10 border-transparent"
+                    className="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2 px-3 rounded-control flex items-center justify-center gap-1 active:scale-95 transition-transform shadow-md shadow-sky-500/10 border-transparent"
                     title="Thêm trang hiện tại vào hàng đợi in"
                     leftIcon={<AppIcon name="add" size="md" />}
                 >
@@ -197,7 +197,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     <div className="space-y-2.5 animate-in fade-in duration-200 pb-2">
                         {stickerType === 'draw' ? (
                             /* Cấu hình phiếu rút thăm chuyên nghiệp */
-                            <div className="p-4 bg-rose-50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-800/30 space-y-4">
+                            <div className="p-4 bg-rose-50 dark:bg-rose-900/10 rounded-popup border border-rose-100 dark:border-rose-800/30 space-y-4">
                                 <div className="flex items-center justify-between border-b border-rose-200/40 dark:border-rose-800/40 pb-2">
                                     <p className="text-[11px] lg:text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
                                         <AppIcon name="settings" size="sm" />
@@ -270,7 +270,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     />
                                 </div>
 
-                                <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                                <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-control border border-slate-100 dark:border-slate-800/40 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                     <span className="font-bold text-sky-600 dark:text-sky-400">Gợi ý in:</span> {localTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(localTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{localStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{localStartNumber + localTotalTickets - 1}</span>.
                                 </div>
                             </div>
@@ -352,7 +352,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                     checked={item.selected}
                                                     onChange={() => toggleItemSelection(item.id)}
                                                     className="mt-0.5"
-                                                    wrapperClassName={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${item.selected ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
+                                                    wrapperClassName={`flex items-start gap-3 p-3 rounded-control border transition-colors ${item.selected ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
                                                     labelClassName="flex-1 min-w-0"
                                                     label={
                                                         <>
@@ -379,7 +379,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 <span className="text-[13px] font-semibold text-slate-800">Hướng dẫn in & sử dụng</span>
                             </div>
                             
-                            <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-3">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-popup border border-slate-100 dark:border-slate-800/60 space-y-3">
                                 <div className="space-y-1.5">
                                     <p className="text-[12px] font-semibold text-slate-600">Cấu hình in Chrome (Ctrl + P)</p>
                                     <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
@@ -455,7 +455,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 return (
                                 <div 
                                     key={entry.id} 
-                                    className={`flex items-center justify-between p-3 rounded-lg border group text-left ${
+                                    className={`flex items-center justify-between p-3 rounded-control border group text-left ${
                                         isDefault 
                                             ? 'sticky top-0 z-10 bg-amber-50/95 dark:bg-amber-950/90 backdrop-blur-xs border-amber-300 dark:border-amber-700/60 shadow-xs' 
                                             : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700'

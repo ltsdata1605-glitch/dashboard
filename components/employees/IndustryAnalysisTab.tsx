@@ -81,8 +81,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         });
         return formatAs === 'percentage' ? `${formattedVal}%` : formattedVal;
     };
-    const boldBlueText = 'font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-2 py-0.5 rounded-lg';
-    const warningText = 'text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
+    const boldBlueText = 'font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/20 px-2 py-0.5 rounded-control';
+    const warningText = 'text-rose-700 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-control';
     
     // ----------------------------
 
@@ -329,21 +329,21 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                 <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export shrink-0">
                     <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
-                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-control transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
                                 <AppIcon name="viewList" size="md" />
                                 <span className="hidden sm:inline">Chi tiết</span>
                             </Button>
-                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Hiệu quả">
+                            <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-control transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Hiệu quả">
                                 <AppIcon name="percent" size="md" />
                                 <span className="hidden sm:inline">Hiệu quả</span>
                             </Button>
                         </div>
                         <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1 shrink-0"></div>
-                        <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
+                        <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
                             <AppIcon name="exportBatch" size="md" />
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 disabled:opacity-40">
+                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 disabled:opacity-40">
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>

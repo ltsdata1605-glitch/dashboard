@@ -218,7 +218,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                     {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day, idx) => {
                         const isWeekend = idx >= 5;
                         return (
-                            <div key={day} className={`${compact ? 'py-0.5 text-[11px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-amber-700 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
+                            <div key={day} className={`${compact ? 'py-0.5 text-[11px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-control tracking-wide uppercase ${isWeekend ? 'text-amber-700 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
                                 {compact ? day : (idx === 0 ? 'THỨ HAI' : idx === 1 ? 'THỨ BA' : idx === 2 ? 'THỨ TƯ' : idx === 3 ? 'THỨ NĂM' : idx === 4 ? 'THỨ SÁU' : idx === 5 ? 'THỨ BẢY' : 'CHỦ NHẬT')}
                             </div>
                         );
@@ -232,7 +232,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                             return (
                                 <div 
                                     key={`empty-${idx}`} 
-                                    className={`aspect-square w-full h-auto ${cellMinH} rounded-lg bg-slate-50/50 dark:bg-white/[0.02] border border-dashed border-slate-200/60 dark:border-white/5`}
+                                    className={`aspect-square w-full h-auto ${cellMinH} rounded-control bg-slate-50/50 dark:bg-white/[0.02] border border-dashed border-slate-200/60 dark:border-white/5`}
                                 />
                             );
                         }
@@ -277,7 +277,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                         return (
                             <div 
                                 key={dayData.dateStr} 
-                                className={`${bgClass} border ${borderClass} rounded-xl aspect-square w-full h-auto ${cellMinH} flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative group cursor-default overflow-hidden p-1 md:p-1.5`}
+                                className={`${bgClass} border ${borderClass} rounded-popup aspect-square w-full h-auto ${cellMinH} flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative group cursor-default overflow-hidden p-1 md:p-1.5`}
                             >
                                 {/* Top Row: Solar & Lunar Date — ô hẹp (iPhone, chế độ gọn) thì ngày âm tự xuống dòng thay vì dính vào số
                                     ngày ("1910/9"). */}

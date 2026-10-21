@@ -55,10 +55,10 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
     });
 
     return (
-        <div className="p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 shadow-2xs space-y-3">
+        <div className="p-3 sm:p-3.5 rounded-card border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 shadow-2xs space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-2">
                 <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                    <div className="p-1.5 rounded-control bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                         <AppIcon name="qrCode" size="md" />
                     </div>
                     <div>
@@ -150,7 +150,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                     </div>
 
                     {/* Copy amount helper */}
-                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 space-y-1.5">
+                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-popup border border-emerald-200/80 dark:border-emerald-800/60 space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                             <div>
                                 <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Số tiền cần chuyển:</span>
@@ -191,10 +191,10 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                 </div>
 
                 {/* QR Display */}
-                <div className="flex flex-col items-center justify-center p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-center min-h-[220px]">
+                <div className="flex flex-col items-center justify-center p-3 bg-slate-50 dark:bg-slate-900/50 rounded-popup border border-slate-200/80 dark:border-slate-700/80 text-center min-h-[220px]">
                     {qrUrl ? (
                         <div className="space-y-2">
-                            <div className="p-2 bg-white rounded-xl shadow-xs border border-slate-200 inline-block">
+                            <div className="p-2 bg-white rounded-popup shadow-xs border border-slate-200 inline-block">
                                 <img
                                     src={qrUrl}
                                     alt="VietQR Chuyển Khoản Hoàn Thuế"

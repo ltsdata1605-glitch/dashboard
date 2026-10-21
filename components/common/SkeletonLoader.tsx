@@ -7,10 +7,10 @@ export const SkeletonPulse: React.FC<{ className?: string }> = ({ className = ''
 
 // Skeleton for a single KPI card
 const KpiCardSkeleton: React.FC = () => (
-    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 p-3.5 flex flex-col justify-between gap-2 overflow-hidden shadow-xs">
+    <div className="rounded-card border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 p-3.5 flex flex-col justify-between gap-2 overflow-hidden shadow-xs">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-                <div className="flex-shrink-0 w-7 h-7 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                <div className="flex-shrink-0 w-7 h-7 rounded-popup bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
                 <SkeletonPulse className="h-3.5 w-20" />
             </div>
             <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
@@ -45,8 +45,8 @@ export const ChartSkeleton: React.FC<{ height?: string }> = ({ height = 'h-[442p
                 <SkeletonPulse className="h-3 lg:h-4 w-52 lg:w-64" />
             </div>
             <div className="flex items-center gap-2">
-                <SkeletonPulse className="h-8 lg:h-9 w-20 lg:w-24 rounded-lg" />
-                <SkeletonPulse className="h-8 lg:h-9 w-28 lg:w-32 rounded-lg" />
+                <SkeletonPulse className="h-8 lg:h-9 w-20 lg:w-24 rounded-control" />
+                <SkeletonPulse className="h-8 lg:h-9 w-28 lg:w-32 rounded-control" />
             </div>
         </div>
         <div className="p-3 lg:p-6 flex-grow">
@@ -79,7 +79,7 @@ export const TableSkeleton: React.FC<{rows?: number}> = ({ rows = 5 }) => (
                 </div>
                 {/* Body */}
                 {Array.from({ length: rows }).map((_, i) => (
-                    <SkeletonPulse key={i} className="h-12 w-full rounded-lg" />
+                    <SkeletonPulse key={i} className="h-12 w-full rounded-control" />
                 ))}
             </div>
         </div>
@@ -110,7 +110,7 @@ export const TabbedTableSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) =
                  </div>
                  {/* Table Body */}
                 {Array.from({ length: rows }).map((_, i) => (
-                    <SkeletonPulse key={i} className="h-16 w-full rounded-xl" />
+                    <SkeletonPulse key={i} className="h-16 w-full rounded-popup" />
                 ))}
             </div>
         </div>

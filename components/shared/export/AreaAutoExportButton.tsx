@@ -199,7 +199,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                 }}
                 title={titleTooltip}
                 aria-label={titleTooltip}
-                className={`ycx-hit preserve-rounded relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-all duration-150 active:scale-[0.94] ${
+                className={`ycx-hit preserve-rounded relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-all duration-150 active:scale-[0.94] ${
                     isAnyActive
                         ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -224,7 +224,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                     </p>
 
                     {/* Card 1: Realtime (bcrt) */}
-                    <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
+                    <div className="p-3.5 rounded-popup border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
                         <div className="flex items-start justify-between gap-3">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -252,7 +252,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                 variant="unstyled"
                                 size="none"
                                 onClick={handleToggleRealtime}
-                                className={`h-8 px-3 rounded-lg text-[12px] font-bold border transition-colors shrink-0 ${
+                                className={`h-8 px-3 rounded-control text-[12px] font-bold border transition-colors shrink-0 ${
                                     setting.realtime
                                         ? 'bg-sky-600 border-sky-600 text-white shadow-xs'
                                         : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400'
@@ -330,7 +330,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                     </div>
 
                     {/* Card 2: Lũy kế (bclk) */}
-                    <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
+                    <div className="p-3.5 rounded-popup border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
                         <div className="flex items-start justify-between gap-3">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -358,7 +358,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                                 variant="unstyled"
                                 size="none"
                                 onClick={handleToggleLuyke}
-                                className={`h-8 px-3 rounded-lg text-[12px] font-bold border transition-colors shrink-0 ${
+                                className={`h-8 px-3 rounded-control text-[12px] font-bold border transition-colors shrink-0 ${
                                     setting.luyke
                                         ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
                                         : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400'
@@ -436,7 +436,7 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                     </div>
 
                     {/* Mẹo tra cứu từ nhóm LINE với lệnh động */}
-                    <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-[12px] text-amber-800 dark:text-amber-300 space-y-1">
+                    <div className="p-2.5 rounded-control bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-[12px] text-amber-800 dark:text-amber-300 space-y-1">
                         <p className="font-semibold flex items-center gap-1.5">
                             <AppIcon name="info" size="xs" />
                             <span>Mẹo tra cứu từ nhóm LINE:</span>

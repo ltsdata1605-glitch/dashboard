@@ -130,7 +130,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
 
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-2xl shadow-xs overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-card shadow-xs overflow-hidden">
                 {/* Sub-tabs row */}
                 <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/60 hide-on-export flex items-center justify-between gap-2">
                     <Tabs
@@ -174,7 +174,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
                                 variant="unstyled" size="none"
-                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded transition-all duration-150 active:scale-[0.94] disabled:opacity-40 shrink-0 ${
+                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded transition-all duration-150 active:scale-[0.94] disabled:opacity-40 shrink-0 ${
                                     isBatchExporting
                                         ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                                         : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -190,7 +190,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     onClick={onExport}
                                     disabled={isExporting}
                                     variant="unstyled" size="none"
-                                    className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded transition-all duration-150 active:scale-[0.94] disabled:opacity-40 shrink-0 ${
+                                    className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded transition-all duration-150 active:scale-[0.94] disabled:opacity-40 shrink-0 ${
                                         isExporting
                                             ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
                                             : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

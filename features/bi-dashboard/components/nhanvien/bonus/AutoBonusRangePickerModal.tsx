@@ -61,7 +61,7 @@ function fromApiInputValue(yyyymmdd: string): string {
     return `${m[3]}/${m[2]}/${m[1]}`;
 }
 
-const tabButtonClass = (active: boolean) => `px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+const tabButtonClass = (active: boolean) => `px-3 py-1.5 text-xs font-bold rounded-control transition-all ${
     active
         ? 'bg-sky-600 dark:bg-sky-700 text-white'
         : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -255,7 +255,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                 {activeTab === 'year' && (
                     <div className="space-y-3">
                         {canResume && resumeInfo && onResume && (
-                            <div className="p-3 bg-amber-50 dark:bg-amber-900/25 border border-amber-300 dark:border-amber-700/60 rounded-xl flex items-center justify-between gap-3">
+                            <div className="p-3 bg-amber-50 dark:bg-amber-900/25 border border-amber-300 dark:border-amber-700/60 rounded-popup flex items-center justify-between gap-3">
                                 <div className="space-y-0.5">
                                     <p className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-300"><AppIcon name="idea" size="sm" className="text-sky-600" />Có đợt chạy trước chưa hoàn tất:</p>
                                     <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">{resumeInfo.label}</p>
@@ -263,7 +263,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => { onResume(); onClose(); }}
-                                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex-shrink-0"
+                                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-control text-xs font-bold transition-all shadow-sm flex-shrink-0"
                                 >
                                     Tiếp tục ngay
                                 </Button>
@@ -277,7 +277,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                         key={y.year}
                                         variant="unstyled" size="none"
                                         onClick={() => setSelectedYear(y.year)}
-                                        className={`flex-1 px-3 py-2.5 rounded-lg border text-xs font-bold transition-all ${
+                                        className={`flex-1 px-3 py-2.5 rounded-control border text-xs font-bold transition-all ${
                                             selectedYear === y.year
                                                 ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400'
                                                 : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
@@ -334,7 +334,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                             <span className="text-xs text-slate-400 dark:text-slate-500 font-normal"> (T{lastItem.label.split('/')[0]} chỉ đến {lastItem.toDate})</span>
                                         )}
                                     </p>
-                                    <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-2.5">
+                                    <div className="rounded-control border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-2.5">
                                         <p className="flex items-start gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
                                             <AppIcon name="warning" size="sm" className="text-amber-600 mt-0.5 shrink-0" />
                                             <span>Sẽ chạy {yearPlan.length} tháng × {employeeCount} nhân viên ≈ {yearEstimate.totalRequests} lượt lấy dữ liệu,

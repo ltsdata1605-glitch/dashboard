@@ -24,9 +24,9 @@ export const getPercentBadge = (pct: number) => {
 
 export const getTraChamBadge = (pct: number, target: number = 45) => {
     if (isNaN(pct)) return 'text-slate-400';
-    if (pct >= target) return `${DATA_STATUS_COLORS.positive.tailwind} px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold`;
-    if (pct >= target - 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
-    return `${DATA_STATUS_COLORS.negative.tailwind} px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold`;
+    if (pct >= target) return `${DATA_STATUS_COLORS.positive.tailwind} px-1 sm:px-2 py-0.5 rounded-md sm:rounded-control font-bold`;
+    if (pct >= target - 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-control font-bold';
+    return `${DATA_STATUS_COLORS.negative.tailwind} px-1 sm:px-2 py-0.5 rounded-md sm:rounded-control font-bold`;
 };
 
 export const getHieuQuaBadge = (pct: number, target: number = 35) => {

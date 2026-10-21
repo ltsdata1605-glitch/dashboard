@@ -89,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
           </div>
 
           {/* Thưởng */}
-          <div className="text-right bg-slate-50/80 px-2 py-1 rounded-lg border border-slate-100">
+          <div className="text-right bg-slate-50/80 px-2 py-1 rounded-control border border-slate-100">
             <p className="text-xs sm:text-sm font-bold text-sky-600 leading-none tabular-nums">
               {formatCurrency(result.tongThuong)}
             </p>
@@ -126,7 +126,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 {result.selected ? <AppIcon name="checkboxOn" size="state" className="text-sky-600" /> : <AppIcon name="checkboxOff" size="state" />}
             </Button>
 
-            <div className="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200">
+            <div className="flex items-center bg-slate-100/90 rounded-popup p-0.5 border border-slate-200">
                 <Button
                     variant="ghost"
                     onClick={() => onQuantityChange(result.msp, -1)}
@@ -177,7 +177,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 variant="unstyled"
                 onClick={() => onDelete(result.msp)}
                 title="Xóa sản phẩm"
-                className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors active:scale-90"
+                className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors active:scale-90"
             >
                 <AppIcon name="delete" size="md" />
             </Button>
@@ -195,7 +195,7 @@ const Annotation: React.FC<{ number: number; className: string }> = ({ number, c
 );
 
 const InstructionsPanel = () => (
-  <div className="text-left p-8 bg-white rounded-2xl shadow-xl border-2 border-sky-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
+  <div className="text-left p-8 bg-white rounded-card shadow-xl border-2 border-sky-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
     <div className="flex items-center gap-4 mb-6">
         <div className="p-3 bg-sky-100 rounded-full">
             <AppIcon name="info" size="state" className="text-sky-600" />
@@ -233,7 +233,7 @@ const InstructionsPanel = () => (
             
             {/* Demo 1: Annotated Sticker */}
             <div className="relative flex-shrink-0 w-[280px] h-[170px]">
-                <div className="absolute top-2 left-2 w-64 h-40 bg-white border-2 border-black rounded-lg p-2 flex flex-col shadow-sm">
+                <div className="absolute top-2 left-2 w-64 h-40 bg-white border-2 border-black rounded-control p-2 flex flex-col shadow-sm">
                     <div className="w-full h-full border-t-2 border-l-2 border-r-2 border-b-8 border-black p-1.5 flex justify-between">
                         <div className="w-4">&nbsp;</div> {/* Ghost Bar */}
                         <div className="flex-grow flex flex-col justify-around text-center relative">
@@ -262,7 +262,7 @@ const InstructionsPanel = () => (
             </div>
 
             {/* Demo 2: Medium Sticker */}
-            <div className="flex-shrink-0 w-48 h-32 bg-white border-2 border-black rounded-lg p-1.5 flex flex-col shadow-sm mt-2">
+            <div className="flex-shrink-0 w-48 h-32 bg-white border-2 border-black rounded-control p-1.5 flex flex-col shadow-sm mt-2">
                 <div className="w-full h-full border-t border-l border-r border-b-4 border-black p-1.5 flex flex-col justify-around text-center">
                     <p className="text-xs font-bold leading-tight">NỒI CƠM ĐIỆN TỬ SHARP</p>
                     <div>
@@ -274,7 +274,7 @@ const InstructionsPanel = () => (
             </div>
 
             {/* Demo 3: Bill Printer Sticker */}
-             <div className="flex-shrink-0 w-32 h-48 bg-white border-2 border-black rounded-lg p-1.5 flex flex-col shadow-sm mt-2">
+             <div className="flex-shrink-0 w-32 h-48 bg-white border-2 border-black rounded-control p-1.5 flex flex-col shadow-sm mt-2">
                 <div className="w-full h-full border-t border-l border-r border-b-8 border-black p-1.5 flex flex-col justify-around text-center">
                     <p className="text-xs font-bold leading-tight">TAI NGHE BLUETOOTH SONY</p>
                      <div>
@@ -328,7 +328,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
                     <Button
                         variant="ghost"
                         onClick={() => setVisibleCount(prev => prev + 50)}
-                        className="px-6 py-2 rounded text-sm font-semibold gap-2"
+                        className="px-6 py-2 text-sm font-semibold gap-2"
                     >
                         Hiển thị thêm (còn {results.length - visibleCount} sản phẩm)
                     </Button>
@@ -339,7 +339,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
   }
   
   return (
-      <div className="flex items-center justify-center bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 shadow-sm lg:hover:shadow-md transition-shadow min-h-[400px]">
+      <div className="flex items-center justify-center bg-white rounded-none lg:rounded-card border-y lg:border border-slate-200 shadow-sm lg:hover:shadow-md transition-shadow min-h-[400px]">
           <EmptyState
               icon={<AppIcon name="search" size="hero" className="text-slate-400" />}
               title="Sẵn sàng tìm kiếm"

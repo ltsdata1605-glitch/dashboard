@@ -38,19 +38,19 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
     return (
         <div className="space-y-4">
             {/* Top Bar */}
-            <div className="p-4 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+            <div className="p-4 bg-white dark:bg-slate-800/80 rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
                 <div>
                     <h3 className="font-bold text-slate-800 dark:text-white text-sm">Thư Viện Từ Khoá Tự Động</h3>
                     <p className="text-xs text-slate-500">Tự động nhận diện câu hỏi thường gặp và phản hồi lập tức kèm ảnh.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 text-slate-500 rounded-xl" title="Làm mới">
+                    <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 text-slate-500 rounded-popup" title="Làm mới">
                         <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                     <Button
                         variant="primary"
                         onClick={handleCreateNew}
-                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm"
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-popup shadow-sm"
                     >
                         <AppIcon name="add" size="md" />
                         <span>Thêm Từ Khoá</span>
@@ -61,7 +61,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
             {/* List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {keywords.length === 0 ? (
-                    <div className="col-span-full p-12 text-center bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+                    <div className="col-span-full p-12 text-center bg-white dark:bg-slate-800/80 rounded-card border border-slate-200/80 dark:border-slate-700/80">
                         <AppIcon name="sparkles" size="state" className="mx-auto text-slate-300 mb-2" />
                         <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Chưa có từ khoá tự động nào</p>
                         <p className="text-xs text-slate-400 mt-1">Bấm "Thêm Từ Khoá" để thiết lập các câu trả lời tự động.</p>
@@ -70,14 +70,14 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                     keywords.map(kw => (
                         <div
                             key={kw.id}
-                            className={`p-4 rounded-2xl bg-white dark:bg-slate-800/80 border transition-all shadow-sm flex flex-col justify-between space-y-3 ${
+                            className={`p-4 rounded-card bg-white dark:bg-slate-800/80 border transition-all shadow-sm flex flex-col justify-between space-y-3 ${
                                 kw.active ? 'border-slate-200/80 dark:border-slate-700/80' : 'border-slate-200/40 opacity-60'
                             }`}
                         >
                             <div className="space-y-2">
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex flex-wrap items-center gap-1.5">
-                                        <span className="font-bold text-slate-900 dark:text-white text-sm bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">
+                                        <span className="font-bold text-slate-900 dark:text-white text-sm bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-control">
                                             "{kw.keyword}"
                                         </span>
                                         <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
@@ -109,7 +109,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={() => handleEdit(kw)}
-                                    className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+                                    className="p-1.5 text-slate-400 hover:text-slate-600 rounded-control"
                                     title="Chỉnh sửa"
                                 >
                                     <AppIcon name="edit" size="sm" />
@@ -117,7 +117,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={() => onDeleteKeyword(kw.id)}
-                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-control"
                                     title="Xoá"
                                 >
                                     <AppIcon name="delete" size="sm" />

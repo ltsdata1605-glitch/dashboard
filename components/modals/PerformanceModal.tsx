@@ -60,12 +60,12 @@ const MODAL_KPI_COLORS: Record<string, { top: string; iconBg: string; iconText: 
 const KpiCard: React.FC<{ icon: string, label: string, value: string, color: string, children?: React.ReactNode }> = ({ icon, label, value, color, children }) => {
     const c = MODAL_KPI_COLORS[color] || MODAL_KPI_COLORS.indigo;
     return (
-        <div className="flex-1 bg-white dark:bg-slate-900/95 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+        <div className="flex-1 bg-white dark:bg-slate-900/95 rounded-card border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
             <div className={`h-[3.5px] w-full shrink-0 ${c.top}`} />
             <div className="p-2 sm:p-2.5 flex flex-col justify-between flex-1 gap-1">
                 <div className="flex items-center justify-between gap-1 min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
-                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
+                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-popup flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
                             <AppIcon name={resolveIconName(icon) ?? 'help'} size="xs" />
                         </div>
                         <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title={label}>{label}</p>
@@ -324,7 +324,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 onClick={toggleAllCustomers}
                 title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
                 aria-label={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
-                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
             >
                 <AppIcon name={isAllCustomersExpanded ? 'collapseAll' : 'expandAll'} size="md" />
             </Button>
@@ -335,7 +335,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 disabled={isExporting}
                 title="Xuất Ảnh Phân Tích"
                 aria-label="Xuất Ảnh Phân Tích"
-                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 shrink-0"
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 shrink-0"
             >
                 <AppIcon name={isExporting ? 'loading' : 'exportImage'} size="md" spin={isExporting} />
             </Button>
@@ -398,7 +398,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             />
 
              {/* Customer Breakdown */}
-            <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-control sm:rounded-popup shadow p-3 sm:p-4">
                  <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center justify-between">
                     <span className="flex items-center gap-2">
                         <AppIcon name="contact" size="lg" className="text-sky-500" /> Chi Tiết Theo Khách Hàng
@@ -427,7 +427,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                         </div>
                                     )}
                         <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1 || isBatchExporting || isExporting || isAllCustomersExpanded}>
-                             <summary className="py-1.5 px-2 sm:px-3 cursor-pointer flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
+                             <summary className="py-1.5 px-2 sm:px-3 cursor-pointer flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 list-none bg-sky-50/80 hover:bg-sky-100/80 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 transition-colors rounded-r-control mb-1.5 mt-2 shadow-sm border-l-4 border-sky-400">
                                 <div className="flex items-center justify-between w-full sm:w-auto">
                                     <p className="font-extrabold text-[11px] sm:text-sm text-sky-950 dark:text-sky-100 pl-1 whitespace-nowrap">{customer.name.toUpperCase()}</p>
                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2 sm:hidden">

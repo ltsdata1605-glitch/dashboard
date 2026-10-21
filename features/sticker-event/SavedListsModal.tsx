@@ -132,7 +132,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                     ) : (
                         <div className="space-y-3">
                             {lists.map(list => (
-                                <div key={list.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-sky-300 transition-colors">
+                                <div key={list.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-popup border border-slate-200 hover:border-sky-300 transition-colors">
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-base font-semibold text-slate-800 truncate">{list.name}</h3>
                                         <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">

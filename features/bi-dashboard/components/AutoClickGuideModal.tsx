@@ -34,7 +34,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
             maxWidth="lg"
             title={
                 <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-gradient-to-tr from-sky-600 to-sky-500 text-white shadow-sm shadow-sky-500/30">
+                    <div className="p-2 rounded-popup bg-gradient-to-tr from-sky-600 to-sky-500 text-white shadow-sm shadow-sky-500/30">
                         <AppIcon name="quick" size="lg" />
                     </div>
                     <div>
@@ -62,7 +62,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                         variant="unstyled"
                         size="none"
                         onClick={onClose}
-                        className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+                        className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold rounded-control shadow-sm active:scale-95 transition-all"
                     >
                         Đã hiểu & Đóng
                     </Button>
@@ -71,7 +71,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
         >
             <div className="space-y-4 py-1 text-slate-700 dark:text-slate-200">
                 {/* LỢI ÍCH TÍNH NĂNG */}
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-sky-50/80 via-sky-50/50 to-sky-50/50 dark:from-sky-950/20 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/60 dark:border-sky-800/40">
+                <div className="p-3.5 rounded-popup bg-gradient-to-r from-sky-50/80 via-sky-50/50 to-sky-50/50 dark:from-sky-950/20 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/60 dark:border-sky-800/40">
                     <div className="flex items-start gap-2.5">
                         <AppIcon name="sparkles" size="md" className="text-sky-600 mt-0.5" />
                         <div className="text-xs space-y-1">
@@ -86,7 +86,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                 </div>
 
                 {/* CÁCH 1: KÉO THẢ DẤU TRANG (KHUYÊN DÙNG) */}
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700/80 overflow-hidden bg-white dark:bg-slate-900/50 shadow-xs">
+                <div className="rounded-popup border border-slate-200 dark:border-slate-700/80 overflow-hidden bg-white dark:bg-slate-900/50 shadow-xs">
                     <div className="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-black">1</span>
@@ -101,7 +101,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                         {/* VÙNG KÉO THẢ TRỰC TIẾP */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {/* NÚT 1: COPY ALL (TỰ MỞ [+] & SAO CHÉP) */}
-                            <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-xl border-2 border-dashed border-sky-300 dark:border-sky-700">
+                            <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-popup border-2 border-dashed border-sky-300 dark:border-sky-700">
                                 <div>
                                     <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
                                         <AppIcon name="sparkles" size="sm" className="text-sky-600" />
@@ -118,7 +118,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                         e.preventDefault();
                                         toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: <AppIcon name="click" size="md" className="text-sky-600" />, duration: 4000 });
                                     }}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs rounded-control shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
                                     <AppIcon name="sparkles" size="md" className="text-sky-100" />
@@ -127,7 +127,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             </div>
 
                             {/* NÚT 2: COPY ALL THUẦN TUÝ */}
-                            <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-xl border-2 border-dashed border-sky-300 dark:border-sky-700">
+                            <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-popup border-2 border-dashed border-sky-300 dark:border-sky-700">
                                 <div>
                                     <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
                                         <AppIcon name="copy" size="sm" className="text-sky-600" />
@@ -144,7 +144,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                         e.preventDefault();
                                         toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: <AppIcon name="click" size="md" className="text-sky-600" />, duration: 4000 });
                                     }}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-500 hover:to-sky-500 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-500 hover:to-sky-500 text-white font-bold text-xs rounded-control shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
                                     <AppIcon name="copy" size="md" className="text-sky-100" />
@@ -155,7 +155,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
 
                         {/* CÁC BƯỚC SỬ DỤNG */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                            <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-control border border-slate-100 dark:border-slate-800">
                                 <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
                                     <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-center font-bold">1</span>
                                     Mở Báo cáo MWG
@@ -165,7 +165,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 </p>
                             </div>
 
-                            <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-control border border-slate-100 dark:border-slate-800">
                                 <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
                                     <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-center font-bold">2</span>
                                     Bấm Auto Click+ hoặc CopyAll
@@ -175,7 +175,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 </p>
                             </div>
 
-                            <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-control border border-slate-100 dark:border-slate-800">
                                 <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
                                     <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-center font-bold">3</span>
                                     Dán vào Dashboard
@@ -191,7 +191,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                 {/* CÁCH 2 & 3: TÙY CHỌN BỔ SUNG */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     {/* SAO CHÉP MÃ CODE */}
-                    <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2">
+                    <div className="p-3 rounded-popup border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2">
                         <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
                             <AppIcon name="copy" size="sm" className="text-sky-500" />
                             <span>Sao chép mã Bookmarklet thủ công</span>
@@ -204,7 +204,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 variant="unstyled"
                                 size="none"
                                 onClick={() => handleCopyCode(AUTO_CLICK_BOOKMARKLET_CODE, 'autoclick', 'Copy All')}
-                                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-lg border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
+                                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-control border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
                             >
                                 {copiedKey === 'autoclick' ? <AppIcon name="check" size="sm" className="text-sky-600" /> : <AppIcon name="sparkles" size="sm" />}
                                 <span>{copiedKey === 'autoclick' ? 'Đã sao chép Copy All!' : 'Sao chép mã Copy All (Có mở [+])'}</span>
@@ -213,7 +213,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 variant="unstyled"
                                 size="none"
                                 onClick={() => handleCopyCode(COPY_ALL_BOOKMARKLET_CODE, 'copyall', 'CopyAll')}
-                                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-lg border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
+                                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-control border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
                             >
                                 {copiedKey === 'copyall' ? <AppIcon name="check" size="sm" className="text-emerald-600" /> : <AppIcon name="copy" size="sm" />}
                                 <span>{copiedKey === 'copyall' ? 'Đã sao chép CopyAll!' : 'Sao chép mã CopyAll (Thuần túy)'}</span>
@@ -222,7 +222,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                     </div>
 
                     {/* TAMPERMONKEY EXTENSION */}
-                    <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2 flex flex-col justify-between">
+                    <div className="p-3 rounded-popup border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2 flex flex-col justify-between">
                         <div>
                             <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
                                 <AppIcon name="click" size="sm" className="text-slate-500" />
@@ -236,7 +236,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             href="/scripts/mwg-auto-thu-thap-diem-thuong.user.js"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 dark:bg-slate-950/60 dark:hover:bg-slate-900/60 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold active:scale-95 transition-all no-underline"
+                            className="w-full flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 dark:bg-slate-950/60 dark:hover:bg-slate-900/60 dark:text-slate-300 rounded-control border border-slate-200 dark:border-slate-800 text-xs font-semibold active:scale-95 transition-all no-underline"
                         >
                             <AppIcon name="externalLink" size="sm" />
                             <span>Cài đặt / Cập nhật Userscript (bản mới nhất)</span>

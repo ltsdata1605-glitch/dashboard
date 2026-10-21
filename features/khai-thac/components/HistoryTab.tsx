@@ -66,19 +66,19 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                     right={
                         <>
                             <Input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} aria-label="Lọc theo ngày" fullWidth={false}
-                                className="h-6 rounded px-1.5 text-[12px] w-[130px]" />
+                                className="h-6 px-1.5 text-[12px] w-[130px]" />
                             <Input placeholder="Tìm NV, doanh thu, ghi chú…" value={search} onChange={e => setSearch(e.target.value)} aria-label="Tìm trong nhật ký" fullWidth={false}
-                                className="h-6 rounded px-2 text-[12px] w-56 hidden sm:block" />
+                                className="h-6 px-2 text-[12px] w-56 hidden sm:block" />
                             {(dateFilter || search) && (
-                                <Button variant="secondary" size="sm" className="h-6 px-2 rounded text-[11px]" onClick={() => { setDateFilter(''); setSearch(''); }}>Xoá lọc</Button>
+                                <Button variant="secondary" size="sm" className="h-6 px-2 text-[11px]" onClick={() => { setDateFilter(''); setSearch(''); }}>Xoá lọc</Button>
                             )}
                         </>
                     }
                 />
                 {reports.length === 0 ? (
                     <div className="relative group m-2">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-xl blur-lg opacity-40 group-hover:opacity-80 transition duration-700 pointer-events-none"></div>
-                        <div className="relative bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 px-4 py-10 text-center">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-popup blur-lg opacity-40 group-hover:opacity-80 transition duration-700 pointer-events-none"></div>
+                        <div className="relative bg-white/90 backdrop-blur-md rounded-control border border-slate-200 px-4 py-10 text-center">
                             <p className="text-[13px] text-slate-500">Chưa có đơn hàng nào được ghi nhận. Bấm <b className="text-sky-600">Báo cáo</b> ở tab Nhập báo cáo.</p>
                         </div>
                     </div>
@@ -161,7 +161,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                     <p className="text-[12px] font-bold text-rose-700 uppercase tracking-wider">Xoá toàn bộ dữ liệu</p>
                     <p className="text-[12px] text-rose-700/80">Xoá nháp, nhật ký đơn hàng, khách hàng và mục tuỳ chỉnh trên máy này.</p>
                 </div>
-                <Button variant="danger" size="sm" className="rounded" onClick={() => setConfirmClear(true)}>Xoá hết</Button>
+                <Button variant="danger" size="sm" onClick={() => setConfirmClear(true)}>Xoá hết</Button>
             </section>
 
             <ConfirmDialog

@@ -349,7 +349,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                             type="button"
                             onClick={handleExportTemplate}
                             disabled={isExportingTemplate}
-                            className="ycx-hit px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] disabled:opacity-50"
+                            className="ycx-hit px-3 py-1.5 text-xs font-semibold rounded-control border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] disabled:opacity-50"
                             title="Tải file Excel mẫu (.xlsx) chuẩn để soạn danh sách mã PMH"
                         >
                             <AppIcon name="download" size="xs" className="text-emerald-600 dark:text-emerald-400" />
@@ -358,7 +358,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
 
                         {/* Nút 2: Nhập từ File Excel */}
                         <label
-                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-control border border-emerald-300 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] ${
                                 isReadingExcel ? 'opacity-50 pointer-events-none' : ''
                             }`}
                             title="Chọn file Excel (.xlsx, .xls, .csv) để nạp trực tiếp danh sách mã"
@@ -381,7 +381,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                         <>
                             {/* Widget Chọn Ngày Hết Hạn */}
                             <div className="flex items-center gap-2 flex-wrap">
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-emerald-500/50 transition-colors">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-emerald-500/50 transition-colors">
                                     <AppIcon name="calendar" size="md" className="text-emerald-600" />
                                     <label htmlFor="import-expiry-date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none whitespace-nowrap">
                                         Hạn dùng:
@@ -421,14 +421,14 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                             </div>
 
                             <div className="flex items-center justify-end gap-2 shrink-0">
-                                <Button variant="ghost" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
+                                <Button variant="ghost" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-control">
                                     Huỷ
                                 </Button>
                                 <Button
                                     variant="primary"
                                     onClick={handleConfirmImport}
                                     disabled={isSubmitting || parsedItems.length === 0}
-                                    className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all"
+                                    className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-control disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all"
                                 >
                                     {isSubmitting ? 'Đang nạp...' : `Xác nhận nạp (${parsedItems.length})`}
                                 </Button>
@@ -440,7 +440,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                 Đang hiển thị <strong className="text-slate-800 dark:text-white">{importBatches.length}</strong> đợt nạp trong kho
                             </div>
                             <div className="flex items-center justify-end gap-2">
-                                <Button variant="secondary" onClick={onClose} className="px-5 py-2 text-xs font-bold rounded-lg">
+                                <Button variant="secondary" onClick={onClose} className="px-5 py-2 text-xs font-bold rounded-control">
                                     Đóng
                                 </Button>
                             </div>
@@ -451,13 +451,13 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         >
                 <div className="space-y-4">
                     {/* Tab Navigation: Dán mã vs Lịch sử các lần nạp */}
-                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-popup">
                         <Button
                             variant="unstyled"
                             size="none"
                             type="button"
                             onClick={() => setMode('paste')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                            className={`flex-1 py-2 text-xs font-bold rounded-control transition-all flex items-center justify-center gap-2 ${
                                 mode === 'paste'
                                     ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -471,7 +471,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                             size="none"
                             type="button"
                             onClick={() => setMode('history')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                            className={`flex-1 py-2 text-xs font-bold rounded-control transition-all flex items-center justify-center gap-2 ${
                                 mode === 'history'
                                     ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -498,7 +498,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             key={t}
                                             type="button"
                                             onClick={() => handleTypeChange(t)}
-                                            className={`min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                                            className={`min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-semibold rounded-control border transition-all ${
                                                 selectedType === t
                                                     ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-bold'
                                                     : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
@@ -520,7 +520,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             }
                                         }}
                                         placeholder="Nhập tên loại (ví dụ: PMH 50K, PMH Tri Ân)..."
-                                        className="h-auto mt-2 p-2 bg-slate-50 border-slate-200 rounded-lg text-xs focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                                        className="h-auto mt-2 p-2 bg-slate-50 border-slate-200 rounded-control text-xs focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                                     />
                                 )}
                             </div>
@@ -537,7 +537,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             autoParseText(text, effectiveType);
                                         }}
                                         placeholder={`Dán danh sách mã vào đây (Hệ thống sẽ TỰ ĐỘNG TRÍCH XUẤT NGAY sau khi dán):\nNgày 18/09/2026 : Mã Phiếu mua hàng 1 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: CG5BBSGXJ9\nNgày 18/09/2026 : Mã Phiếu mua hàng 2 - dùng cho Bếp gas đôi Sunhouse SHB3105MD: 4P1DXFTUM8`}
-                                        className="min-h-0 p-3 bg-slate-50 border-slate-200 rounded-xl text-xs font-mono focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                                        className="min-h-0 p-3 bg-slate-50 border-slate-200 rounded-popup text-xs font-mono focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                                     />
                                     {pasteText && (
                                         <Button
@@ -577,7 +577,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                         )}
                                     </div>
 
-                                    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-2xs">
+                                    <div className="border border-slate-200 dark:border-slate-700 rounded-popup overflow-hidden shadow-2xs">
                                         <table className="w-full text-left text-xs border-collapse">
                                             <thead>
                                                 <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-500">
@@ -626,7 +626,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                                 size="none"
                                                                 type="button"
                                                                 onClick={() => handleRemoveProductGroup(g.productName)}
-                                                                className="ycx-hit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                                                                className="ycx-hit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-control transition-colors"
                                                                 title={`Xoá toàn bộ ${g.count} mã của sản phẩm này`}
                                                             >
                                                                 <AppIcon name="delete" size="sm" />
@@ -646,9 +646,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                     {mode === 'history' && (
                         <div className="space-y-4 animate-in fade-in duration-150">
                             {/* Summary banner */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-popup border border-slate-200/80 dark:border-slate-700/80">
                                 <div className="flex items-center gap-2.5">
-                                    <div className="p-2 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-lg">
+                                    <div className="p-2 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-control">
                                         <AppIcon name="layers" size="md" />
                                     </div>
                                     <div>
@@ -660,7 +660,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/40 shrink-0 text-center">
+                                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-control border border-emerald-200 dark:border-emerald-800/40 shrink-0 text-center">
                                     {importBatches.reduce((sum, b) => sum + b.total, 0)} mã tổng cộng
                                 </div>
                             </div>
@@ -680,7 +680,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                         <div
                                             key={batch.id}
                                             onClick={() => setBatchToEdit(batch)}
-                                            className="p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-600/70 rounded-xl shadow-2xs hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
+                                            className="p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-600/70 rounded-popup shadow-2xs hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
                                             title="Chạm vào để sửa tên model, loại PMH, hạn dùng hoặc khôi phục mã"
                                         >
                                             <div className="space-y-1.5 flex-1 min-w-0">
@@ -742,7 +742,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                     size="none"
                                                     type="button"
                                                     onClick={() => setBatchToEdit(batch)}
-                                                    className="ycx-hit px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                                                    className="ycx-hit px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-popup transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
                                                     title="Chỉnh sửa tên sản phẩm, loại PMH, hạn dùng hoặc khôi phục mã"
                                                 >
                                                     <AppIcon name="edit" size="sm" />
@@ -752,7 +752,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                     variant="danger"
                                                     onClick={() => setBatchToDelete(batch)}
                                                     disabled={deletingBatchId === batch.id}
-                                                    className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                                                    className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-popup transition-all flex items-center gap-1.5 cursor-pointer"
                                                     title="Xoá toàn bộ mã thuộc đợt nạp này"
                                                 >
                                                     {deletingBatchId === batch.id ? (
@@ -802,7 +802,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
             message={batchToDelete ? (
                 <div className="space-y-2 text-left">
                     <p className="text-xs text-slate-500">Hành động này không thể hoàn tác</p>
-                    <div className="p-3 bg-rose-50/60 rounded-xl border border-rose-100 text-xs space-y-1.5 text-slate-700">
+                    <div className="p-3 bg-rose-50/60 rounded-popup border border-rose-100 text-xs space-y-1.5 text-slate-700">
                             <div>• Đợt nạp: <strong>{new Date(batchToDelete.importedAt).toLocaleString('vi-VN')}</strong></div>
                             <div>• Số lượng mã: <strong className="text-rose-600 font-bold">{batchToDelete.total} mã</strong> ({batchToDelete.unused} khả dụng, {batchToDelete.sent} đã phát)</div>
                             <div>• Sản phẩm: <strong>{batchToDelete.productSummary}</strong></div>

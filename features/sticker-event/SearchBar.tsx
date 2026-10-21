@@ -47,7 +47,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       <div className="relative w-full">
         {/* Input container */}
-        <div className={`relative flex items-center bg-white dark:bg-slate-800 rounded-xl sm:rounded-lg border transition-all ${
+        <div className={`relative flex items-center bg-white dark:bg-slate-800 rounded-popup sm:rounded-control border transition-all ${
           compact
             ? 'border-slate-200 dark:border-slate-700 h-8 sm:h-8.5 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500'
             : isMobile 
@@ -107,7 +107,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
         {/* Dropdown Gợi ý kết quả */}
         {(suggestions.length > 0 || showNoResults) && (
-          <ul className={`absolute z-50 w-full min-w-[280px] sm:min-w-[340px] left-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-64 sm:max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 animate-in fade-in slide-in-from-top-1 duration-150`}>
+          <ul className={`absolute z-50 w-full min-w-[280px] sm:min-w-[340px] left-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup shadow-xl max-h-64 sm:max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700 animate-in fade-in slide-in-from-top-1 duration-150`}>
             {suggestions.map((suggestion) => (
               <li
                 key={suggestion.msp}

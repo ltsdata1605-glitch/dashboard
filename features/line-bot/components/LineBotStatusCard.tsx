@@ -26,14 +26,14 @@ export const LineBotStatusCard: React.FC<LineBotStatusCardProps> = ({
     onVerifyToken
 }) => {
     return (
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+        <div className="p-5 rounded-card bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <div className="relative">
                         {botInfo?.pictureUrl ? (
-                            <img src={botInfo.pictureUrl} alt="Bot Avatar" className="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-500/40 shadow-sm" />
+                            <img src={botInfo.pictureUrl} alt="Bot Avatar" className="w-14 h-14 rounded-card object-cover border-2 border-emerald-500/40 shadow-sm" />
                         ) : (
-                            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
+                            <div className="w-14 h-14 rounded-card bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
                                 <AppIcon name="bot" size="state" />
                             </div>
                         )}

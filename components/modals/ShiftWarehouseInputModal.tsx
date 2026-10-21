@@ -105,8 +105,8 @@ export const ShiftWarehouseInputModal: React.FC<ShiftWarehouseInputModalProps> =
         >
             <div className="space-y-4 text-xs sm:text-sm">
                 {/* File info card */}
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
+                <div className="p-3 rounded-popup bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-control bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <AppIcon name="cloudUpload" size="md" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -144,7 +144,7 @@ export const ShiftWarehouseInputModal: React.FC<ShiftWarehouseInputModalProps> =
                 </div>
 
                 {/* Ghi chú định danh & đồng bộ */}
-                <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-[11px] sm:text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                <div className="p-3 rounded-popup bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-[11px] sm:text-xs text-amber-800 dark:text-amber-300 space-y-1">
                     <div className="font-bold flex items-center gap-1">
                         <AppIcon name="help" size="xs" className="text-amber-600" />
                         Mục đích định danh mã kho:

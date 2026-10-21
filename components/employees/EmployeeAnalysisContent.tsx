@@ -260,10 +260,10 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                                     ]}
                                     title={`Tùy chọn ${customTab.name}`}
                                     label="Tùy chọn Tab"
-                                    triggerClassName="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    triggerClassName="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                 />
                                 <div className="h-4 sm:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
-                                <Button variant="unstyled" size="none" onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all disabled:opacity-40">
+                                <Button variant="unstyled" size="none" onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all disabled:opacity-40">
                                     {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
                                 </Button>
                             </div>

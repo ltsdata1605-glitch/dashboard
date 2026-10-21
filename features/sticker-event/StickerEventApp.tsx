@@ -644,7 +644,7 @@ export default function App(): React.JSX.Element {
                   (() => {
                     const isQuota = /hạn mức|Quota/i.test(error);
                     return (
-                      <div className={`${isQuota ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-rose-50 border-rose-200 text-rose-700'} border p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4`} role="alert">
+                      <div className={`${isQuota ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-rose-50 border-rose-200 text-rose-700'} border p-4 rounded-popup flex flex-col sm:flex-row items-center justify-between gap-4`} role="alert">
                         <div className="flex items-center gap-3">
                             <AppIcon name="warning" size="lg" className={isQuota ? 'text-amber-500' : 'text-rose-500'} />
                             <p className="text-sm font-medium">{error}</p>
@@ -730,7 +730,7 @@ export default function App(): React.JSX.Element {
         {/* ───────── FLOATING PRINT ACTION BAR TRÊN MOBILE (KHI Ở TAB HOME VÀ CÓ CHỌN SẢN PHẨM) ───────── */}
         {isMobile && activeTab === 'home' && selectedCount > 0 && (
           <div 
-            className="fixed left-2 right-2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-xl border border-slate-700/60 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="fixed left-2 right-2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-card shadow-xl border border-slate-700/60 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200"
             style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 8px)' }}
           >
             <div className="flex items-center gap-2.5 min-w-0">
@@ -756,7 +756,7 @@ export default function App(): React.JSX.Element {
 
             <Button
               onClick={handlePrintSelected}
-              className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-sky-500/30 active:scale-95 transition-all shrink-0 border-0 cursor-pointer"
+              className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black text-xs px-4 py-2.5 rounded-popup flex items-center gap-1.5 shadow-md shadow-sky-500/30 active:scale-95 transition-all shrink-0 border-0 cursor-pointer"
             >
               <AppIcon name="print" size="md" />
               <span>IN NGAY ({selectedCount})</span>

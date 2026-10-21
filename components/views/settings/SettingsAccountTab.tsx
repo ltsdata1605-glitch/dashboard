@@ -185,7 +185,7 @@ export const SettingsAccountTab: React.FC = () => {
                     <div className={`flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
                         <div className="flex items-start gap-3 sm:gap-5 flex-1 min-w-0">
                             {/* Avatar */}
-                            <div className="w-12 h-12 sm:w-20 sm:h-20 overflow-hidden shadow-xs bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
+                            <div className="w-12 h-12 sm:w-20 sm:h-20 overflow-hidden shadow-xs bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-popup">
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
@@ -292,7 +292,7 @@ export const SettingsAccountTab: React.FC = () => {
 
                     {/* Editing Form */}
                     {isEditingProfile && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-sky-100 dark:border-sky-900/50 rounded-lg mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-sky-100 dark:border-sky-900/50 rounded-control mb-6">
                             <div className="flex flex-col gap-2">
                                 <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><AppIcon name="location" size="sm" /> {isSuperAdmin ? 'KHO DÙNG CHUNG (thêm vào quyền Super Admin)' : 'MÃ KHO ĐĂNG KÝ'}</label>
                                 <input

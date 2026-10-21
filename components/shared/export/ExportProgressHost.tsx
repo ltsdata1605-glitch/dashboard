@@ -47,7 +47,7 @@ function Panel({ s }: { s: ExportJobState }) {
             id="export-overlay"
             className="z-[999990] flex items-center justify-center bg-slate-950/25 dark:bg-black/40 backdrop-blur-[3px] p-4 transition-all duration-300"
         >
-            <div className="relative w-full max-w-[340px] sm:max-w-[360px] rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.14),0_6px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-4.5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-[340px] sm:max-w-[360px] rounded-card bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.14),0_6px_16px_rgba(0,0,0,0.06)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)] border border-slate-200/80 dark:border-slate-800/80 p-4 sm:p-4.5 animate-in fade-in zoom-in-95 duration-200">
                 {/* Nút đóng nhanh (Quick Close ✕) */}
                 <Button
                     type="button"
@@ -106,7 +106,7 @@ function Panel({ s }: { s: ExportJobState }) {
 
                 {/* Danh sách mục lỗi (nếu có) */}
                 {xong && failed.length > 0 && (
-                    <div className="mt-2.5 max-h-24 overflow-y-auto rounded-xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/40 p-2 text-[11px] text-rose-700 dark:text-rose-300 space-y-0.5" data-testid="export-progress-failed">
+                    <div className="mt-2.5 max-h-24 overflow-y-auto rounded-popup bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/40 p-2 text-[11px] text-rose-700 dark:text-rose-300 space-y-0.5" data-testid="export-progress-failed">
                         {failed.map((f, i) => (
                             <div key={i} className="truncate font-medium">
                                 • {f.label}{f.error ? ` — ${f.error}` : ''}

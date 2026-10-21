@@ -77,9 +77,9 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
     return (
         <div ref={containerRef} className="space-y-4">
             {/* Header Title & Export Button */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between p-3.5 rounded-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-sky-600 text-white flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-popup bg-gradient-to-tr from-sky-500 to-sky-600 text-white flex items-center justify-center">
                         <AppIcon name="quick" size="xs" />
                     </div>
                     <div>
@@ -110,7 +110,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
             {/* Head-to-Head Cards */}
             <div className="grid grid-cols-2 gap-3">
                 {/* Store 1 Card */}
-                <div className="p-3.5 rounded-2xl border border-sky-200 dark:border-sky-900/60 bg-gradient-to-br from-sky-50/70 to-white dark:from-sky-950/30 dark:to-slate-900 shadow-xs space-y-2">
+                <div className="p-3.5 rounded-card border border-sky-200 dark:border-sky-900/60 bg-gradient-to-br from-sky-50/70 to-white dark:from-sky-950/30 dark:to-slate-900 shadow-xs space-y-2">
                     <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-sky-500 text-white">
                             {code1}
@@ -142,7 +142,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
                 </div>
 
                 {/* Store 2 Card */}
-                <div className="p-3.5 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-gradient-to-br from-amber-50/70 to-white dark:from-amber-950/30 dark:to-slate-900 shadow-xs space-y-2">
+                <div className="p-3.5 rounded-card border border-amber-200 dark:border-amber-900/60 bg-gradient-to-br from-amber-50/70 to-white dark:from-amber-950/30 dark:to-slate-900 shadow-xs space-y-2">
                     <div className="flex items-center gap-2">
                         <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-600 text-white">
                             {code2}
@@ -175,7 +175,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
             </div>
 
             {/* Quick Strengths Top 3 */}
-            <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+            <div className="p-4 rounded-card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                     <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200">
                         Top 3 Nhóm Thưởng Cao Nhất
@@ -193,7 +193,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                     {/* Store 1 Top 3 */}
-                    <div className="p-2.5 rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/30 space-y-1">
+                    <div className="p-2.5 rounded-popup bg-sky-50/50 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/30 space-y-1">
                         <p className="font-bold text-sky-800 dark:text-sky-300 text-[11px] truncate mb-1">
                             {name1}
                         </p>
@@ -208,7 +208,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
                     </div>
 
                     {/* Store 2 Top 3 */}
-                    <div className="p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 space-y-1">
+                    <div className="p-2.5 rounded-popup bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 space-y-1">
                         <p className="font-bold text-amber-800 dark:text-amber-300 text-[11px] truncate mb-1">
                             {name2}
                         </p>
@@ -225,7 +225,7 @@ export const CheckThuongComparisonView: React.FC<CheckThuongComparisonViewProps>
             </div>
 
             {/* Detailed Table */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+            <div className="rounded-card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
                 <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200">
                         Chi Tiết Ngành Hàng

@@ -127,7 +127,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
     }
 
     return (
-        <div className="industry-kpi-container mb-3 bg-white/80 dark:bg-slate-900/40 backdrop-blur-xs p-1.5 sm:p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs">
+        <div className="industry-kpi-container mb-3 bg-white/80 dark:bg-slate-900/40 backdrop-blur-xs p-1.5 sm:p-3 rounded-card border border-slate-200/90 dark:border-slate-800 shadow-2xs">
             {/* Header bar of KPI Section */}
             <div className="industry-kpi-header flex items-center justify-between gap-1 sm:gap-1.5 mb-2 pb-2 border-b border-slate-100 dark:border-slate-800 flex-wrap hide-on-export no-print">
                 <div className="flex items-center gap-1 sm:gap-1.5">
@@ -163,7 +163,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={handleResetDefault}
-                        className="ycx-hit h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+                        className="ycx-hit h-7 w-7 sm:h-8 sm:w-8 rounded-control flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
                         title="Khôi phục 12 thẻ mặc định"
                         aria-label="Khôi phục 12 thẻ mặc định"
                     >
@@ -174,7 +174,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsAddModalOpen(true)}
-                        className="ycx-hit h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95"
+                        className="ycx-hit h-7 w-7 sm:h-8 sm:w-8 rounded-control flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95"
                         title="Tạo / Thêm thẻ KPI"
                         aria-label="Tạo / Thêm thẻ KPI"
                     >

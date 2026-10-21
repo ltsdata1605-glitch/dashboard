@@ -32,7 +32,7 @@ const TONE_ON: Record<'sky' | 'rose' | 'emerald', { btn: string; box: string }> 
 
 const ToggleButton: React.FC<{ on: boolean; onClick: () => void; icon: React.ReactNode; label: string; tone: 'sky' | 'rose' | 'emerald' }> = ({ on, onClick, icon, label, tone }) => (
     <Button variant="secondary" size="sm" onClick={onClick} aria-pressed={on}
-        className={`rounded h-9 lg:h-8 gap-1.5 ${on ? TONE_ON[tone].btn : ''}`}>
+        className={`h-9 lg:h-8 gap-1.5 ${on ? TONE_ON[tone].btn : ''}`}>
         <span className={`flex h-4 w-4 items-center justify-center border rounded-sm ${on ? TONE_ON[tone].box : 'border-slate-300 bg-white'}`}>
             {on && <AppIcon name="check" size="xs" />}
         </span>
@@ -55,10 +55,10 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
     // Nút hành động vẽ 2 lần (cột phải desktop / cuối trang mobile) — test id khác nhau để test bấm đúng nút đang hiện.
     const renderActions = (where: 'desktop' | 'mobile') => (
         <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" onClick={onReset} leftIcon={<AppIcon name="reset" size="md" />} className="rounded h-11 lg:h-9 text-rose-700 border-rose-200 hover:bg-rose-50">
+            <Button variant="secondary" onClick={onReset} leftIcon={<AppIcon name="reset" size="md" />} className="h-11 lg:h-9 text-rose-700 border-rose-200 hover:bg-rose-50">
                 Làm mới
             </Button>
-            <Button variant="primary" onClick={onSubmit} isLoading={isSaving} leftIcon={<AppIcon name="copy" size="md" />} className="rounded h-11 lg:h-9" data-testid={`btn-submit-report-${where}`}>
+            <Button variant="primary" onClick={onSubmit} isLoading={isSaving} leftIcon={<AppIcon name="copy" size="md" />} className="h-11 lg:h-9" data-testid={`btn-submit-report-${where}`}>
                 Báo cáo
             </Button>
         </div>
@@ -88,7 +88,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                                 onChange={e => onPatch({ revenueTotal: sanitizeExpressionInput(e.target.value) })}
                                 onBlur={commitRevenue}
                                 onKeyDown={e => { if (e.key === 'Enter') commitRevenue(); }}
-                                className="h-9 rounded text-[15px] tabular-nums font-semibold" />
+                                className="h-9 text-[15px] tabular-nums font-semibold" />
                             {isExpression && (
                                 <span className={`shrink-0 text-[15px] font-semibold tabular-nums ${evaluated !== null ? 'text-sky-700' : 'text-slate-300'}`} data-testid="revenue-eval">
                                     = {evaluated !== null ? fmtTr(evaluated) : '…'}

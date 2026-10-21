@@ -44,7 +44,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
     >
         <div className="space-y-3.5">
             {/* Đợt 1 */}
-            <div className="p-3 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-sky-50/50 dark:bg-sky-950/20">
+            <div className="p-3 rounded-popup border border-sky-200 dark:border-sky-800/60 bg-sky-50/50 dark:bg-sky-950/20">
                 <div className="flex items-center justify-between gap-2 mb-2">
                     <h4 className="text-xs font-bold text-sky-800 dark:text-sky-300">1. Lương ngày 5</h4>
                     <a
@@ -74,7 +74,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
             </div>
 
             {/* Đợt 2 */}
-            <div className="p-3 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-sky-50/50 dark:bg-sky-950/20">
+            <div className="p-3 rounded-popup border border-sky-200 dark:border-sky-800/60 bg-sky-50/50 dark:bg-sky-950/20">
                 <div className="flex items-center justify-between gap-2 mb-2">
                     <h4 className="text-xs font-bold text-sky-800 dark:text-sky-300">2. Thưởng ngày 20</h4>
                     <a
@@ -105,7 +105,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
             </div>
 
             {/* Lưu ý */}
-            <div className="p-3 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/20 space-y-1.5">
+            <div className="p-3 rounded-popup border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/20 space-y-1.5">
                 <h4 className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
                     <AppIcon name="keyboard" size="sm" />
                     Lưu ý

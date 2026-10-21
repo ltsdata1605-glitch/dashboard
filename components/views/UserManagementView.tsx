@@ -1091,7 +1091,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 {extendingUser && (
                     <div className="space-y-4 py-1">
                         {/* User Summary Card */}
-                        <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-popup border border-slate-200 dark:border-slate-700 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-sm shrink-0">
                                 {extendingUser.employeeName?.charAt(0) || extendingUser.displayName?.charAt(0) || 'U'}
                             </div>
@@ -1128,7 +1128,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         variant="unstyled"
                                         size="none"
                                         onClick={() => handleQuickPreset(p.days)}
-                                        className={`min-h-11 sm:min-h-0 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                                        className={`min-h-11 sm:min-h-0 py-1.5 text-xs font-semibold rounded-control border transition-all ${
                                             !isUnlimited && extendDays === p.days
                                                 ? 'bg-sky-600 text-white border-sky-600 shadow-sm font-bold'
                                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300 hover:bg-sky-50 dark:hover:bg-slate-700'
@@ -1143,7 +1143,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     variant="unstyled"
                                     size="none"
                                     onClick={handleToggleUnlimited}
-                                    className={`min-h-11 sm:min-h-0 w-full py-2 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
+                                    className={`min-h-11 sm:min-h-0 w-full py-2 text-xs font-bold rounded-control border flex items-center justify-center gap-1.5 transition-all ${
                                         isUnlimited
                                             ? 'bg-slate-600 text-white border-slate-600 shadow-sm'
                                             : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-950/30'
@@ -1195,7 +1195,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         )}
 
                         {/* Result Highlight Box */}
-                        <div className={`p-3 rounded-xl border text-center transition-all ${
+                        <div className={`p-3 rounded-popup border text-center transition-all ${
                             isUnlimited
                                 ? 'bg-slate-50 dark:bg-slate-950/30 border-slate-200 dark:border-slate-800'
                                 : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
@@ -1261,7 +1261,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 message={
                     <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         <p>Bạn có chắc chắn muốn thu hồi quyền truy cập của tài khoản:</p>
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-control border border-slate-200 dark:border-slate-700">
                             <p className="font-bold text-slate-800 dark:text-white">
                                 {formatCleanDisplayName(confirmRevokeUser?.employeeName || confirmRevokeUser?.displayName || 'Chưa đặt tên')}
                             </p>

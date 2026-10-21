@@ -688,7 +688,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             onClick={onStartNewVersion}
                             disabled={!supermarket}
                             title="Tạo bản lưu mới từ các nhóm đang chọn"
-                            className="p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer shrink-0"
+                            className="p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-control transition-colors disabled:opacity-40 cursor-pointer shrink-0"
                         >
                             <AppIcon name="add" size="md" />
                         </Button>
@@ -752,7 +752,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             <div
                                                 ref={employeeFilterPanelRef}
                                                 style={employeeFilterPanelStyle}
-                                                className="fixed w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
+                                                className="fixed w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-control shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
                                             >
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                                                     <Input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" />
@@ -834,7 +834,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         size="none"
                                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     >
                                         {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                                     </Button>
@@ -845,7 +845,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         onClick={handleGroupBatchExport}
                                         disabled={isBatchExporting || selectedHeadersForNhom.length === 0}
                                         title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'}
-                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] disabled:opacity-40 ${isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] disabled:opacity-40 ${isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     >
                                         {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                     </Button>
@@ -856,7 +856,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             onClick={handleSmartBatchExport}
                                             disabled={isExportingHighlights}
                                             title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`}
-                                            className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 shadow-2xs font-semibold disabled:opacity-40"
+                                            className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 shadow-2xs font-semibold disabled:opacity-40"
                                         >
                                             {isExportingHighlights ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="users" size="md" />}
                                         </Button>
@@ -877,7 +877,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         onClick={() => individualViewRef.current?.performBatchExport()}
                                         disabled={individualViewRef.current?.isBatchExporting}
                                         title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'}
-                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] disabled:opacity-40 ${individualViewRef.current?.isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control preserve-rounded flex items-center justify-center shrink-0 transition-all duration-150 active:scale-[0.94] disabled:opacity-40 ${individualViewRef.current?.isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     >
                                         {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                     </Button>
@@ -896,7 +896,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     onClick={handleSummaryBatchExport}
                                     disabled={isBatchExporting || summaryTables.length === 0}
                                     title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'}
-                                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                 </Button>
@@ -999,7 +999,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             onClick={handleAddSummaryTable}
                                             title="Thêm bảng"
                                             aria-label="Thêm bảng"
-                                            className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shrink-0"
+                                            className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shrink-0"
                                         >
                                             <AppIcon name="add" size="md" />
                                         </Button>

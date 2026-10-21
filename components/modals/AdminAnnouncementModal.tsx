@@ -123,7 +123,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Nhập nội dung chạy ngang (Ví dụ: 📢 Lịch bảo trì hệ thống từ 22h tối nay...)"
                         rows={3}
-                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-semibold resize-none"
+                        className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup text-slate-800 dark:text-white placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-semibold resize-none"
                     />
                 </div>
 
@@ -135,7 +135,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                         type="date"
                         value={expiresDate}
                         onChange={(e) => setExpiresDate(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-semibold"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup text-slate-800 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-semibold"
                     />
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                         Nếu để trống, thông báo sẽ luôn hiển thị khi được bật cho đến khi bạn tắt thủ công.
@@ -143,7 +143,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 </div>
 
                 {isCurrentExpired && active && (
-                    <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+                    <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-popup text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
                         <AppIcon name="warning" size="sm" className="text-amber-600 shrink-0" />
                         <span>
                             Ngày hết hạn đã chọn ở trong quá khứ nên thông báo sẽ bị tự động ẩn. Vui lòng chọn ngày trong tương lai hoặc để trống.
@@ -152,10 +152,10 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 )}
 
                 <label
-                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl cursor-pointer select-none transition-all hover:brightness-95"
+                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-popup cursor-pointer select-none transition-all hover:brightness-95"
                 >
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-lg shrink-0">
+                        <div className="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-control shrink-0">
                             <AppIcon name="announcement" size="md" />
                         </div>
                         <div>
@@ -185,7 +185,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                         type="button"
                         variant="unstyled" size="none"
                         onClick={onClose}
-                        className="px-4 py-2 text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-bold"
+                        className="px-4 py-2 text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-popup dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-bold"
                     >
                         Hủy
                     </Button>
@@ -193,7 +193,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                         type="submit"
                         variant="unstyled" size="none"
                         disabled={isLoading}
-                        className="px-5 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 active:scale-[0.98] transition-all flex items-center gap-1.5"
+                        className="px-5 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 text-white font-bold text-xs rounded-popup shadow-md shadow-rose-500/10 active:scale-[0.98] transition-all flex items-center gap-1.5"
                     >
                         {isLoading ? (
                             <AppIcon name="loading" size="sm" spin />

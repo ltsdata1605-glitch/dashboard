@@ -55,7 +55,7 @@ const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange
                 )}
                 <Input type="number" inputMode="decimal" min="0" step="0.1" placeholder="0" fullWidth={false} aria-label={label}
                     value={value} onChange={e => onChange(e.target.value)} onKeyDown={blockNonNumericKeys}
-                    className="h-8 min-h-0 lg:h-6 w-16 sm:w-[88px] lg:w-20 rounded px-2 text-base sm:text-[13px] tabular-nums text-right" />
+                    className="h-8 min-h-0 lg:h-6 w-16 sm:w-[88px] lg:w-20 px-2 text-base sm:text-[13px] tabular-nums text-right" />
             </div>
         </div>
     );
@@ -105,7 +105,7 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
             <div className="flex items-center gap-2 px-2 h-11 lg:h-[34px] border-t border-slate-200 bg-slate-50/60">
                 <Input type="text" placeholder={meta.otherPlaceholder} value={other.name} aria-label={meta.otherPlaceholder}
                     onChange={e => onOther(group, { name: e.target.value })}
-                    className="h-8 lg:h-6 rounded px-2 text-[13px]" />
+                    className="h-8 lg:h-6 px-2 text-[13px]" />
                 <div className="flex items-center gap-1 shrink-0">
                     <Button variant="secondary" size="icon" onClick={() => onOther(group, { count: Math.max(0, other.count - 1) })} aria-label="Giảm mục khác"
                         className="ycx-hit h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="minus" size="sm" /></Button>

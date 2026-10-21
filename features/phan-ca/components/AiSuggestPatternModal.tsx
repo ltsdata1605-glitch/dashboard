@@ -279,7 +279,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
     }, [functions, departmentName, numNam, numNu, maxHours, commonShifts, slotRequirements, specialShifts, hourConfig, checkFeasibility]);
 
     const renderSpecialShiftConfig = (role: SpecialShiftRole, title: string) => (
-        <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="p-3 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2">{title}</h4>
             <div className="mb-2">
                 <label htmlFor={`ai-gioi-tinh-${role}`} className="text-xs font-medium text-slate-600 dark:text-slate-400">Giới tính:</label>
@@ -348,11 +348,11 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                     </div>
                     {/* Column 2: General Config */}
                     <div className="space-y-4">
-                        <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="p-3 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
                             <label htmlFor="ai-gio-cong-max" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Giờ công MAX/tháng</label>
                             <Input id="ai-gio-cong-max" type="number" inputMode="decimal" value={maxHours} onChange={e => setMaxHours(parseInt(e.target.value))} />
                         </div>
-                        <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="p-3 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Số lượng nhân sự Nam/Nữ</label>
                             <div className="flex gap-2">
                                  <div className="flex-1 min-w-0"><Input type="number" inputMode="decimal" value={numNam} onChange={e => setNumNam(parseInt(e.target.value))} placeholder="Nam" title="Nam" aria-label="Số nhân sự Nam" /></div>
@@ -361,7 +361,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                         </div>
 
                         {/* Bảng Quy Đổi Giờ Công */}
-                        <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="p-3 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
                             <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2">Bảng Quy Đổi Giờ Công</h4>
                             <div className="grid grid-cols-3 gap-2">
                                 {['1', '2', '3', '4', '5', '6'].map(slot => (
@@ -382,13 +382,13 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                             </div>
                         </div>
 
-                        <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="p-3 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
                             <label htmlFor="ai-ca-thuong-dung" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Ca thường dùng (cách nhau bởi dấu phẩy)</label>
                             <Textarea id="ai-ca-thuong-dung" value={commonShifts} onChange={e => setCommonShifts(e.target.value)} rows={3} />
                         </div>
                     </div>
                     {/* Column 3: Slot Requirements */}
-                    <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="p-3 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
                          <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2">Yêu cầu nhân sự tối thiểu/ca</h4>
                          <div className="grid grid-cols-2 gap-3">
                             {Object.keys(slotRequirements).map(slot => (
@@ -408,7 +408,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                 </div>
 
                 {(isLoading || error || suggestion) && (
-                    <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-control border border-slate-200 dark:border-slate-700">
                         <h3 className="font-bold text-[17px] text-center mb-2 text-slate-800 dark:text-slate-200 leading-7">Kết quả từ AI</h3>
                         {isLoading && <div className="flex justify-center items-center p-4"><div className="spinner !w-8 !h-8 !border-4"></div></div>}
                         {error && <div className="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded text-center">{error}</div>}
@@ -456,7 +456,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                 <div className="text-center mt-2 text-xs text-slate-500 dark:text-slate-400 italic">Mẹo: Kéo thả các ô màu xanh để thay đổi thứ tự</div>
 
                                 {feasibilityWarnings.length > 0 ? (
-                                    <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                    <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-control">
                                         <h4 className="text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
                                             Cảnh báo khả thi (ước lượng)
                                         </h4>
@@ -465,7 +465,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                         </ul>
                                     </div>
                                 ) : (
-                                    <div className="mt-3 p-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-center text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                    <div className="mt-3 p-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-control text-center text-xs font-bold text-emerald-700 dark:text-emerald-400">
                                         Đủ điều kiện theo ước lượng nhân sự/ca hiện tại.
                                     </div>
                                 )}

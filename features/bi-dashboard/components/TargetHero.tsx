@@ -138,9 +138,9 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                             <label className="block text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2">
                                 Đã chọn ({selectedEmps.size})
                             </label>
-                            <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-xl bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
+                            <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-popup bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
                                 {Array.from(selectedEmps).map(empName => (
-                                    <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                    <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-control text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
                                         <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
                                         <Button variant="unstyled" size="none" onClick={() => toggleEmp(empName)} className="p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title="Bỏ chọn">
                                             <AppIcon name="close" size="sm" />
@@ -176,9 +176,9 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                             </div>
                         </div>
                         <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." leftIcon="search" className="mb-3 font-medium" />
-                        <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-xl bg-slate-50/30 dark:bg-slate-900/30">
+                        <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-popup bg-slate-50/30 dark:bg-slate-900/30">
                             {filteredEmps.length > 0 ? filteredEmps.map(emp => (
-                                <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
+                                <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-popup transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
                                     <Checkbox
                                         checked={selectedEmps.has(emp.originalName)}
                                         onChange={() => toggleEmp(emp.originalName)}
@@ -190,7 +190,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                     <Button
                                         variant="unstyled" size="none"
                                         onClick={() => removeEmp(emp.originalName)}
-                                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0"
+                                        className="p-1.5 rounded-control text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0"
                                         title="Xoá khỏi danh sách"
                                     >
                                         <AppIcon name="delete" size="sm" />
@@ -247,7 +247,7 @@ const CompactTargetItem: React.FC<{
     const t = COMPACT_TARGET_ITEM_THEMES[colorTheme] || COMPACT_TARGET_ITEM_THEMES.slate;
 
     return (
-        <div className={`p-2.5 sm:p-3 transition-colors border ${t.bg} ${t.border} rounded-xl shadow-2xs`}>
+        <div className={`p-2.5 sm:p-3 transition-colors border ${t.bg} ${t.border} rounded-popup shadow-2xs`}>
             <div className="mb-2">
                 <div className="flex items-center justify-between">
                     <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{label}</span>
@@ -383,7 +383,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     return (
         <section className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {!hasEmployees && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-popup border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30">
                     <div className="min-w-0">
                         <h4 className="text-sm font-bold text-amber-800 dark:text-amber-200">Chưa có danh sách nhân viên</h4>
                         <p className="text-xs text-amber-700/90 dark:text-amber-300/90 mt-0.5">
@@ -393,7 +393,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                     <Button
                         variant="unstyled" size="none"
                         onClick={requestUploadYcx}
-                        className="min-h-11 sm:min-h-0 shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors"
+                        className="min-h-11 sm:min-h-0 shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-control text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors"
                         title="Mở hộp chọn file YCX (giống nút File YCX ở chức năng Phân Tích)"
                     >
                         <AppIcon name="upload" size="sm" />
@@ -427,7 +427,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     closeConfirm();
                                 }
                             });
-                        }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                        }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-popup transition-all active:scale-95" title="Reset">
                             <AppIcon name="reset" size="md" />
                         </Button>
                     </div>
@@ -462,10 +462,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                         closeConfirm();
                                     }
                                 });
-                            }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                            }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-popup transition-all active:scale-95" title="Reset">
                                 <AppIcon name="reset" size="md" />
                             </Button>
-                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Chỉnh sửa bộ phận">
+                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-popup transition-all active:scale-95" title="Chỉnh sửa bộ phận">
                                 <AppIcon name="edit" size="md" />
                             </Button>
                         </div>
@@ -481,7 +481,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             const t = DEPARTMENT_PASTEL_THEMES[idx % DEPARTMENT_PASTEL_THEMES.length];
 
                             return (
-                                <div key={dept.name} className={`relative group p-2.5 sm:p-3 ${t.bg} border ${t.border} rounded-xl shadow-2xs transition-colors`}>
+                                <div key={dept.name} className={`relative group p-2.5 sm:p-3 ${t.bg} border ${t.border} rounded-popup shadow-2xs transition-colors`}>
                                     <div className="mb-2">
                                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                             <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{dept.name}</span>
@@ -544,7 +544,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs sm:text-[13px] font-bold uppercase tracking-widest">Trống</div>}
+                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-popup text-slate-400 text-xs sm:text-[13px] font-bold uppercase tracking-widest">Trống</div>}
                     </div>
                 </div>
             </div>

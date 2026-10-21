@@ -92,7 +92,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setTableMode('standard')}
-                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${
                                     tableMode === 'standard'
                                     ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -104,7 +104,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setTableMode('comparison')}
-                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${
                                     tableMode === 'comparison'
                                     ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -125,7 +125,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         onClick={handleExport}
                                         disabled={isExporting}
                                         title="Xuất Ảnh"
-                                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                     >
                                         {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                         {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
@@ -138,7 +138,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
                                             <AppIcon name="settings" size="md" />
@@ -148,7 +148,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             onClick={handleExport}
                                             disabled={isExporting}
                                             title="Xuất Ảnh"
-                                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                         >
                                             {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                             {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
@@ -157,7 +157,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     </div>
 
                                     {activeFilterKey === 'columns' && (
-                                        <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                                        <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-popup sm:rounded-card shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                             <div className="flex justify-between items-center mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 border-b border-slate-50 pb-1.5 sm:pb-2 dark:border-slate-700/50">
                                                 <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
                                                 <Button variant="unstyled" size="none" onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><AppIcon name="close" size="md" /></Button>
@@ -169,9 +169,9 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                                     if (isPivotMode && PIVOT_EXCLUDED_COLS.includes(col.key)) return false;
                                                     return true;
                                                 }).map((col) => (
-                                                    <div key={col.key} role="button" tabIndex={0} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} onKeyDown={onActivateKey(() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key]))} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                                    <div key={col.key} role="button" tabIndex={0} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} onKeyDown={onActivateKey(() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key]))} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-control sm:rounded-popup hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2 select-none">
-                                                            <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg ${col.colorClass}`}>
+                                                            <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-control ${col.colorClass}`}>
                                                                 <AppIcon name={resolveIconName(col.icon || 'columns') ?? 'help'} size="sm" />
                                                             </div>
                                                             {col.label}

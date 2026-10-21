@@ -209,7 +209,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         const val = metricToDisplay === 'revenue' ? d.revenue : d.quantity;
         const pct = total > 0 ? (val / total * 100).toFixed(1) : '0.0';
         return (
-            <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans min-w-[170px]">
+            <div className="p-3 shadow-xl rounded-popup bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans min-w-[170px]">
                 <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 truncate text-xs">{d.name}</div>
                 <div className="text-slate-600 dark:text-slate-300 mb-1 flex justify-between gap-3 text-xs"><span>{metricToDisplay === 'revenue' ? 'Doanh thu:' : 'Số lượng:'}</span><span className={`font-bold ${metricToDisplay === 'revenue' ? 'text-sky-700 dark:text-sky-400' : 'text-emerald-700 dark:text-emerald-400'}`}>{metricToDisplay === 'revenue' ? formatCurrency(d.revenue) : formatQuantity(d.quantity)}</span></div>
                 <div className="text-slate-500 dark:text-slate-400 flex justify-between gap-3 text-[11px]"><span>Tỷ trọng:</span><span className="font-bold">{pct}%</span></div>
@@ -304,7 +304,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleBreadcrumbClick(drilldownPath.length - 1)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-control bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
                         >
                             <AppIcon name="chevronLeft" size="md" />
                             Quay lại
@@ -334,7 +334,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         </div>
 
                         {currentView.data.length === 0 ? (
-                            <div className="bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
+                            <div className="bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-card">
                                 <EmptyState icon={<AppIcon name="searchEmpty" size="xl" />} title="Không có dữ liệu" compact />
                             </div>
                         ) : (
@@ -356,7 +356,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 'group relative',
                                                 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5',
                                                 'shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.07)]',
-                                                'transition-all duration-200 hover:-translate-y-0.5 rounded-xl select-none premium-card-shadow',
+                                                'transition-all duration-200 hover:-translate-y-0.5 rounded-popup select-none premium-card-shadow',
                                                 isDrillable ? 'cursor-pointer active:scale-[0.97]' : 'cursor-default',
                                                 // Mobile: single row, Desktop: block card
                                                 'flex items-center gap-1.5 p-1.5 lg:flex-col lg:justify-between lg:items-stretch lg:p-2.5',
@@ -384,7 +384,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
 
                                             {/* Desktop: original block layout */}
                                             <div className="hidden lg:flex justify-between items-start mb-1.5">
-                                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
+                                                <div className={`w-6 h-6 rounded-control flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
                                                     <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
                                                 </div>
                                                 <span className={`text-[11px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-widerer`}>

@@ -263,7 +263,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                 {/* Form */}
                     <form id="manual-form-top" onSubmit={editingId ? handleSaveEdit : handleAddProduct} className="p-5 space-y-3 bg-slate-50 border-b border-slate-200">
                         {editingId && (
-                            <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 rounded-control px-3 py-2">
                                 <AppIcon name="edit" size="sm" className="shrink-0 text-amber-600" />
                                 <span className="text-amber-700 font-medium">Đang chỉnh sửa sản phẩm — Thay đổi thông tin và bấm "Lưu thay đổi"</span>
                                 <Button type="button" variant="inline-link" onClick={handleCancelEdit} className="ml-auto text-amber-600 hover:text-amber-800 text-xs">Hủy sửa</Button>
@@ -328,7 +328,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         </div>
 
                         {manualProducts.length === 0 ? (
-                            <div className="border-2 border-dashed border-slate-200 rounded-xl">
+                            <div className="border-2 border-dashed border-slate-200 rounded-popup">
                                 <EmptyState
                                     icon={<AppIcon name="productOff" size="lg" />}
                                     title="Chưa có sản phẩm nào"
@@ -344,7 +344,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                     return (
                                         <div
                                             key={p.firebaseId || p.msp}
-                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
+                                            className={`flex items-center gap-3 p-3 rounded-popup border transition-colors cursor-pointer ${
                                                 isEditing
                                                     ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-200'
                                                     : isSelected

@@ -336,7 +336,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             title="Tùy chọn Bảng 7 Ngày"
                             label="Tùy chọn Bảng"
                             data-testid="h2h-crud-action-menu"
-                            triggerClassName="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            triggerClassName="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         />
 
                         {/* Separator */}
@@ -347,7 +347,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             type="button"
                             variant="unstyled" size="none"
                             onClick={() => setIncludeToday(p => !p)}
-                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${
                                 includeToday
                                 ? 'text-sky-700 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -360,14 +360,14 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             variant="unstyled" size="none"
                             onClick={handleBatchExport}
                             disabled={isBatchExporting || tables.length === 0}
-                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
                             {isBatchExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportBatch" size="md" className="lg:hidden" />}
                             {isBatchExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportBatch" size="md" className="hidden lg:block" />}
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
+                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>
@@ -462,8 +462,8 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     maxWidth="md"
                     footer={
                         <div className="flex justify-end gap-2 sm:gap-3">
-                            <Button type="button" variant="unstyled" size="none" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</Button>
-                            <Button type="button" variant="unstyled" size="none" onClick={handleDelete} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors">Xóa</Button>
+                            <Button type="button" variant="unstyled" size="none" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-control shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</Button>
+                            <Button type="button" variant="unstyled" size="none" onClick={handleDelete} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-control shadow-sm text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors">Xóa</Button>
                         </div>
                     }
                 >

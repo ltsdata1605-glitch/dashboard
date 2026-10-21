@@ -103,7 +103,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
   return (
     <div className="space-y-1.5">
       {/* Main row */}
-      <div className="flex items-center gap-2 flex-wrap bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl px-2.5 py-1.5 shadow-2xs">
+      <div className="flex items-center gap-2 flex-wrap bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-popup px-2.5 py-1.5 shadow-2xs">
         {/* 1. Ô tìm kiếm sản phẩm (Được chuyển lên thanh lọc theo yêu cầu) */}
         {onSearchChange && (
           <div className="w-full sm:w-72 md:w-80 lg:w-84 xl:w-96 shrink-0">
@@ -216,7 +216,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
 
       {/* Collapsible filter row */}
       {showFilters && (
-        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-control px-2.5 py-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
           {options.maSieuThi.length > 0 && (
             <div className="flex-1 min-w-0">
               <StringMultiSelect

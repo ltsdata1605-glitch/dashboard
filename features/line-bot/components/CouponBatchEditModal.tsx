@@ -173,7 +173,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
             }
             controls={
                 <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
+                    <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-control">
                         Tổng {batch.total} mã ({batch.unused} khả dụng, {batch.sent} đã cấp)
                     </span>
                 </div>
@@ -181,7 +181,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
         >
             <div className="space-y-4 text-left">
                 {/* Header Info Box */}
-                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-100 dark:border-emerald-800/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-popup border border-emerald-100 dark:border-emerald-800/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                         <div className="font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
                             <AppIcon name="clock" size="xs" className="text-emerald-600" />
@@ -192,14 +192,14 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                         </div>
                     </div>
                     {batch.expiryDate && (
-                        <div className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 rounded-lg font-mono text-[11px] shrink-0 self-start sm:self-auto">
+                        <div className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 rounded-control font-mono text-[11px] shrink-0 self-start sm:self-auto">
                             Hạn hiện tại: {batch.expiryDate}
                         </div>
                     )}
                 </div>
 
                 {/* PHẦN 1: TÊN SẢN PHẨM / MODEL ÁP DỤNG */}
-                <div className="p-3.5 bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                <div className="p-3.5 bg-white dark:bg-slate-800/80 rounded-popup border border-slate-200 dark:border-slate-700 space-y-2.5">
                     <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                             <AppIcon name="sparkles" size="xs" className="text-emerald-500" />
@@ -236,7 +236,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                         value={newProductName}
                         onChange={e => setNewProductName(e.target.value)}
                         placeholder="Nhập tên sản phẩm chuẩn (Ví dụ: Máy lọc nước RO Kangaroo KG12S2H4)..."
-                        className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
+                        className="h-auto p-2.5 bg-slate-50 border-slate-200 rounded-popup text-xs font-medium text-slate-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-emerald-500"
                     />
 
                     {distinctProducts.length > 0 && (
@@ -262,7 +262,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                 {/* PHẦN 2: LOẠI PMH & HẠN DÙNG */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Loại PMH */}
-                    <div className="p-3.5 bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div className="p-3.5 bg-white dark:bg-slate-800/80 rounded-popup border border-slate-200 dark:border-slate-700 space-y-2">
                         <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
                             Loại PMH (Phân loại Bot LINE)
                         </label>
@@ -274,7 +274,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                     key={t}
                                     type="button"
                                     onClick={() => setSelectedType(t)}
-                                    className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all text-center truncate ${
+                                    className={`px-2.5 py-1.5 text-xs font-semibold rounded-control border transition-all text-center truncate ${
                                         selectedType === t
                                             ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-bold'
                                             : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
@@ -291,13 +291,13 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                 value={customType}
                                 onChange={e => setCustomType(e.target.value)}
                                 placeholder="Nhập tên loại mới..."
-                                className="h-auto p-2 bg-slate-50 border-slate-200 rounded-lg text-xs"
+                                className="h-auto p-2 bg-slate-50 border-slate-200 rounded-control text-xs"
                             />
                         )}
                     </div>
 
                     {/* Hạn sử dụng */}
-                    <div className="p-3.5 bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div className="p-3.5 bg-white dark:bg-slate-800/80 rounded-popup border border-slate-200 dark:border-slate-700 space-y-2">
                         <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
                             Hạn Sử Dụng (YYYY-MM-DD)
                         </label>
@@ -307,7 +307,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                             type="date"
                             value={expiryDate}
                             onChange={e => setExpiryDate(e.target.value)}
-                            className="block h-auto p-2 bg-slate-50 border-slate-200 rounded-lg text-xs font-mono"
+                            className="block h-auto p-2 bg-slate-50 border-slate-200 rounded-control text-xs font-mono"
                         />
                         <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
                             <span className="text-slate-400">Chọn nhanh:</span>
@@ -353,7 +353,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
 
                 {/* PHẦN 3: KHÔI PHỤC MÃ ĐÃ CẤP */}
                 {batch.sent > 0 && (
-                    <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-800/40 flex items-center justify-between gap-3">
+                    <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-popup border border-amber-200/80 dark:border-amber-800/40 flex items-center justify-between gap-3">
                         <div className="space-y-0.5">
                             <div className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
                                 <AppIcon name="history" size="xs" />
@@ -373,7 +373,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                 )}
 
                 {/* PHẦN 4: DANH SÁCH CHI TIẾT TỪNG MÃ */}
-                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800">
+                <div className="border border-slate-200 dark:border-slate-700 rounded-popup overflow-hidden bg-white dark:bg-slate-800">
                     <Button
                         variant="unstyled"
                         size="none"
@@ -396,7 +396,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                 value={codeSearch}
                                 onChange={e => setCodeSearch(e.target.value)}
                                 placeholder="Tìm mã code hoặc tên sản phẩm..."
-                                className="h-auto p-2 bg-slate-50 border-slate-200 rounded-lg text-xs"
+                                className="h-auto p-2 bg-slate-50 border-slate-200 rounded-control text-xs"
                             />
 
                             <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
@@ -405,7 +405,7 @@ const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
                                     return (
                                         <div
                                             key={c.id}
-                                            className="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-lg border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs gap-2"
+                                            className="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-control border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs gap-2"
                                         >
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <span className="text-[11px] text-slate-400 font-mono">#{idx + 1}</span>

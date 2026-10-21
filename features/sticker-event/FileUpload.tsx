@@ -13,7 +13,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileChange, fileName, disable
       <label
         htmlFor="file-upload"
         title="Tải lên tệp sản phẩm"
-        className={`relative flex items-center justify-center w-12 h-12 transition bg-emerald-50 border-2 border-emerald-200 rounded-lg appearance-none cursor-pointer hover:border-emerald-400 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`relative flex items-center justify-center w-12 h-12 transition bg-emerald-50 border-2 border-emerald-200 rounded-control appearance-none cursor-pointer hover:border-emerald-400 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <input
           id="file-upload"

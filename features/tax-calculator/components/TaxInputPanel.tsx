@@ -423,11 +423,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
   const selectedCount = (input.selectedProxyItemIds || []).length;
 
   return (
-    <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs transition-all duration-200">
+    <div className="bg-white dark:bg-slate-800/90 rounded-card border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs transition-all duration-200">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-slate-100 dark:border-slate-700/50">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
+          <div className="w-7 h-7 rounded-control bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
             <AppIcon name="calculator" size="md" />
           </div>
           <div>
@@ -447,7 +447,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
           data-testid="open-copy-guide"
           onClick={() => setShowCopyGuide(true)}
           title="Hướng dẫn cách copy dữ liệu từ HRM"
-          className="min-h-11 sm:min-h-0 whitespace-nowrap inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors cursor-pointer"
+          className="min-h-11 sm:min-h-0 whitespace-nowrap inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-control transition-colors cursor-pointer"
         >
           <AppIcon name="help" size="md" />
           <span>Hướng dẫn</span>
@@ -465,7 +465,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       <div className="space-y-3">
         {/* BANNER TRẠNG THÁI (KHI ĐÃ TẢI ÍT NHẤT 1 ĐỢT) */}
         {hasBothSlips ? (
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-xs">
+          <div className="flex items-center justify-between p-2.5 rounded-popup bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-xs">
             <div className="flex items-center gap-1.5 font-semibold min-w-0 flex-wrap">
               <AppIcon name="success" size="md" className="text-emerald-600" />
               <span>Đã nạp đủ 2 đợt lương & thưởng</span>
@@ -485,7 +485,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
             </span>
           </div>
         ) : (input.hasDay5Slip || input.hasDay20Slip) ? (
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs">
+          <div className="flex items-center justify-between p-2.5 rounded-popup bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs">
             <div className="flex items-center gap-1.5 font-semibold min-w-0 flex-wrap">
               <AppIcon name="info" size="md" className="text-amber-600" />
               <span>{input.hasDay5Slip ? 'Đã có Ngày 5 • Vui lòng tải tiếp Ngày 20' : 'Đã có Ngày 20 • Vui lòng tải tiếp Ngày 5'}</span>
@@ -507,7 +507,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
         <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
           {/* CỘT 1: LƯƠNG NGÀY 5 */}
           <div
-            className={`p-2.5 rounded-xl border flex flex-col justify-between transition-all ${
+            className={`p-2.5 rounded-popup border flex flex-col justify-between transition-all ${
               errorDay5
                 ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay5Slip
@@ -571,7 +571,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 onClick={() => handlePasteClick('day5')}
                 disabled={uploadingSlot === 'day5'}
                 title="Bấm để tự dán nội dung đã copy từ trang HRM"
-                className={`min-h-11 sm:min-h-0 w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                className={`min-h-11 sm:min-h-0 w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-control text-xs font-semibold cursor-pointer transition-colors ${
                   input.hasDay5Slip
                     ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                     : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
@@ -653,7 +653,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
           {/* CỘT 2: THƯỞNG NGÀY 20 */}
           <div
-            className={`p-2.5 rounded-xl border flex flex-col justify-between transition-all ${
+            className={`p-2.5 rounded-popup border flex flex-col justify-between transition-all ${
               errorDay20
                 ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay20Slip
@@ -717,7 +717,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 onClick={() => handlePasteClick('day20')}
                 disabled={uploadingSlot === 'day20'}
                 title="Bấm để tự dán nội dung đã copy từ trang HRM"
-                className={`min-h-11 sm:min-h-0 w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                className={`min-h-11 sm:min-h-0 w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-control text-xs font-semibold cursor-pointer transition-colors ${
                   input.hasDay20Slip
                     ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                     : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
@@ -816,7 +816,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
         {/* ========================================================================= */}
         {/* KHUNG BÓC TÁCH DANH SÁCH THƯỞNG NÓNG (CHECKBOX NHẬN THAY)                   */}
         {/* ========================================================================= */}
-        <div className="p-3 sm:p-3.5 rounded-xl border border-rose-300/80 dark:border-rose-900/60 bg-gradient-to-br from-rose-50/40 via-amber-50/20 to-transparent dark:from-rose-950/20 space-y-2.5">
+        <div className="p-3 sm:p-3.5 rounded-popup border border-rose-300/80 dark:border-rose-900/60 bg-gradient-to-br from-rose-50/40 via-amber-50/20 to-transparent dark:from-rose-950/20 space-y-2.5">
           {/* Header gọn gàng: Tiêu đề + 3 nút thao tác siêu ngắn */}
           <div className="flex items-center justify-between gap-2 border-b border-rose-200/60 dark:border-rose-900/40 pb-2">
             <div className="flex items-center gap-1.5">
@@ -850,7 +850,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
           {showAddCustomBonus && (
             <form
               onSubmit={handleAddCustomBonusItem}
-              className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-rose-200 dark:border-rose-900/60 space-y-2 animate-fadeIn"
+              className="p-2.5 bg-white dark:bg-slate-800 rounded-popup border border-rose-200 dark:border-rose-900/60 space-y-2 animate-fadeIn"
             >
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
                 <div className="sm:col-span-6">
@@ -906,7 +906,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   <div
                     key={item.id}
                     onClick={() => handleToggleProxyItem(item.id)}
-                    className={`flex items-center justify-between gap-2 p-2 rounded-lg border transition-all cursor-pointer select-none ${
+                    className={`flex items-center justify-between gap-2 p-2 rounded-control border transition-all cursor-pointer select-none ${
                       isChecked
                         ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-100 shadow-2xs'
                         : 'bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300'
@@ -945,7 +945,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               })}
             </div>
           ) : (
-            <div className="text-center py-3 px-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-dashed border-rose-200 dark:border-rose-900/40">
+            <div className="text-center py-3 px-3 bg-white/60 dark:bg-slate-800/60 rounded-control border border-dashed border-rose-200 dark:border-rose-900/40">
               {/* ĐÃ tải ảnh Ngày 20 mà danh sách vẫn trống: câu "hãy tải ảnh Ngày 20" cũ khiến
                   người dùng tưởng app chưa nhận ảnh (chủ dự án báo 2026-09-23). Nói đúng việc
                   cần làm: chụp lại đủ phần danh sách, hoặc thêm tay. */}
@@ -973,7 +973,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
         </div>
 
         {/* THÔNG TIN KÊ KHAI BỔ SUNG (ACCORDION GỌN) */}
-        <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/30">
+        <div className="border border-slate-200 dark:border-slate-700/60 rounded-popup overflow-hidden bg-slate-50/50 dark:bg-slate-900/30">
           <Button
             variant="unstyled"
             size="none"

@@ -247,7 +247,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
 
                 <div className="flex-1 overflow-y-auto p-3 sm:p-5 custom-scrollbar space-y-5 sm:space-y-8">
                     {/* COLUMNS BUILDER */}
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="bg-slate-100 dark:bg-slate-800/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
                             <h3 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
                                 <AppIcon name="columns" size="md" className="text-sky-700 hidden sm:block" />
@@ -255,13 +255,13 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                 Cấu Hình Cột
                             </h3>
                             <div className="flex gap-1.5 sm:gap-2">
-                                <Button variant="unstyled" size="none" onClick={() => addColumn('target')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('target')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-bold text-[11px] sm:text-xs rounded-control flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
                                     <AppIcon name="target" size="sm" /> Mục Tiêu
                                 </Button>
-                                <Button variant="unstyled" size="none" onClick={() => addColumn('data')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('data')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold text-[11px] sm:text-xs rounded-control flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                     <AppIcon name="add" size="sm" /> Dữ Liệu
                                 </Button>
-                                <Button variant="unstyled" size="none" onClick={() => addColumn('ratio')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
+                                <Button variant="unstyled" size="none" onClick={() => addColumn('ratio')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-[11px] sm:text-xs rounded-control flex items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition border border-rose-200 dark:border-rose-800">
                                     <AppIcon name="percent" size="sm" /> Tỉ Lệ
                                 </Button>
                             </div>
@@ -269,7 +269,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                         
                         <div className="p-2.5 sm:p-4 space-y-2.5 sm:space-y-3">
                             {config.columns.map((col, cIdx) => (
-                                <div key={col.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                <div key={col.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-control border border-slate-100 dark:border-slate-700/50">
                                     <div className={`w-12 flex items-center justify-center rounded font-black text-sm ${col.type === 'target' ? 'bg-amber-100 text-amber-700' : col.type === 'ratio' ? 'bg-rose-100 text-rose-700' : 'bg-sky-100 text-sky-700'}`}>
                                         Cột {cIdx + 1}
                                     </div>
@@ -361,20 +361,20 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                     </div>
 
                     {/* ROWS BUILDER */}
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-popup border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="bg-slate-100 dark:bg-slate-800/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <h3 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
                                 <AppIcon name="viewList" size="md" className="text-sky-700" />
                                 Cấu Hình Dòng
                             </h3>
-                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold text-[11px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
+                            <Button variant="unstyled" size="none" onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold text-[11px] sm:text-xs rounded-control flex items-center gap-1 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition border border-sky-200 dark:border-sky-800">
                                 <AppIcon name="add" size="sm" /> Thêm Nhóm
                             </Button>
                         </div>
                         
                         <div className="p-2.5 sm:p-4 space-y-4 sm:space-y-6">
                             {config.sections.map((section, sIdx) => (
-                                <div key={section.id} className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-all focus-within:border-sky-400 dark:focus-within:border-sky-500">
+                                <div key={section.id} className="relative bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-popup p-4 transition-all focus-within:border-sky-400 dark:focus-within:border-sky-500">
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="h-8 w-8 rounded bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center font-black">
                                             {sIdx + 1}
@@ -394,7 +394,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                     {/* Rows Wrapper */}
                                     <div className="space-y-3 pl-2 sm:pl-10">
                                         {section.rows.map((row, rIdx) => (
-                                            <div key={row.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                            <div key={row.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-control border border-slate-100 dark:border-slate-700/50">
                                                 <div className="flex-1 space-y-2">
                                                     <Input 
                                                         type="text" 

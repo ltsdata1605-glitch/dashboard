@@ -164,7 +164,7 @@ const EmployeeCategoryTable: React.FC<EmployeeCategoryTableProps> = ({ rows, pro
     if (columns.length === 0) return null;
 
     return (
-        <div className={`${CATEGORY_TABLE_CLASS} bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4`}>
+        <div className={`${CATEGORY_TABLE_CLASS} bg-white dark:bg-slate-800 rounded-control sm:rounded-popup shadow p-3 sm:p-4`}>
             <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2">
                 <AppIcon name="viewGrid" size="lg" className="text-sky-500" />
                 Phụ Kiện &amp; Điện Gia Dụng

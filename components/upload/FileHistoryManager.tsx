@@ -83,7 +83,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                 )}
             </div>
 
-            <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-xl overflow-hidden shadow-inner">
+            <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-popup overflow-hidden shadow-inner">
                 <div className={`overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50 scrollbar-thin ${compact ? 'max-h-[160px]' : 'max-h-[220px]'}`}>
                     {registry.map((file) => (
                         <div
@@ -184,7 +184,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                         variant="unstyled" size="none"
                                         onClick={() => handleStartRename(file)}
                                         id={`btn-rename-file-${file.id}`}
-                                        className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/20 rounded-lg transition-all"
+                                        className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/20 rounded-control transition-all"
                                         title="Đổi tên tệp"
                                     >
                                         <AppIcon name="edit" size="md" />
@@ -194,7 +194,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                     variant="unstyled" size="none"
                                     onClick={() => onDelete(file.id)}
                                     id={`btn-delete-file-${file.id}`}
-                                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all"
+                                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-control transition-all"
                                     title="Xóa tệp này"
                                 >
                                     <AppIcon name="delete" size="md" />

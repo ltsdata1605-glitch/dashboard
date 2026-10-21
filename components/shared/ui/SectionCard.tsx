@@ -9,7 +9,7 @@ interface SectionCardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 /**
  * Khung "Card section" chuẩn dùng chung toàn app (DESIGN_SYSTEM_MODERN.md §3.1):
- * mobile phẳng full-bleed (rounded-none, border-y), laptop bo góc nổi (rounded-2xl, border, shadow).
+ * mobile phẳng full-bleed (rounded-none, border-y), laptop bo góc nổi (rounded-card 16px, border, shadow).
  * Chỉ cung cấp bg/rounded/border/shadow/overflow — không áp padding, để header/body tự quản lý spacing riêng.
  *
  * Khác với `Card` (tĩnh, không đổi hình theo breakpoint): `SectionCard` dành riêng cho khung bọc

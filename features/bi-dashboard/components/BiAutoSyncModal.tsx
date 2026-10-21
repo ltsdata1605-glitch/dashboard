@@ -119,7 +119,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
             title={
                 status === 'not-installed' ? (
                     <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-xs">
+                        <div className="p-2 rounded-popup bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-xs">
                             <AppIcon name="securityOk" size="lg" />
                         </div>
                         <div>
@@ -133,7 +133,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     </div>
                 ) : (
                     <div className="flex items-center gap-2.5">
-                        <div className={`p-2 rounded-xl text-white shadow-xs ${
+                        <div className={`p-2 rounded-popup text-white shadow-xs ${
                             isRealtime ? 'bg-amber-500 shadow-amber-500/20' : 'bg-emerald-600 shadow-emerald-500/20'
                         }`}>
                             {isRealtime ? <AppIcon name="clock" size="lg" /> : <AppIcon name="trendUp" size="lg" />}
@@ -165,7 +165,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
             <div className="space-y-4 py-1">
                 {/* TRƯỜNG HỢP CẦN CẬP NHẬT USERSCRIPT */}
                 {status === 'outdated' && (
-                    <div className="space-y-3 p-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-800/60 animate-in fade-in duration-200">
+                    <div className="space-y-3 p-4 bg-rose-50 dark:bg-rose-950/30 rounded-popup border border-rose-200 dark:border-rose-800/60 animate-in fade-in duration-200">
                         <div className="flex items-start gap-3">
                             <AppIcon name="alert" size="lg" className="text-rose-600 mt-0.5" />
                             <div className="text-xs space-y-1.5">
@@ -176,7 +176,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                     Trình duyệt đang chạy bản cũ{currentVersion ? ` (v${currentVersion})` : ''}. Đã tự mở trang cập nhật ở tab mới:
                                     bấm <b>Cập nhật</b> (Update) trong Tampermonkey. Sau khi cập nhật xong, <b>hệ thống sẽ tự động phát hiện ngầm và tự động đổ dữ liệu</b> mà không cần F5 hay bấm lại.
                                 </p>
-                                <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-semibold text-[11px] bg-rose-100/60 dark:bg-rose-900/40 px-2.5 py-1.5 rounded-lg border border-rose-200/80 dark:border-rose-800/50">
+                                <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-semibold text-[11px] bg-rose-100/60 dark:bg-rose-900/40 px-2.5 py-1.5 rounded-control border border-rose-200/80 dark:border-rose-800/50">
                                     <AppIcon name="loading" size="xs" spin className="text-rose-600 dark:text-rose-400 shrink-0" />
                                     <span>Đang kiểm tra ngầm liên tục... Sẽ tự động đổ dữ liệu ngay khi cập nhật xong.</span>
                                 </div>
@@ -192,7 +192,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                                 onRetry();
                                             }
                                         }}
-                                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-control shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
                                         title="Bấm để kiểm tra lại và tự động đổ dữ liệu ngay nếu bạn đã cài đặt xong trong Tampermonkey"
                                     >
                                         <AppIcon name="check" size="sm" />
@@ -202,7 +202,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                         variant="unstyled"
                                         size="none"
                                         onClick={() => window.open(USERSCRIPT_URL, '_blank')}
-                                        className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+                                        className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-control shadow-sm flex items-center gap-1.5 transition-colors"
                                     >
                                         <AppIcon name="externalLink" size="sm" />
                                         <span>Mở lại trang cập nhật Userscript{latestVersion ? ` v${latestVersion}` : ''}</span>
@@ -238,7 +238,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                             return (
                                 <div
                                     key={step.id}
-                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                                    className={`flex items-center justify-between p-3 rounded-popup border transition-all ${
                                         isCurrent
                                             ? 'bg-sky-50/70 dark:bg-sky-950/40 border-sky-300 dark:border-sky-700 ring-2 ring-sky-500/10'
                                             : isCompleted
@@ -322,7 +322,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
 
                 {/* THÀNH CÔNG */}
                 {status === 'success' && (
-                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 text-emerald-800 dark:text-emerald-200 text-xs font-medium">
+                    <div className="p-3.5 rounded-popup bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 text-emerald-800 dark:text-emerald-200 text-xs font-medium">
                         <AppIcon name="check" size="lg" className="text-emerald-600" />
                         <span>Toàn bộ {steps.length} báo cáo {isRealtime ? 'Realtime' : 'Luỹ kế'} đã được tự động dán và lưu trữ thành công vào hệ thống!</span>
                     </div>
@@ -330,7 +330,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
 
                 {/* LỖI */}
                 {status === 'error' && (
-                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center gap-3 text-rose-800 dark:text-rose-200 text-xs">
+                    <div className="p-3.5 rounded-popup bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center gap-3 text-rose-800 dark:text-rose-200 text-xs">
                         <AppIcon name="alert" size="lg" className="text-rose-600" />
                         <div>
                             <div className="font-bold">Có lỗi xảy ra trong quá trình thu thập:</div>

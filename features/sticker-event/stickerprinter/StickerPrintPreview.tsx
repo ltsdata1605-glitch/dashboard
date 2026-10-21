@@ -340,7 +340,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         </div>
                         ))}
                         {batchItems.filter(it => it.selected).length > 20 && (
-                            <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-lg border border-slate-200 mt-4 shadow-sm">
+                            <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-control border border-slate-200 mt-4 shadow-sm">
                                 <span className="text-sky-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 sticker đầu tiên (trong tổng số {batchItems.filter(it => it.selected).length} sticker).<br/>
                                 <i>Tất cả sticker sẽ được in đầy đủ khi bấm nút IN.</i>
                             </div>
@@ -372,7 +372,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 <FloatingFormatToolbar />
             </div>
             {stickerType === 'draw' && totalDrawPages > 1 && (
-                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/40 no-print">
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-popup border border-slate-100 dark:border-slate-800/40 no-print">
                     <span className="text-[11px] font-bold text-slate-500 mr-1.5 uppercase">
                         Trang xem trước:
                     </span>

@@ -69,7 +69,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
         >
             <div className="modal-bleed">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-2xl">
+            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-card">
                 <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 text-sky-700 dark:text-sky-400 flex items-center justify-center border border-slate-200 dark:border-slate-700 shrink-0">
                         <AppIcon name="database" size="md" />
@@ -86,7 +86,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
 
             {/* Content */}
             <div className="p-4 space-y-3">
-                <div className="flex items-start gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 rounded-lg">
+                <div className="flex items-start gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 rounded-control">
                     <AppIcon name="warning" size="md" className="mt-0.5" />
                     <p className="text-[11px] font-semibold leading-relaxed">
                         Lưu ý: chỉ nên tải lên dữ liệu theo từng <span className="underline">Quý</span> (3 tháng/lần), không dồn quá nhiều tháng vào 1 tệp. Tệp quá lớn (nhiều dữ liệu dồn 1 lúc) hệ thống sẽ không xử lý được.

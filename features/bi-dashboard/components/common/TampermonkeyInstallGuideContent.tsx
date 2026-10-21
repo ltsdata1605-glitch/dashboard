@@ -84,8 +84,8 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
     return (
         <div className="space-y-4 text-left">
             {/* Thanh giới thiệu nổi bật */}
-            <div className="p-3 sm:p-3.5 bg-gradient-to-r from-sky-50 via-sky-50 to-sky-50 dark:from-sky-950/40 dark:via-sky-950/30 dark:to-sky-950/30 rounded-xl border border-sky-100 dark:border-sky-900/40 flex items-start gap-3">
-                <div className="p-2 bg-sky-500/10 dark:bg-sky-400/10 rounded-lg text-sky-600 dark:text-sky-400 shrink-0 mt-0.5">
+            <div className="p-3 sm:p-3.5 bg-gradient-to-r from-sky-50 via-sky-50 to-sky-50 dark:from-sky-950/40 dark:via-sky-950/30 dark:to-sky-950/30 rounded-popup border border-sky-100 dark:border-sky-900/40 flex items-start gap-3">
+                <div className="p-2 bg-sky-500/10 dark:bg-sky-400/10 rounded-control text-sky-600 dark:text-sky-400 shrink-0 mt-0.5">
                     <AppIcon name="securityOk" size="lg" />
                 </div>
                 <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300">
@@ -101,7 +101,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
             {/* DANH SÁCH 4 BƯỚC CHI TIẾT */}
             <div className="space-y-3">
                 {/* ─── BƯỚC 1 ─── */}
-                <div className="p-3.5 sm:p-4 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+                <div className="p-3.5 sm:p-4 rounded-popup border border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
                             <span className="w-6 h-6 rounded-full bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
@@ -115,7 +115,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             variant="unstyled"
                             size="none"
                             onClick={() => window.open(TAMPERMONKEY_STORE_URL, '_blank')}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-control text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
                         >
                             <AppIcon name="externalLink" size="sm" />
                             <span>Mở Chrome Web Store</span>
@@ -127,7 +127,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     </p>
 
                     {/* Hộp BẬT DEVELOPER MODE — Bắt buộc trên Chrome mới */}
-                    <div className="ml-8 p-3 rounded-xl bg-rose-50/50 dark:bg-rose-950/30 border-2 border-rose-500/80 dark:border-rose-500/70 text-xs space-y-2">
+                    <div className="ml-8 p-3 rounded-popup bg-rose-50/50 dark:bg-rose-950/30 border-2 border-rose-500/80 dark:border-rose-500/70 text-xs space-y-2">
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5 font-bold text-rose-700 dark:text-rose-300">
                                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse shrink-0" />
@@ -169,7 +169,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                 </div>
 
                 {/* ─── BƯỚC 2: THIẾT LẬP QUYỀN CHO TAMPERMONKEY ─── */}
-                <div className="p-3.5 sm:p-4 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+                <div className="p-3.5 sm:p-4 rounded-popup border border-indigo-200 dark:border-indigo-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
                             <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
@@ -188,7 +188,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             variant="unstyled"
                             size="none"
                             onClick={handleCopySettingsLink}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
                         >
                             {copiedSettingsLink ? <AppIcon name="check" size="sm" className="text-white" /> : <AppIcon name="copy" size="sm" />}
                             <span>{copiedSettingsLink ? 'Đã sao chép link' : 'Sao chép link thiết lập'}</span>
@@ -196,7 +196,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     </div>
 
                     <div className="space-y-3 pl-8 text-xs">
-                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center gap-2">
+                        <div className="p-2.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center gap-2">
                             <span className="text-slate-600 dark:text-slate-300">
                                 • Mở một <b>tab mới</b> và dán địa chỉ cài đặt:
                             </span>
@@ -206,7 +206,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                         </div>
 
                         {/* HỘP KHUNG ĐỎ BẮT BUỘC BẬT HẾT CÁC CÔNG TẮC */}
-                        <div className="p-3.5 rounded-xl bg-rose-50/40 dark:bg-rose-950/20 border-2 border-rose-500 dark:border-rose-500/80 space-y-3 shadow-xs">
+                        <div className="p-3.5 rounded-popup bg-rose-50/40 dark:bg-rose-950/20 border-2 border-rose-500 dark:border-rose-500/80 space-y-3 shadow-xs">
                             <div className="flex items-center justify-between gap-2 border-b border-rose-200 dark:border-rose-900/60 pb-2">
                                 <div className="flex items-center gap-1.5">
                                     <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse shrink-0" />
@@ -221,7 +221,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
 
                             <div className="space-y-2">
                                 {/* 1. Allow User Scripts */}
-                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                <div className="p-2.5 rounded-control bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
                                     <div className="space-y-0.5 pr-2">
                                         <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-100">
                                             <span>1. Allow User Scripts</span>
@@ -242,7 +242,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                 </div>
 
                                 {/* 2. Pin to toolbar */}
-                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                <div className="p-2.5 rounded-control bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
                                     <div className="space-y-0.5 pr-2">
                                         <div className="font-bold text-slate-800 dark:text-slate-100">
                                             2. Pin to toolbar
@@ -262,7 +262,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                 </div>
 
                                 {/* 3. Allow in Incognito */}
-                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                <div className="p-2.5 rounded-control bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
                                     <div className="space-y-0.5 pr-2">
                                         <div className="font-bold text-slate-800 dark:text-slate-100">
                                             3. Allow in Incognito
@@ -282,7 +282,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                 </div>
 
                                 {/* 4. Allow access to file URLs */}
-                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                <div className="p-2.5 rounded-control bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
                                     <div className="space-y-0.5 pr-2">
                                         <div className="font-bold text-slate-800 dark:text-slate-100">
                                             4. Allow access to file URLs
@@ -302,7 +302,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                 </div>
 
                                 {/* 5. Collect errors */}
-                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                <div className="p-2.5 rounded-control bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
                                     <div className="space-y-0.5 pr-2">
                                         <div className="font-bold text-slate-800 dark:text-slate-100">
                                             5. Collect errors
@@ -336,7 +336,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                 </div>
 
                 {/* ─── BƯỚC 3 ─── */}
-                <div className="p-3.5 sm:p-4 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+                <div className="p-3.5 sm:p-4 rounded-popup border border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
                             <span className="w-6 h-6 rounded-full bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
@@ -350,7 +350,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             href={getScriptUrl()}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0 no-underline"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-control text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0 no-underline"
                         >
                             <AppIcon name="download" size="sm" />
                             <span>Cài đặt Script ngay</span>
@@ -369,7 +369,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                 </div>
 
                 {/* ─── BƯỚC 4 ─── */}
-                <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs space-y-3">
+                <div className="p-3.5 sm:p-4 rounded-popup border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs space-y-3">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
                             <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
@@ -384,7 +384,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             size="none"
                             disabled={isChecking}
                             onClick={handleCheckConnection}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm transition-all active:scale-95 shrink-0 ${
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold text-white shadow-sm transition-all active:scale-95 shrink-0 ${
                                 checkSuccess 
                                     ? 'bg-emerald-600' 
                                     : 'bg-gradient-to-r from-emerald-600 to-emerald-600 hover:from-emerald-700 hover:to-emerald-700'
@@ -427,7 +427,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             variant="unstyled"
                             size="none"
                             onClick={onUseManual}
-                            className="px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors border border-rose-200 dark:border-rose-900/50"
+                            className="px-3 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-control transition-colors border border-rose-200 dark:border-rose-900/50"
                         >
                             Dùng Thủ công trong lúc chờ
                         </Button>

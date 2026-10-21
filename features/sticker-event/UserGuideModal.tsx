@@ -16,7 +16,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
       onClose={onClose}
       title={
         <span className="flex items-center gap-3">
-          <span className="p-2 bg-sky-50 rounded-lg">
+          <span className="p-2 bg-sky-50 rounded-control">
             <AppIcon name="guide" size="lg" className="text-sky-600" />
           </span>
           Hướng dẫn sử dụng
@@ -43,7 +43,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
               <AppIcon name="refresh" size="lg" className="text-sky-500" />
               <h3 className="text-base font-bold text-slate-800">1. Nguyên lý hoạt động</h3>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div className="bg-slate-50 rounded-popup p-4 border border-slate-100">
               <p className="text-sm text-slate-600 leading-relaxed">
                 Hệ thống hoạt động dựa trên dữ liệu bảng giá và tồn kho được tải lên bởi Quản lý. 
                 Dữ liệu được lưu trữ tập trung trên Cloud (Firebase), cho phép tất cả nhân viên trong cùng một kho 
@@ -67,7 +67,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
                 'Lưu danh sách in để sử dụng lại sau này.',
                 'Tùy chỉnh bố cục in (1, 2, 4, 10 sticker/trang).'
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                <div key={i} className="flex items-start gap-3 p-3 bg-white border border-slate-100 rounded-control shadow-sm">
                   <AppIcon name="success" size="md" className="text-emerald-500 mt-0.5" />
                   <span className="text-sm text-slate-600">{item}</span>
                 </div>
@@ -82,7 +82,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
               <h3 className="text-base font-bold text-slate-800">3. Chức năng dành cho Quản lý</h3>
             </div>
             <div className="space-y-3">
-              <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-popup">
                 <p className="text-sm text-amber-800 font-medium mb-2 italic">* Bao gồm tất cả chức năng của nhân viên và thêm:</p>
                 <ul className="space-y-2">
                   {[

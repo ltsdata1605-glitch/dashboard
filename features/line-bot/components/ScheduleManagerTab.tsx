@@ -88,7 +88,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                 </Banner>
             )}
             {/* Top Bar */}
-            <div className="p-2.5 sm:p-3 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-row items-center justify-between gap-2">
+            <div className="p-2.5 sm:p-3 bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-row items-center justify-between gap-2">
                 <div className="min-w-0">
                     <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                         <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">Lịch Hẹn Thông Báo</h3>
@@ -103,7 +103,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                         variant="ghost"
                         size="none"
                         onClick={onRefresh}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 rounded-lg border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
+                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 rounded-control border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
                         title="Làm mới danh sách và nhóm"
                     >
                         <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
@@ -111,7 +111,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                     <Button
                         variant="primary"
                         onClick={handleCreateNew}
-                        className="h-8 px-3 flex items-center gap-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+                        className="h-8 px-3 flex items-center gap-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-control shadow-2xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                     >
                         <AppIcon name="add" size="sm" />
                         <span>Thêm Lịch</span>
@@ -122,7 +122,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
             {/* List */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
                 {schedules.length === 0 ? (
-                    <div className="col-span-full p-8 text-center bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
+                    <div className="col-span-full p-8 text-center bg-white dark:bg-slate-800/90 rounded-popup sm:rounded-card border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
                         <AppIcon name="clock" size="state" className="mx-auto text-slate-300 mb-1.5" />
                         <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">Chưa có lịch hẹn thông báo nào</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">Bấm "Thêm Lịch" để tạo lịch gửi thông báo tự động.</p>
@@ -148,7 +148,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                         return (
                             <div
                                 key={sched.id}
-                                className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800/90 border transition-all shadow-2xs space-y-2 ${
+                                className={`p-2.5 sm:p-3 rounded-popup sm:rounded-card bg-white dark:bg-slate-800/90 border transition-all shadow-2xs space-y-2 ${
                                     sched.active ? 'border-slate-200/80 dark:border-slate-700/80' : 'border-slate-200/40 opacity-60'
                                 }`}
                             >
@@ -178,7 +178,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                     <Switch size="sm" checked={sched.active} onChange={() => onToggleActive(sched)} label="Bật / tắt lịch gửi" />
                                 </div>
 
-                                <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-lg text-[11px] text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap line-clamp-2">
+                                <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-control text-[11px] text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap line-clamp-2">
                                     {sched.messageTemplate}
                                 </div>
 
