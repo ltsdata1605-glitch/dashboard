@@ -8862,3 +8862,28 @@ Tái hiện bằng Playwright giả iPhone + chặn treo `apis.google.com`: tran
 - Test: `nho-tai-khoan-dang-nhap` (hiện email, login_hint, "Dùng tài khoản khác", giữ qua đăng xuất), `pwa-login-khong-gapi` (luồng
   đi thẳng: không nạp `/firebasejs/`, đóng khung m=pwa, nút thử lại vẫn chọn sẵn tài khoản), `ios-pwa-dang-nhap` (URL đi thẳng),
   `iphone-gapi-treo-dang-nhap` (đăng nhập thật → nhớ email).
+
+### Kết quả 21/10 — thẻ KPI phương án B + xoá Hướng dẫn Phân ca + bước 4 bo góc
+
+- **Thẻ KPI B — XONG, đã deploy** (97542f5b): 7 dòng thêm trùng khớp bản B đã gửi duyệt; thang chữ 10 bậc (`kpi-xl` 44/48 — token,
+  utility, `TYPE_SCALE_PX`, test). Toàn dự án `offScaleText` 0, `nonSemanticColor` 0. Ảnh tài khoản thật iPhone/1440/1920 khớp ảnh B.
+- **Hướng dẫn Phân ca — ĐÃ XOÁ** (4ac58966).
+- **Sự cố deploy 07:09 UTC:** bước fast-forward `main` hỏng vì phiên khác vừa đẩy bản sửa đăng nhập iPhone, nhưng lệnh deploy không bị
+  chặn → `gh-pages` ghi đè bản của phiên kia 4 phút; đã gộp `main` và deploy lại 07:13 (`index-BCZIPjIC.js` có cả hai). CLAUDE.md thêm
+  quy tắc "chỉ build + deploy khi HEAD = origin/main".
+- **Bước 4 — bo góc → token, giao diện KHÔNG đổi** (ded788c1):
+  - 905 lớp đổi (lg → `control` 421, xl → `popup` 376, 2xl → `card` 108) ở 205 file + 2 `@apply` (`.surface-card`, `.chart-card`).
+  - `cn()` (`components/shared/ui/utils.ts`) khai 4 token cho tailwind-merge (`extendTailwindMerge` → `theme.radius`); `Button.tsx` bỏ bản
+    `cn` riêng. Hệ quả: 32 lớp `rounded` trần ĐANG CHẾT (Input/Select/Button cỡ thường — `rounded-control` gốc thắng theo thứ tự CSS) sẽ
+    "sống lại" (4px) → đã gỡ để giữ 8px đang thấy. Ngược lại 2 ca `ActionMenu triggerClassName="rounded-lg"` và 6 nút `size="icon"` +
+    `rounded` mà nếu KHÔNG khai token sẽ đổi hình (nút tròn / 8px) nay tự đúng.
+  - Ratchet `legacyRadius` mốc 0 (`scripts/lint-ratchet.cjs` + test).
+  - **Đo:** (1) tĩnh — AST TypeScript liệt kê MỌI tổ hợp lớp của từng phần tử JSX (nhánh `?:`/`&&`/`cn()`/hằng trong file), cộng lớp gốc
+    của Button (theo `size`/`variant`), Input/Select/Textarea, Checkbox, ActionMenu, Badge, Card, SectionCard, DataTable, SkeletonPulse…,
+    tính góc thắng bằng tailwind-merge THẬT (cũ vs đã khai token) + thứ tự CSS THẬT đọc từ bản build (`!important` > nhóm thuộc tính
+    border-radius < t < l < tl < r < tr < b…; cùng nhóm theo chữ cái): 12.574 phần tử, 11.858 tổ hợp → 0 lệch. (2) trình duyệt — 2 dev
+    server bản gốc/bản mới (bộ đệm Vite RIÊNG: dùng chung `node_modules/.vite` thì bản kia lỗi "Outdated Optimize Dep" giữa chừng) mở cùng
+    lúc, so `border-radius` tính toán từng phần tử theo đường dẫn DOM: 23 tab tài khoản thật chỉ đọc (laptop 1440 + iPhone 440), 27 hộp
+    thoại qua harness, lịch Phân ca có dữ liệu — >23.000 phần tử, 0 lệch (chỗ lệch ban đầu ở Phân tích iPhone là 1 bên còn khung chờ — đo
+    lại chờ 25 s: 0). (3) `npm run check`; e2e 67/67.
+  - Công cụ (scratchpad, không commit): `bo-goc.cjs` (`phan-tich` / `doi` / `so-sanh` với `GOC=<ref>`), `go-rounded-chet.cjs`.

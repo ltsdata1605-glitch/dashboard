@@ -130,6 +130,13 @@ thấp, cỡ 10px không đọc được.
 mới.)* Cấm tự đặt `rounded-xl`/`rounded-2xl`/`rounded-[…]` cho thẻ/nút/modal mới: dùng class ngữ nghĩa
 ở trên để đổi 1 token là cả app đổi theo.
 
+*(GĐ10 bước 4, 2026-10-21)* Toàn bộ 905 lớp kiểu cũ đã đổi sang token CÙNG GIÁ TRỊ: `rounded-lg` 8px → `rounded-control`,
+`rounded-xl` 12px → `rounded-popup`, `rounded-2xl` 16px → `rounded-card` (kể cả cạnh `rounded-t-*`, biến thể `sm:`, `!`) — giao diện
+không đổi (đo `border-radius` tính toán trước/sau). Token là thang 3 cỡ 8 / 12 / 16 đặt tên theo vai trò chính: phần tử có cỡ bo trùng
+thang dùng token của cỡ đó dù vai trò khác (thẻ nhỏ bo 12px → `rounded-popup`). `lint-ratchet` `legacyRadius` = 0 — lớp cũ mới là đỏ.
+Giữ nguyên: `rounded`/`-sm` (4px), `-xs` (2px), `-md` (6px tooltip), `-full`, `-none` (thang không có cỡ 2/4px). `cn()` đã khai 4 token
+cho tailwind-merge → đè bo góc qua `className` là lớp sau thắng.
+
 **Viền dày `2px` chỉ dùng đúng 2 chỗ trong bảng**: mép phải cột ghim, và đầu mỗi nhóm cột.
 
 ---

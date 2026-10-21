@@ -39,9 +39,9 @@ Chữ dùng thang `type-*` (`type-title`, `type-headline`, `type-body`, `type-su
 token (`rounded-control/card/popup/overlay`), màu theo 5 họ semantic — chi tiết `DESIGN_SYSTEM.md` mục 7.
 
 Đè lớp qua `className` (`cn` = tailwind-merge): lớp cùng nhóm được gộp (vd `h-9` → `h-8`, `text-sm` → `text-xs`, `border` →
-`border-0`). RIÊNG bo góc token: tailwind-merge không nhận ra `rounded-control/card/…` nên KHÔNG gỡ chúng — lớp nào thắng do thứ tự
-trong CSS (theo bảng chữ cái): `rounded-none/-sm/-md/-lg/-xl/-full` thắng `rounded-control`; `rounded` (trơn) và `rounded-card` THUA
-(đo 20/10 khi làm In Sticker).
+`border-0`). Bo góc token cũng vậy (GĐ10 bước 4, 21/10): `cn` đã khai `rounded-control/card/popup/overlay` cho tailwind-merge nên
+lớp bo góc SAU thắng — `<Input className="rounded-card">` ra 16px, không cần `!` nữa (test `ui/cnBoGoc.test.ts`). Trước đó token không
+được nhận ra và lớp thắng theo chữ cái trong CSS (`rounded-control` thắng `rounded-card`/`rounded` trơn — đo 20/10 khi làm In Sticker).
 
 ## `export/` — xuất ảnh DUY NHẤT
 

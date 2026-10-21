@@ -310,7 +310,9 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   `rounded-full` (huy hiệu, viên, avatar). **Ô bảng và khung KHỐI DỮ LIỆU lớn trên laptop vẫn vuông**
   (`rounded-none`) — giữ như Phân tích/Report BI đang chạy. Phần tử MỚI dùng class ngữ nghĩa, không tự đặt
   `rounded-xl`/`rounded-2xl`/`rounded-[…]`. *(Thay quy tắc 2026-09-10 "4px/6px, bỏ rounded-xl cho card" —
-  chủ dự án chọn không đổi giao diện sang phẳng.)*
+  chủ dự án chọn không đổi giao diện sang phẳng.)* *(GĐ10 bước 4, 2026-10-21: 905 lớp `rounded-lg/xl/2xl` → token cùng giá trị
+  8/12/16px, giao diện không đổi; ratchet `legacyRadius` = 0. `cn()` khai 4 token cho tailwind-merge → `className="rounded-card"`
+  đè được bo góc gốc của Input/Button, KHÔNG cần `!`.)*
 - **Đổ bóng** *(chuẩn B, 2026-10-07)*: thẻ tĩnh `shadow-sm`, rê chuột `shadow-md`; dropdown/popup `shadow-lg`;
   modal `shadow-xl`. Khối dữ liệu vuông và ô bảng không đổ bóng.
   `lint-ratchet` chặn lệch chuẩn mới (GĐ4, 2026-10-07): `rawOverlay` (tự dựng `fixed inset-0` ngoài
