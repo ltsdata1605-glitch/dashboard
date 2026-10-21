@@ -108,11 +108,15 @@ describe('GĐ4 — chuẩn thiết kế (B): luật chặn lệch chuẩn mới'
     });
 });
 
-describe('offScaleText — cỡ chữ ngoài thang 9 bậc (GĐ3 2026-10-11)', () => {
+describe('offScaleText — cỡ chữ ngoài thang 10 bậc (GĐ3 2026-10-11; bậc 44 kpi-xl 2026-10-21)', () => {
     const f = 'components/x/Vi.tsx';
     it('cỡ trong thang không bị đếm (11/12/13/14/15/16/17/20/25/26/28/34 và xs/sm/base/xl)', () => {
         const ok = ['text-[11px]', 'text-[12px]', 'text-[13px]', 'text-[15px]', 'text-[17px]', 'text-[20px]', 'text-[25px]', 'text-[34px]', 'text-xs', 'text-sm', 'text-base', 'text-xl'];
         expect(countOffScaleText(line(ok.join(' ')), f)).toBe(0);
+    });
+    it('44px (kpi-xl — số KPI chính màn ≥ xl, phương án B) thuộc thang; 40/48px vẫn ngoài thang', () => {
+        expect(countOffScaleText(line('lg:text-[34px] xl:text-[44px]'), f)).toBe(0);
+        expect(countOffScaleText(line('text-[40px] text-[48px]'), f)).toBe(2);
     });
     it('đếm cỡ px ngoài thang và cỡ có tên ngoài thang', () => {
         expect(countOffScaleText(line('text-[18px] text-[22px] text-[9.5px]'), f)).toBe(2); // 9.5px đã thuộc tinyText

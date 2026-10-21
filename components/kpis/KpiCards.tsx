@@ -558,7 +558,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                                     const { val, unit } = splitCurrencyValue(displayValue);
                                     return (
                                         <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
-                                            <span className={`text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
+                                            <span className={`text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
                                                 {val}
                                             </span>
                                             {unit && (
@@ -574,7 +574,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                                     const pctVal = displayValue.endsWith('%') ? displayValue.slice(0, -1) : displayValue;
                                     return (
                                         <div className="flex items-baseline justify-center gap-0.5 flex-nowrap overflow-hidden w-full">
-                                            <span className={`text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
+                                            <span className={`text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
                                                 {pctVal}
                                             </span>
                                             <span className="text-[13px] sm:text-[15px] lg:text-[17px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
@@ -584,7 +584,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                                     );
                                 })()
                             ) : (
-                                <div className={`w-full text-center text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
+                                <div className={`w-full text-center text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
                                     {displayValue}
                                 </div>
                             )}

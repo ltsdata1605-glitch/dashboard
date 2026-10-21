@@ -263,7 +263,7 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Lớp CSS khung (GĐ7 2026-10-13, styles.css):** `ycx-tranh-dock` — trang TRÀN NGANG trên laptop tự chừa lề 2 dock nổi (khung đặt
   `--dock-left/--dock-right`; trang có max-width đặt thêm `--trang-max`). `[data-thay-tieu-de]` trên gốc thanh công cụ đưa lên khe
   `#mobile-topbar-actions` → dưới 540px chữ tiêu đề thanh trên nhường chỗ (Check thưởng — chủ dự án chốt "1 thanh bar duy nhất").
-- **Lớp Apple (2026-10-11, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ3 — `DESIGN_SYSTEM.md` mục 7):** chữ theo thang 9 bậc `type-*`
+- **Lớp Apple (2026-10-11, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ3 — `DESIGN_SYSTEM.md` mục 7):** chữ theo thang 10 bậc `type-*` (bậc 44px `kpi-xl` chỉ cho số KPI chính ở màn ≥ xl — chủ dự án chọn B 21/10)
   (token `--type-*`, ratchet `offScaleText` chỉ được giảm), tiêu đề viết thường như câu (IN HOA chỉ nhãn cột). Dùng component
   dùng chung thay vì tự vẽ: `Switch` (công tắc), `Tabs variant="segment"` (segmented), `Banner` (thông báo tĩnh, cấm chữ chạy),
   `ListGroup`/`ListRow` (trang cài đặt), `ActionMenu` (nút "⋯" — thanh/tiêu đề tối đa 1 nút chính + ≤ 2 icon), `usePageActions`

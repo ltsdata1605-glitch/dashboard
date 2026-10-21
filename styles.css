@@ -977,6 +977,7 @@ summary,
 @utility modal-bleed-b { margin-bottom: calc(var(--modal-pad, 1.25rem) * -1); }
 @utility type-kpi { font-size: var(--type-kpi); line-height: var(--type-kpi-lh); font-variant-numeric: tabular-nums; }
 @utility type-kpi-lg { font-size: var(--type-kpi-lg); line-height: var(--type-kpi-lg-lh); font-variant-numeric: tabular-nums; }
+@utility type-kpi-xl { font-size: var(--type-kpi-xl); line-height: var(--type-kpi-xl-lh); font-variant-numeric: tabular-nums; }
 
 /* Check thưởng: tiêu đề và thời gian cập nhật hiển thị như tab Phân tích.
    Thanh công cụ tìm kiếm và cụm con nhộng hành động nằm gọn gàng bên phải. */

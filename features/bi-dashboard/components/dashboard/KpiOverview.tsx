@@ -214,7 +214,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
-                        <span className="text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums shrink-0 text-emerald-700 dark:text-emerald-400">
+                        <span className="text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 text-emerald-700 dark:text-emerald-400">
                             {dtlkFormatted.value}
                         </span>
                         <span className="text-[13px] sm:text-[15px] lg:text-[17px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
@@ -249,7 +249,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
-                        <span className="text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums shrink-0 text-sky-700 dark:text-sky-400">
+                        <span className="text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 text-sky-700 dark:text-sky-400">
                             {dtqdFormatted.value}
                         </span>
                         <span className="text-[13px] sm:text-[15px] lg:text-[17px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
@@ -282,7 +282,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline justify-center gap-0.5 flex-nowrap overflow-hidden w-full">
-                        <span className={`text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums shrink-0 ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                        <span className={`text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
                             {Math.ceil(hqqd)}
                         </span>
                         <span className="text-[13px] sm:text-[15px] lg:text-[17px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
@@ -315,7 +315,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline justify-center gap-0.5 flex-nowrap overflow-hidden w-full">
-                        <span className={`text-[26px] sm:text-[28px] lg:text-[34px] font-black leading-none tracking-tight tabular-nums shrink-0 ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        <span className={`text-[26px] sm:text-[28px] lg:text-[34px] xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                             {Math.round(tyTrongTraGop)}
                         </span>
                         <span className="text-[13px] sm:text-[15px] lg:text-[17px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">

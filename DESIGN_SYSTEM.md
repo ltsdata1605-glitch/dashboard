@@ -316,7 +316,7 @@ ngang.
 Áp chuẩn Apple HIG cho dashboard bán lẻ, **giữ nguyên** mọi quyết định đã chốt (bảng luôn là bảng, UTM Avo + Roboto Condensed,
 tắt dark mode, bảng màu 5 họ, thang bo góc B, chữ ≥ 11px). Mọi thứ dưới đây nằm ở `components/shared/ui/` + `styles/tokens.css`.
 
-**Thang chữ 9 bậc** — class `type-*` (styles.css), giá trị ở token `--type-*` (tự đổi iPhone/laptop):
+**Thang chữ 10 bậc** — class `type-*` (styles.css), giá trị ở token `--type-*` (tự đổi iPhone/laptop):
 
 | Class | iPhone | Laptop | Dùng cho |
 |---|---|---|---|
@@ -328,6 +328,7 @@ tắt dark mode, bảng màu 5 họ, thang bo góc B, chữ ≥ 11px). Mọi th�
 | `type-footnote` | 12/16 | 12/16 | Chú thích, giờ cập nhật |
 | `type-caption` | 11/13 | 11/13 | **Nhãn cột** (IN HOA, Roboto Condensed), nhãn thanh tab |
 | `type-kpi` / `type-kpi-lg` | 25/28 · 34/38 | như iPhone | Số thẻ KPI (tabular-nums) |
+| `type-kpi-xl` | — | 44/48 (chỉ màn ≥ xl) | **Số KPI chính** trên màn lớn — thẻ KPI chạy dải 26 → 28 → 34 → 44px (chủ dự án chọn phương án B 2026-10-21) |
 
 IN HOA chỉ cho `caption`. Tiêu đề viết thường như câu ("Chi tiết theo kho"). Không dùng `font-black`. `lint-ratchet`
 `offScaleText` đếm cỡ chữ ngoài thang — chỉ được giảm.

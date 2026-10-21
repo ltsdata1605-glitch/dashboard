@@ -492,7 +492,7 @@
    ═══════════════════════════════════════════════════════════ */
 :root {
   /* ─── LỚP APPLE (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3) ───
-     Thang chữ 9 bậc — MỌI chữ mới chọn 1 trong 9 bậc (class `type-*` ở styles.css). Bậc có 2 giá trị iPhone/laptop:
+     Thang chữ 10 bậc — MỌI chữ mới chọn 1 trong 10 bậc (class `type-*` ở styles.css). Bậc có 2 giá trị iPhone/laptop:
      laptop đọc gần hơn và màn dày chữ hơn nên nhỏ hơn 1px (đổi ở khối @media cuối file).
      Bảng giữ nguyên: số trong bảng 13px = `subhead`, nhãn cột 11px = `caption` (IN HOA, Roboto Condensed). */
   --type-large-title: 28px;  --type-large-title-lh: 34px;   /* tiêu đề trang (vùng nội dung) */
@@ -504,6 +504,7 @@
   --type-caption: 11px;      --type-caption-lh: 13px;       /* nhãn cột (IN HOA), nhãn thanh tab */
   --type-kpi: 25px;          --type-kpi-lh: 28px;           /* số thẻ KPI (tabular-nums) */
   --type-kpi-lg: 34px;       --type-kpi-lg-lh: 38px;        /* một con số nổi bật */
+  --type-kpi-xl: 44px;       --type-kpi-xl-lh: 48px;        /* số KPI chính ở màn ≥ xl (phương án B, chủ dự án chốt 2026-10-21) */
 
   /* Vật liệu mờ cho 3 vùng nổi nhỏ cố định: thanh trên, thanh tab, toast (class .ycx-material) */
   --material-bg: rgb(255 255 255 / 0.84);

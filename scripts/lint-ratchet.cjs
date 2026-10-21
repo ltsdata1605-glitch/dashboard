@@ -249,13 +249,14 @@ function countOffScaleRadius(content, file = '') {
 }
 
 /**
- * offScaleText (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3): cỡ chữ NGOÀI thang 9 bậc của lớp Apple. Thang (px):
- * 11 caption · 12 footnote · 13 subhead · 15/14 body · 17/16 headline · 20 title · 25 kpi · 28/26 large-title · 34 kpi-lg
+ * offScaleText (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3): cỡ chữ NGOÀI thang 10 bậc của lớp Apple. Thang (px):
+ * 11 caption · 12 footnote · 13 subhead · 15/14 body · 17/16 headline · 20 title · 25 kpi · 28/26 large-title · 34 kpi-lg ·
+ * 44 kpi-xl (số KPI chính ở màn ≥ xl — chủ dự án chọn phương án B 2026-10-21)
  * (số sau "/" là bản laptop). Đếm `text-[Npx]` với N ≥ 11 không thuộc thang (N < 11 đã có `tinyText`) và cỡ có tên ngoài thang
  * `text-lg`(18) `text-2xl`(24) `text-3xl`(30) `text-4xl`(36)… — `text-xs/sm/base/xl` = 12/14/16/20 nằm trong thang.
  * Ghi chú: ~30 cỡ chữ khác nhau là một trong 3 nguyên nhân gốc của cảm giác "rối" — chỉ số này chỉ được GIẢM.
  */
-const TYPE_SCALE_PX = new Set([11, 12, 13, 14, 15, 16, 17, 20, 25, 26, 28, 34]);
+const TYPE_SCALE_PX = new Set([11, 12, 13, 14, 15, 16, 17, 20, 25, 26, 28, 34, 44]);
 function countOffScaleText(content, file = '') {
   if (!file.endsWith('.tsx')) return 0;
   let n = 0;
