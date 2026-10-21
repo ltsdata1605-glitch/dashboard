@@ -473,7 +473,7 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
    - **Ngoài thẻ KPI — XONG 21/10** (127 chỗ / 63 file về cỡ gần nhất trong thang, giữ chiều cao dòng; `offScaleText` 198 → 71;
      màn đăng nhập blue → sky, `nonSemanticColor` 26 → 24).
    - **Mã hex — XONG 21/10** (108 ngoài bảng màu: 76 giữ có lý do — màu người dùng tự chọn, LINE mô phỏng, thương hiệu, `dark:`, chú
-     thích; 6 giữ — hệ màu "đậm nét" có chủ đích của Report BI; 22 sửa — chú giải Phân ca lệch màu thật, đầu bảng tuần, vạch Top NV; 4 ở thẻ KPI).
+     thích; 6 giữ — hệ màu "đậm nét" có chủ đích của Report BI; 22 sửa — chú giải Phân ca lệch màu thật, đầu bảng tuần, vạch Top NV; 4 giữ — viền xuất ảnh thẻ KPI do bộ xuất Report BI quyết).
    - **Thẻ KPI — CHỜ DUYỆT ẢNH** (71 cỡ chữ + 24 màu còn lại đều ở đây): đề xuất ở nhánh `claude/gd10-b3-the-kpi` — A: số chính 34px ·
      B: thêm bậc 44px cho màn ≥ xl · hoặc giữ nguyên.
 4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.

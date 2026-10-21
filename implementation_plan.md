@@ -8757,6 +8757,9 @@ Ratchet chỉ quét lớp Tailwind nên mã hex (`style={{…'#…'}}`, `bg-[#�
   Doanh thu/Thưởng, `BonusCompareTable`. Đây là hệ màu có tên trong bảng chọn ("Cam đậm (Cảnh báo)", "Đỏ đậm (Xấu)"), là MẶC ĐỊNH của cài
   đặt màu người dùng (đã lưu trên cloud) và `toBoldVividColor` cố ý đổi amber/rose cũ SANG cam/đỏ để tương phản cao — đổi về amber/rose là
   đi ngược quyết định đó và lệch với màu người dùng đã lưu.
+- **Giữ — viền emerald của thẻ KPI (4, `KpiCard`, `IndustryKpiCard`):** `borderHex: '#86efac'` (green-300; các theme khác là bậc 300 của
+  chính họ) CHỈ dùng làm `data-kpi-border` khi xuất ảnh, và `presetBi.ts` (bộ xuất Report BI — thiết kế riêng có chủ đích) tự có
+  `colorBorderMap.emerald = '#86efac'` được ưu tiên hơn → đổi ở thẻ không đổi gì trên màn hình lẫn ảnh xuất, chỉ tạo thêm chỗ lệch.
 - **Sửa (22):**
   - Phân ca `Legend` (dải Ghi chú dưới lịch): chấm "Xin nghỉ" TÍM không tồn tại trên lịch (`off-request` chỉ khai trong `types.ts`, không
     nơi nào gán) và thiếu chấm XANH của người đổi cùng → 3 chấm đúng màu `.cell-*::after` ở `phanca.css`: Sửa trực tiếp (emerald) · Chủ
@@ -8766,7 +8769,6 @@ Ratchet chỉ quét lớp Tailwind nên mã hex (`style={{…'#…'}}`, `bg-[#�
   - Phân ca đầu bảng theo tuần: teal → emerald tầng đậm (tuần 1 vốn gần như trùng tuần 5), fuchsia → indigo (không dùng rose vì cột
     T7/CN đã tô hồng), yellow → amber.
   - `TopSellerList` vạch nhóm: blue-500 → `bg-sky-500` (dữ liệu thật: 2 vạch, đúng màu sky-500).
-  - Thẻ KPI (4 — `KpiCard`, `IndustryKpiCard`): viền theme emerald đang là `#86efac` (green-300) → nằm trong đề xuất thẻ KPI chờ duyệt.
 - Ngoài phạm vi, chưa đổi: Xuất Google Sheet của Phân ca (`googleSheetsExport.ts`) vẫn tô ô Thu Ngân tím (`#f3e8ff`) trong khi app là
   sky — tài liệu bên ngoài người dùng đang quen, cần chủ dự án quyết.
 - Kiểm: ảnh trước/sau Phân ca (Dùng thử + tệp NV giả, tháng 10/2026, laptop 1440 + iPhone 440) đầu bảng/Ghi chú/Hướng dẫn mục 7;
