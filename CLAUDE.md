@@ -150,7 +150,8 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 
 **Vùng chạy (2026-10-14):** Firestore `(default)` ở `asia-southeast1` (Singapore). Hàm app gọi trực tiếp khai `region: CLIENT_REGIONS`
 (`functions/src/region.ts`), client gọi `getFunctions(app, 'asia-southeast1')`. Hàm MỚI app gọi cũng phải vậy — để mặc định là chạy ở Mỹ
-(đi vòng VN → Mỹ → Singapore). `us-central1` trong mảng chỉ tạm cho app bản cũ, gỡ sau ~2026-10-21 (xem `implementation_plan.md`).
+(đi vòng VN → Mỹ → Singapore). Bản `us-central1` tạm cho app bản cũ ĐÃ GỠ 2026-10-21 (log: lượt gọi cuối 15/10); chỉ còn
+`demoteExpiredUsers` (chạy theo lịch) ở Mỹ.
 
 **Bản đồ database → file rules** nằm ở mảng `firestore[]` trong `firebase.json` — nay chỉ còn `(default)` → `firestore.rules`.
 

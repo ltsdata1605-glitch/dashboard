@@ -8706,3 +8706,11 @@ Sau Report BI toàn dự án còn **0** `<button>` thô (194 lúc kiểm 15/10; 
 — lint bằng ĐÚNG cấu hình dự án ở 5 khu vực (gốc + 3 features): `<button>` thô phải ra mức lỗi 2, `<Button>`/chuỗi có chữ "<button>"
 không bị bắt nhầm, Button.tsx sạch; đã thử hạ về `warn` → test đỏ đúng ca chính. Cách viết nút tự tạo kiểu: `<Button variant="unstyled"
 size="none" …>` giữ nguyên lớp (có sẵn vòng focus bàn phím, `disabled:opacity-50`); CLAUDE.md mục 2 ghi quy tắc.
+
+### Gỡ bản Cloud Functions ở Mỹ (2026-10-21)
+
+- Log Cloud Run 14–21/10 (`resource.labels.location="us-central1"`, POST): app bản cũ gọi vào Mỹ lần cuối 2026-10-15 ~06h UTC
+  (`resolveSession`, `listManagedUsers`); sau đó chỉ còn `demoteExpiredUsers` (lịch, giữ ở Mỹ có chủ đích).
+- `functions/src/region.ts`: `CLIENT_REGIONS = ['asia-southeast1']`; deploy `--force` 14 hàm → 14 bản `us-central1` đã xoá.
+- Kiểm: `firebase functions:list` chỉ còn `demoteExpiredUsers` ở us-central1; `tests/e2e/ham-may-chu-singapore.spec.ts` (đăng nhập
+  tài khoản thật, chỉ đọc) xanh — gọi `resolveSession`/`listManagedUsers` ở Singapore, 0 lỗi.
