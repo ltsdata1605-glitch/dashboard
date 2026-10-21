@@ -30,12 +30,16 @@ const hashVerifier = (verifier: string): string =>
   createHash('sha256').update(verifier).digest('base64url');
 
 export const pwaHandoffStore = onCall({ region: CLIENT_REGIONS }, async (request) => {
-  const { code, idToken, accessToken, warmup } = (request.data ?? {}) as {
-    code?: string; idToken?: string; accessToken?: string; warmup?: boolean;
+  const { code, idToken, accessToken, warmup, diag } = (request.data ?? {}) as {
+    code?: string; idToken?: string; accessToken?: string; warmup?: boolean; diag?: unknown;
   };
   // Gọi "hâm nóng" (2026-10-13): app/trang đăng nhập gọi trước trong lúc người dùng còn ở trang Google, để lượt
   // gửi phiên thật không phải chờ khởi động nguội (~6 s trong video chủ dự án quay). Không đọc/ghi gì.
-  if (warmup === true) return { ok: true, warm: true };
+  // `diag` (2026-10-21): trang đăng nhập báo bước bị kẹt/lỗi (không chứa token) — để lần sau đọc log là biết máy nào kẹt ở đâu.
+  if (warmup === true) {
+    if (diag && typeof diag === 'object') console.warn('[pwa-login diag]', JSON.stringify(diag).slice(0, 600));
+    return { ok: true, warm: true };
+  }
   let uid = request.auth?.uid;
   if (!uid && typeof idToken === 'string' && idToken.length >= 20) {
     try {

@@ -8779,3 +8779,23 @@ Ratchet chỉ quét lớp Tailwind nên mã hex (`style={{…'#…'}}`, `bg-[#�
 CI `main` lượt 411 đỏ ở `tax-qr-and-export`: test tìm số thuế bằng `[data-testid=tax-result-panel] .text-2xl`, lượt cỡ chữ ở trên đổi
 `text-2xl` → `text-[25px]`. Sửa: `data-testid="tax-hero-amount"` cho số chính của thẻ kết quả, test tìm theo đó (6827f171). Bài học: trước
 khi đổi lớp hàng loạt, `git grep` thư mục `tests/` xem có bộ chọn nào bám đúng lớp đó (đã rà: chỉ còn chỗ này).
+
+### Đăng nhập iPhone kẹt "Đang mở trang đăng nhập Google…" (2026-10-21, video chủ dự án)
+
+**Nguyên nhân (đã tái hiện):** trên iPhone/Safari, `getAuth()` gắn `browserPopupRedirectResolver` và thư viện CHỜ tải xong
+khung ẩn gapi (`apis.google.com`, cho chờ 30–60 s trên điện thoại) trước khi xong khởi tạo. Máy nào treo bước đó thì:
+- trang `auth-hosting/pwa-login.html`: `signInWithRedirect` không chạy → "Trang Google chưa mở? Bấm nút bên dưới." mãi;
+- app chính: `signInWithCredential` (nhận phiên) treo → kẹt "Đang hoàn tất đăng nhập…".
+Tái hiện bằng Playwright giả iPhone + chặn treo `apis.google.com`: trang cũ không sang Google trong 15 s, app cũ không đăng nhập
+được trong 120 s.
+
+**Sửa:**
+- `pwa-login.html`: bước 1 `initializeAuth` bộ nhớ RAM, không gắn resolver lúc khởi tạo, chỉ truyền vào `signInWithRedirect`
+  (chỉ dựng URL + chuyển trang). Bước 2 đọc thẳng kết quả handler để ở sessionStorage
+  `firebase:redirectEvent:<apiKey>:[DEFAULT]` ({urlResponse, sessionId}) → REST `accounts:signInWithIdp` → `fetch` callable
+  `pwaHandoffStore` kèm Bearer ID token. Không còn `getRedirectResult` / khung gapi / firebase-functions.
+- `services/firebase.ts`: `initializeAuth` (persistence như getAuth); iPhone/iPad KHÔNG gắn resolver; các lệnh popup/redirect
+  truyền `browserPopupRedirectResolver` tường minh. Máy tính giữ nguyên hành vi.
+- `pwaHandoffStore({warmup, diag})`: trang đăng nhập báo bước kẹt/lỗi vào log (`[pwa-login diag]`, không có token).
+- Test: `tests/e2e/pwa-login-khong-gapi.spec.ts`, `tests/e2e/iphone-gapi-treo-dang-nhap.spec.ts` (tài khoản thật, chỉ đọc).
+  Bản giả `firebase/auth` trong 8 spec thêm `initializeAuth`.

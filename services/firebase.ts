@@ -1,5 +1,8 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential } from 'firebase/auth';
+import {
+    getAuth, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence, browserPopupRedirectResolver,
+    GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
@@ -19,7 +22,24 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// initializeAuth thay getAuth (2026-10-21, video iPhone mới kẹt "Đang hoàn tất đăng nhập…"): getAuth gắn sẵn
+// browserPopupRedirectResolver, mà trên iPhone/Safari thư viện CHỜ tải xong khung ẩn gapi (apis.google.com, cho chờ tới
+// 30–60 s trên điện thoại) rồi mới xong khởi tạo — máy nào treo bước đó thì onAuthStateChanged lẫn signInWithCredential (nhận
+// phiên đăng nhập) treo theo. iPhone/iPad không dùng popup/redirect của app (đi trang auth.dashboard.pro.vn) nên khỏi gắn;
+// các lệnh popup/redirect bên dưới truyền resolver tường minh. Máy tính giữ nguyên như getAuth (cùng persistence, cùng resolver).
+const laThietBiIOS = typeof navigator !== 'undefined'
+    && (/iPad|iPhone|iPod/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1));
+const khoiTaoAuth = () => {
+    try {
+        return initializeAuth(app, {
+            persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence],
+            popupRedirectResolver: laThietBiIOS ? undefined : browserPopupRedirectResolver,
+        });
+    } catch {
+        return getAuth(app); // đã khởi tạo (nạp lại module lúc dev) → dùng lại instance có sẵn
+    }
+};
+const auth = khoiTaoAuth();
 const db = getFirestore(app);
 // Singapore — cùng vùng Firestore, gần Việt Nam nhất (functions/src/region.ts). Trước 2026-10-14 mặc định us-central1 (Mỹ).
 const functions = getFunctions(app, 'asia-southeast1');
@@ -89,7 +109,7 @@ export const loginWithGoogle = async () => {
 
     try {
         // Cho người dùng đủ thời gian (180s = 3 phút) để chọn tài khoản, nhập mật khẩu và hoàn tất xác thực 2 bước (2FA) trên thiết bị mới
-        const popupPromise = signInWithPopup(auth, googleProvider);
+        const popupPromise = signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
         const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => {
                 const err = new Error('Quá thời gian chờ đăng nhập Google (180s).');
@@ -124,7 +144,7 @@ export const loginWithGoogle = async () => {
 
 export const loginWithGoogleRedirect = async () => {
     try {
-        await signInWithRedirect(auth, googleProvider);
+        await signInWithRedirect(auth, googleProvider, browserPopupRedirectResolver);
     } catch (error) {
         console.error("Lỗi đăng nhập Google redirect:", error);
         throw error;
@@ -133,7 +153,7 @@ export const loginWithGoogleRedirect = async () => {
 
 export const checkRedirectLoginResult = async () => {
     try {
-        const result = await getRedirectResult(auth);
+        const result = await getRedirectResult(auth, browserPopupRedirectResolver);
         if (result) {
             const credential = GoogleAuthProvider.credentialFromResult(result);
             if (credential?.accessToken) {
@@ -290,7 +310,7 @@ export const loginWithGoogleForceConsent = async () => {
     consentProvider.addScope('https://www.googleapis.com/auth/drive.file');
     consentProvider.setCustomParameters({ prompt: 'consent' });
     try {
-        const result = await signInWithPopup(auth, consentProvider);
+        const result = await signInWithPopup(auth, consentProvider, browserPopupRedirectResolver);
         const credential = GoogleAuthProvider.credentialFromResult(result);
         if (credential?.accessToken) {
             sessionStorage.setItem('googleOAuthToken', credential.accessToken);

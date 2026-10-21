@@ -16,6 +16,8 @@ export class GoogleAuthProvider {
   static credentialFromResult() { return null; }
 }
 export function getAuth() { return { currentUser: null }; }
+export function initializeAuth() { return { currentUser: null }; } // services/firebase.ts dùng initializeAuth (2026-10-21)
+export const indexedDBLocalPersistence = {}; export const browserPopupRedirectResolver = {};
 export function onAuthStateChanged(auth, cb) {
   window.__authCb = cb;
   setTimeout(() => cb(null), 30); // Firebase xác nhận: chưa đăng nhập -> LoginView
