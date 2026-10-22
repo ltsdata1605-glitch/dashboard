@@ -27,7 +27,6 @@ export const useDashboardLogic = () => {
     const { user, userRole, departmentId } = useAuth();
     const [status, setStatus] = useState<Status>({ message: '', type: 'info', progress: 0 });
     const [appState, setAppState] = useState<AppState>('loading');
-    const [configUrl, setConfigUrl] = useState('cloud://global_product_config');
     const [isLuyKe, setIsLuyKe] = useState(false);
     const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'uncollected' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<{ employeeName: string } | null>(null);
@@ -75,7 +74,7 @@ export const useDashboardLogic = () => {
         cloudSyncBanner,
         handleDismissCloudSyncBanner,
         isSyncingCloud
-    } = useDataManagement({ filterState, configUrl, setStatus, setAppState, appState });
+    } = useDataManagement({ filterState, setStatus, setAppState, appState });
 
     // 3. Warehouse Targets Management
     const { handleSaveWarehouseTargets } = useWarehouseTargets(setWarehouseTargets);
@@ -269,7 +268,7 @@ export const useDashboardLogic = () => {
     return useMemo(() => ({
         status, appState, setAppState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, productConfig, processedData, employeeAnalysisData,
-        configUrl, setConfigUrl, uniqueFilterOptions,
+        uniqueFilterOptions,
         availableWeeks, availableMonths,
         filterState, handleFilterChange,
         pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync: stableHandleAcceptCloudSync,
@@ -325,7 +324,7 @@ export const useDashboardLogic = () => {
     }), [
         status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, productConfig, processedData, employeeAnalysisData,
-        configUrl, uniqueFilterOptions,
+        uniqueFilterOptions,
         availableWeeks, availableMonths,
         filterState, handleFilterChange,
         pendingCloudSync, stableHandleAcceptCloudSync,

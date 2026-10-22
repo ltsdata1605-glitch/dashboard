@@ -1,7 +1,4 @@
 import { expect, test } from '@playwright/test';
-import * as fs from 'node:fs';
-import * as XLSX from 'xlsx';
-if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs);
 /**
  * ĐO HIỆU NĂNG (tuỳ chọn, mặc định BỎ QUA): nạp file doanh số lớn vào Phân tích và in ra thời gian,
  * heap, số lần khựng luồng chính, top hàm tốn CPU. Chủ dự án (2026-09-29): dữ liệu lớn nhất
@@ -13,11 +10,6 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
 test('đo nạp dữ liệu lớn vào Phân tích', async ({ page }) => {
     test.skip(!process.env.PERF_FILE, 'Chỉ chạy khi đặt PERF_FILE');
     test.setTimeout(900_000);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NhomCha','NhomCon','NhomHang'],['ICT','Smartphone','1491'],['Phụ kiện','Camera','4219'],['Phụ kiện','Pin','12'],['Phụ kiện','Loa','1031'],['Gia dụng','Máy lọc','4171'],['Gia dụng','Nồi cơm','4156']]), 'Ngành hàng');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Hình thức xuất','Tính doanh thu','Hình thức'],['Xuất bán hàng tại siêu thị','Có','Tiền mặt']]), 'Hình thức xuất');
-    const cfg = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
-    await page.route('**://docs.google.com/**', r => r.fulfill({ status: 200, contentType: 'application/octet-stream', body: cfg }));
     await page.addInitScript(() => {
         const w = window as unknown as { __long: number[] };
         w.__long = [];

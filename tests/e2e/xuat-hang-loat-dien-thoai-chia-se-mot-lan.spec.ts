@@ -35,12 +35,6 @@ function taoFileBanHang(): string {
     return file;
 }
 
-function taoCauHinh(): Buffer {
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NhomCha', 'NhomCon', 'NhomHang'], ['ICT', 'Smartphone', '1491']]), 'Ngành hàng');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Hình thức xuất', 'Tính doanh thu', 'Hình thức'], ['Xuất bán hàng tại siêu thị', 'Có', 'Tiền mặt']]), 'Hình thức xuất');
-    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
-}
 
 
 test.use({
@@ -63,10 +57,6 @@ test('xuất hàng loạt NV trên iPhone: một nút, một lượt chia sẻ �
             },
         });
     });
-    const cauHinh = taoCauHinh();
-    await page.route('**://docs.google.com/**', r => r.fulfill({
-        status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
-    }));
     await page.goto('/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     await page.locator('input[type="file"]').first().setInputFiles(taoFileBanHang());

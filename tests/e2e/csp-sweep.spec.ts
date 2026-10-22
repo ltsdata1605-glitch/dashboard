@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
  * thật ĐẾN 3 LẦN, lần nào cũng âm thầm (trình duyệt không báo ồn ào, tính năng chỉ đơn giản
  * là không chạy):
  *   1. `connect-src` thiếu docs.google.com/googleusercontent.com → hỏng nạp cấu hình sản
- *      phẩm (ảnh hưởng MỌI số liệu doanh thu).
+ *      phẩm (ảnh hưởng MỌI số liệu doanh thu). (2026-10-22: cấu hình chỉ còn từ Firestore — đã bỏ docs.google.com.)
  *   2. `worker-src` thiếu blob: → chặn Worker của canvas-confetti.
  *   3. `frame-src` thiếu 'self' + https://*.run.app → hỏng HOÀN TOÀN Check Thưởng và Hoàn thuế.
  *

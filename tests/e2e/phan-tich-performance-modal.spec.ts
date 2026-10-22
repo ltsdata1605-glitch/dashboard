@@ -1,13 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { createProductConfigXlsx, createSalesXlsx, TEST_EMPLOYEE } from './helpers/salesFixture';
+import { createSalesXlsx, TEST_EMPLOYEE } from './helpers/salesFixture';
 
 /** Phân Tích > Nhân Viên > modal "Phân Tích Hiệu Quả Cá Nhân" — kiểm chứng thay đổi 2026-09-05. */
 test.describe('Phân Tích — modal hiệu quả cá nhân', () => {
     test.beforeEach(async ({ page }) => {
-        const cauHinh = createProductConfigXlsx();
-        await page.route('**://docs.google.com/**', r => r.fulfill({
-            status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
-        }));
         await page.goto('/');
         await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
 

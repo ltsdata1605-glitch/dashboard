@@ -3,6 +3,7 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
+import { useLayout } from '../../contexts/LayoutContext';
 
 interface UnconfiguredGroupsModalProps {
     isOpen: boolean;
@@ -13,8 +14,6 @@ interface UnconfiguredGroupsModalProps {
     onRestoreGroup: (nhomHang: string) => void;
 }
 
-const EDITABLE_CONFIG_URL = 'https://docs.google.com/spreadsheets/d/1yxI_cHhvMxvpWHErW8asFjuDgfMp_B5_H_x6w1KxNXo/edit?gid=1855307997#gid=1855307997';
-
 const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
     isOpen,
     onClose,
@@ -24,6 +23,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
     onRestoreGroup
 }) => {
     const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+    const { setActiveTab } = useLayout();
 
     const handleCopyText = (text: string, index: number) => {
         navigator.clipboard.writeText(text);
@@ -35,7 +35,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
     const handleCopyAllRows = () => {
         if (unconfiguredGroups.length === 0) return;
         
-        // Format as 5 columns matching Google Sheets columns:
+        // 5 cột khớp sheet "Ngành hàng" của file Excel cấu hình (Cài đặt › cấu hình ngành hàng › Xuất Excel / Tải file Excel):
         // Col A: NganhHang (nganhHang raw)
         // Col B: NhomHang (nhomHang raw)
         // Col C: NhomCha (empty, for user to fill in, e.g. DCNB, Gia dụng)
@@ -203,11 +203,12 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                     <h4 className="font-bold text-slate-700 dark:text-slate-300">Hướng dẫn cập nhật cấu hình:</h4>
                     <ol className="list-decimal pl-4 space-y-2 text-slate-600 dark:text-slate-400 leading-relaxed">
                         <li>Bấm nút <strong>Sao chép toàn bộ dòng mới</strong> (dưới chân modal).</li>
-                        <li>Bấm nút <strong>Mở file Google Sheets cấu hình</strong> bên dưới để truy cập vào sheet <strong>Ngành hàng</strong>.</li>
+                        <li>Bấm nút <strong>Mở cấu hình ngành hàng</strong> bên dưới (mục cấu hình ngành hàng trong Cài đặt), bấm <strong>Xuất Excel</strong> để lấy file cấu hình hiện tại rồi mở sheet <strong>Ngành hàng</strong>.</li>
                         <li>Cuộn xuống dưới cùng của danh sách.</li>
                         <li>Chọn ô trống đầu tiên ở <strong>Cột A (Ngành hàng)</strong> và nhấn <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[11px] font-mono shadow-sm">Ctrl + V</kbd> (hoặc <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[11px] font-mono shadow-sm">Cmd + V</kbd>).</li>
                         <li>Hệ thống đã tự điền sẵn Tên Ngành hàng (cột A), Nhóm hàng (cột B), Nhóm con (cột D) và Hệ số quy đổi (cột E).</li>
                         <li>Bạn chỉ cần bổ sung cột <strong>NhomCha</strong> (cột C) (ví dụ: <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">DCNB</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">Gia dụng</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">CE</code>, <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px]">ICT</code>) và điều chỉnh lại cột NhomCon, Hệ số quy đổi nếu cần.</li>
+                        <li>Lưu file rồi bấm <strong>Tải file Excel</strong> ở cùng mục — cấu hình mới áp dụng cho toàn hệ thống.</li>
                     </ol>
                 </div>
 
@@ -223,15 +224,14 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         <span>Sao chép toàn bộ dòng mới</span>
                     </Button>
                     
-                    <a
-                        href={EDITABLE_CONFIG_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={() => { onClose(); setActiveTab('settings'); }}
                         className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-popup shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
-                        <AppIcon name="externalLink" size="sm" />
-                        <span>Mở file Google Sheets cấu hình</span>
-                    </a>
+                        <AppIcon name="settings" size="sm" />
+                        <span>Mở cấu hình ngành hàng</span>
+                    </Button>
                 </div>
             </div>
             </div>

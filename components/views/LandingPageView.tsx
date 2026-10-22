@@ -8,8 +8,6 @@ import { useAuth } from '../../contexts/AuthContext';
 
 interface LandingPageViewProps {
     onProcessFile: (files: File[]) => void;
-    configUrl: string;
-    onConfigUrlChange: (url: string) => void;
     registry?: UploadedFileRegistryItem[];
     onToggleActive?: (id: string) => Promise<void> | void;
     onDelete?: (id: string) => Promise<void> | void;
@@ -23,8 +21,6 @@ interface LandingPageViewProps {
  */
 const LandingPageView: React.FC<LandingPageViewProps> = ({
     onProcessFile,
-    configUrl,
-    onConfigUrlChange,
     registry = [],
     onToggleActive = () => {},
     onDelete = () => {},
@@ -40,11 +36,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
         <FeatureLandingLayout>
             {canManageFiles ? (
                 <>
-                    <UploadSection
-                        onProcessFile={onProcessFile}
-                        configUrl={configUrl}
-                        onConfigUrlChange={onConfigUrlChange}
-                    />
+                    <UploadSection onProcessFile={onProcessFile} />
                     {registry.length > 0 && (
                         <FileHistoryManager
                             registry={registry}

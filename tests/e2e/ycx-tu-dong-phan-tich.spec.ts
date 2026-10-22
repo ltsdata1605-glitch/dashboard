@@ -33,12 +33,6 @@ function fileBanHang(): Buffer {
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
 }
 
-function cauHinh(): Buffer {
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NhomCha', 'NhomCon', 'NhomHang'], ['ICT', 'Smartphone', '1491']]), 'Ngành hàng');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Hình thức xuất', 'Tính doanh thu', 'Hình thức'], ['Xuất bán hàng tại siêu thị', 'Có', 'Tiền mặt']]), 'Hình thức xuất');
-    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
-}
 
 // App có CSP chặn script nội tuyến — Tampermonkey thật không bị CSP chặn, nên test bỏ qua CSP để nạp userscript
 test.use({ bypassCSP: true });
@@ -48,7 +42,6 @@ const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.s
 async function moPhanTichCoUserscript(page: Page, homNay?: string) {
     if (homNay) await page.clock.install({ time: new Date(homNay) });
     await page.setViewportSize({ width: 1920, height: 1000 });
-    await page.route('**://docs.google.com/**', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: cauHinh() }));
     await page.route('**/__ycx_file_mwg__', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: fileBanHang() }));
     // Tab report.mwgroup.vn mà Dashboard mở: trang trống (userscript bên đó có test riêng)
     await page.context().route('https://report.mwgroup.vn/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>MWG</body></html>' }));

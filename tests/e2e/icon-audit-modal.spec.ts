@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { khamPhaModal, doLopMoBang, type KetQuaModal } from './helpers/modalExplorer';
-import { createProductConfigXlsx, createSalesXlsx, TEST_EMPLOYEE } from './helpers/salesFixture';
+import { createSalesXlsx, TEST_EMPLOYEE } from './helpers/salesFixture';
 
 /**
  * CHUẨN HOÁ ICON — audit icon BÊN TRONG MODAL (2026-10-07).
@@ -77,10 +77,6 @@ for (const [label, width] of MAN) {
         test.setTimeout(2_400_000);
         chanTacDungPhu(page);
         await page.setViewportSize({ width, height: 900 });
-        const cauHinh = createProductConfigXlsx();
-        await page.route('**://docs.google.com/**', (r) => r.fulfill({
-            status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
-        }));
         await page.goto('/');
         await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
         await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());

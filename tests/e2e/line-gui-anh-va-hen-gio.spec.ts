@@ -38,19 +38,12 @@ function fileBanHang(): Buffer {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Data');
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
 }
-function cauHinh(): Buffer {
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NhomCha', 'NhomCon', 'NhomHang'], ['ICT', 'Smartphone', '1491']]), 'Ngành hàng');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Hình thức xuất', 'Tính doanh thu', 'Hình thức'], ['Xuất bán hàng tại siêu thị', 'Có', 'Tiền mặt']]), 'Hình thức xuất');
-    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
-}
 
 type W = { __gm: Map<string, unknown>; __line: { url: string; headers: Record<string, string>; body: { to: string; messages: { type: string; text?: string; originalContentUrl?: string; previewImageUrl?: string }[] } }[]; __tabs: string[] };
 
 async function chuanBi(page: Page, opts: { homNay?: string; hd?: boolean; url?: string } = {}) {
     await page.setViewportSize({ width: 1920, height: 1000 });
     if (opts.homNay) await page.clock.install({ time: new Date(opts.homNay) });
-    await page.route('**://docs.google.com/**', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: cauHinh() }));
     await page.route('**/__ycx_file_mwg__', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: fileBanHang() }));
     await page.context().route('https://report.mwgroup.vn/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>MWG</body></html>' }));
     await page.addInitScript(({ nhom, hd }) => {

@@ -87,7 +87,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const {
         status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, processedData,
-        configUrl, setConfigUrl, uniqueFilterOptions,
+        uniqueFilterOptions,
         activeModal, setActiveModal, modalData,
         handleClearDepartments, handleClearData, handleClearAllData, handleShiftFileProcessing, handleFileProcessing,
         openUnshippedModal, handleExport, handleExportUncollectedSheet,
@@ -503,8 +503,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     {showLanding && (
                         <LandingPageView
                             onProcessFile={handleFileProcessing}
-                            configUrl={configUrl}
-                            onConfigUrlChange={setConfigUrl}
                             registry={logic.fileRegistry}
                             onToggleActive={logic.handleToggleFileActive}
                             onDelete={logic.handleDeleteFile}
