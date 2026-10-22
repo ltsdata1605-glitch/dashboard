@@ -9074,3 +9074,27 @@ bộ không có (`ERR_CONNECTION_REFUSED`, có từ 21/10).
   chối thì chạm mã đơn không thấy gì. iPhone Safari / app Màn hình chính cho ghi trong cú chạm nên chưa gặp thật.
 - Máy mới đăng nhập lần đầu đẩy `users/{uid}/configs/productConfig` (khoá nặng) lên Cloud: bản cấu hình chung vừa tải về mang mốc giờ
   máy → "mới hơn" bản của tài khoản. Có cả ở code trước 1753ad35 (đo bằng bài 2 máy); vô hại (cùng nội dung) nhưng tốn một lượt ghi.
+
+## Đưa thanh trên iPhone + Report BI về chuẩn đã chốt (2026-10-22, chủ dự án chọn "Đưa về chuẩn đã chốt")
+
+**Bối cảnh:** 19b5dbf1 + f33b3462 (chủ dự án) làm đỏ 8 bộ canh iPhone (mục 8 phần rà soát ở trên). Chủ dự án chọn: GIỮ chức năng mới
+(tắt auto sync trên điện thoại, Báo cáo vào nhóm Công cụ, hệ số số lượng quy đổi, đăng nhập cùng tab, Phân quyền / Cài đặt / Cấu hình mới…)
+và GIỮ phong cách kính mờ (màu, mờ, bóng của thanh trên / dock / capsule); TRẢ CỠ + BỐ CỤC về chuẩn GĐ4–GĐ7: tiêu đề 17px, vùng chạm ≥ 44,
+segmented "Realtime | Luỹ kế", chữ ≥ 11px, không tràn ngang, toast nổi trên lớp nền modal.
+
+**Tệp sửa:**
+1. `components/layout/MobileNavBar.tsx` → bản trước 19b5dbf1 (tiêu đề 17px `truncate` trong khối `min-w-0 flex-1`; khối phải `min-w-0 shrink`
+   — co lại + tự cuộn trong khe, không đẩy trang tràn; chuông 44). Bỏ khe `#mobile-topbar-filters`.
+2. `features/bi-dashboard/components/dashboard/DashboardHeader.tsx`, `NhanVien.tsx` → bản trước 19b5dbf1: bỏ viên lọc portal lên thanh trên;
+   hàng "Realtime | Luỹ kế" + chọn siêu thị (Siêu thị) và 2 bộ lọc (Nhân viên) hiện lại TRONG TRANG trên điện thoại. `Dashboard.tsx`: bỏ
+   prop `isActive` chỉ dùng cho portal.
+3. `styles.css` (khối capsule thanh trên): giữ màu/mờ/bóng kính mờ; trả `margin-left:auto` / `justify-content:flex-end`, bỏ `flex-shrink:0`,
+   bỏ luật ép tiêu đề 13,5px và các luật `#mobile-topbar-filters`.
+4. `components/shared/ui/Tabs.tsx`: segmented cỡ `sm` trả `pointer-coarse:min-h-11 max-sm:min-h-11` (44 trên cảm ứng — In Sticker).
+5. Chữ < 11px / ngoài thang mới của 19b5dbf1: `UserManagementView` (3, + icon lịch ô "Hạn:" `xs` → `md`), `ConfigTable` (5),
+   `ProductCodeConfigTable` (1), `SettingsAccountTab` (2) → thang chuẩn; gỡ 6 ngoại lệ đã ghi ở 5c6ddda9 khỏi `violations-baseline.json`.
+6. Toast bị lớp nền modal phủ (`phan-tich-gd5b` #23): tìm nguyên nhân rồi sửa.
+7. Bài test chủ dự án viết cho thiết kế cũ-mới (lọc trên thanh trên…): cập nhật theo chuẩn trả về.
+
+**Kiểm:** 8 bộ canh đang đỏ (`apple-tuong-thich`, `khung-app-gd4`, `gd7-mini-app`, `icon-audit-man-goc`, `phan-tich-gd5b`, `report-bi-gd6`,
+`bi-mobile-iphone`) + mọi bài mới của 19b5dbf1/f33b3462 + `npm run check` + vòng chụp dữ liệu thật (Report BI iPhone không còn tràn 58px).
