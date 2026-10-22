@@ -15,16 +15,27 @@ test.use({
 
 test('máy mới, chưa có dữ liệu: màn tải tệp hiện ngay dù cấu hình ngành hàng tải treo', async ({ page, context }) => {
     test.setTimeout(120_000);
-    await context.addInitScript(() => { try { localStorage.setItem('ycx_demo_mode', 'true'); } catch { /* */ } });
+    await context.addInitScript(() => {
+        try { localStorage.setItem('ycx_demo_mode', 'true'); } catch { /* */ }
+        // Ghi lại nếu lớp chờ từng hiện "Đang tải cấu hình ngành hàng…" (code cũ hiện suốt lúc chờ Firestore tới 5 s).
+        const w = window as unknown as { __choCauHinh?: boolean };
+        new MutationObserver(() => {
+            if (!w.__choCauHinh && /cấu hình ngành hàng từ Cloud/i.test(document.body?.innerText || '')) w.__choCauHinh = true;
+        }).observe(document, { childList: true, subtree: true, characterData: true });
+    });
     let treo = true;
     await page.route('**://firestore.googleapis.com/**', async (route) => {
         while (treo) await new Promise((r) => setTimeout(r, 200));
         await route.fallback().catch(() => {});
     });
 
+    const t0 = Date.now();
     await page.goto('/?tab=analysis');
     await expect(page.getByText('Phân tích siêu tốc.').first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText(/Đang tải cấu hình ngành hàng/)).toHaveCount(0);
+    // Đo 22/10 (dev server): 1,4 s nóng · 3,7 s nguội; code cũ 8,9 s. Không đặt ngưỡng giờ (tốc độ máy CI dao động) — phép kiểm
+    // quyết định là lớp chờ "Đang tải cấu hình ngành hàng…" KHÔNG từng hiện (code cũ: đỏ đúng ở đây).
+    console.log('màn tải tệp hiện sau', Date.now() - t0, 'ms');
+    expect(await page.evaluate(() => !!(window as unknown as { __choCauHinh?: boolean }).__choCauHinh), 'không được chờ tải cấu hình').toBe(false);
 
     await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());
     await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').first().tap();

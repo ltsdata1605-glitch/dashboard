@@ -117,7 +117,8 @@ jobs:
   # ───────────────────────────────────────────────────────────────────────────────────────────
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 30 → 40 (2026-10-22): thêm 9 bài (~4 phút) — job ~19 → ~23 phút, chừa dư cho runner chậm.
+    timeout-minutes: 40
 
     env:
       # Trỏ Playwright vào server tự dựng ở bước dưới → `playwright.config.ts` bỏ qua khối
@@ -308,6 +309,44 @@ jobs:
       - name: 'E2E: gd10-xac-nhan-va-bang'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/gd10-xac-nhan-va-bang.spec.ts --output=test-results/gd10-xac-nhan-va-bang
+
+      # (2026-10-22) Khoá 29 lỗi từ 2 video iPhone gốc (KE_HOACH_GIAO_DIEN_APPLE.md mục 1) — trước đây nằm ngoài CI, không chạy lại sau
+      # GĐ10 (đo 22/10: 21/21 xanh, 2,8 phút) — + bài mở lạnh Phân tích + 3 bài từng cũ đi ngoài CI mà không ai biết.
+      - name: 'E2E: phan-tich-gd5'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/phan-tich-gd5.spec.ts --output=test-results/phan-tich-gd5
+
+      - name: 'E2E: phan-tich-gd5b'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/phan-tich-gd5b.spec.ts --output=test-results/phan-tich-gd5b
+
+      - name: 'E2E: report-bi-gd6'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/report-bi-gd6.spec.ts --output=test-results/report-bi-gd6
+
+      - name: 'E2E: bi-mobile-iphone'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/bi-mobile-iphone.spec.ts --output=test-results/bi-mobile-iphone
+
+      - name: 'E2E: mobile-settings-compact'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/mobile-settings-compact.spec.ts --output=test-results/mobile-settings-compact
+
+      - name: 'E2E: phan-tich-mo-lanh-khong-cho-cau-hinh'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/phan-tich-mo-lanh-khong-cho-cau-hinh.spec.ts --output=test-results/phan-tich-mo-lanh-khong-cho-cau-hinh
+
+      - name: 'E2E: analysis-only-all-in-one'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/analysis-only-all-in-one.spec.ts --output=test-results/analysis-only-all-in-one
+
+      - name: 'E2E: bi-competition-bonus-col'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/bi-competition-bonus-col.spec.ts --output=test-results/bi-competition-bonus-col
+
+      - name: 'E2E: bi-nhan-vien-theo-sieu-thi'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/bi-nhan-vien-theo-sieu-thi.spec.ts --output=test-results/bi-nhan-vien-theo-sieu-thi
 
       # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
       # Kèm cả log dev server: nếu Vite chết giữa chừng thì mọi spec sau đó đỏ vì lý do CHUNG, và
