@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { isLightSyncKey } from '../../utils/localDbScope';
+
+// services/syncService (laKhoaDongBoCu) import services/firebase — không dựng Firebase thật trong test đơn vị.
+vi.mock('../../services/firebase', () => ({ db: {}, auth: { currentUser: null } }));
 
 // Chỉ khoá đồng bộ nhẹ mới được đóng mốc `localSettingsLastModified` (2026-09-28). Trước đây mọi lượt
 // ghi đều đóng mốc → máy luôn "mới hơn Cloud", không nhận thay đổi cấu hình từ máy khác.
@@ -9,13 +12,21 @@ describe('isLightSyncKey', () => {
     });
     it.each([
         'cached_user_role', 'cached_lightCloudPulled_v1', 'lastModified_kpiCardConfig', 'localSettingsLastModified',
-        'productConfig', 'customTabs', 'customExploitationTabs', 'analysis-employees-list', 'checkthuong_data',
+        'productConfig', 'global_product_config_updated_at', 'customTabs', 'customExploitationTabs', 'analysis-employees-list', 'checkthuong_data',
         'bi_config-Tân Hiệp-thidua', 'bi_bonus-data-Tân Hiệp', 'bi_nhanvien-active-tab', 'active-tab-x',
         'summary-realtime', 'salesFilesRegistry', 'stickerSavedLists',
         'warehouseViewMode', 'warehouseVerticalKhoFilter',
     ])('%s → KHÔNG', k => {
         expect(isLightSyncKey(k)).toBe(false);
     });
+});
+
+it('mốc cấu hình ngành hàng của máy (global_product_config_updated_at): riêng từng máy — không đi đường mới lẫn đường cũ', async () => {
+    const { isLocalOnlyKey } = await import('../../utils/localDbScope');
+    const { laKhoaDongBoCu } = await import('../../services/syncService');
+    expect(isLocalOnlyKey('global_product_config_updated_at')).toBe(true);
+    expect(isLightSyncKey('global_product_config_updated_at')).toBe(false);
+    expect(laKhoaDongBoCu('global_product_config_updated_at')).toBe(false);
 });
 
 describe('isHeavySyncKey — nhận diện đầy đủ khóa nặng thi đua và cấu hình lớn', () => {

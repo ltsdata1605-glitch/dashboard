@@ -33,7 +33,9 @@ async function moMay(browser: Browser, ten: string, opts: Parameters<Browser['ne
             const than = decodeURIComponent((route.request().postData() || '').replace(/\+/g, ' '));
             if (/"writes"|"update"|"delete"|"transform"/.test(than)) {
                 const ten = [...new Set([...than.matchAll(/documents\/([^"\\,}]{1,140})/g)].map(m => m[1].replace(/users\/[^/]+/, 'users/U')))];
-                const truong = [...new Set([...than.matchAll(/"fieldPaths"\s*:\s*\[([^\]]{0,300})/g)].map(m => m[1]))];
+                // Lấy TRỌN danh sách trường: cắt 300 ký tự như trước thì tên khoá cuối bị cụt ("settings.khoDataCa") — lượt dọn
+                // khoá Kho cũ (2026-10-21) xoá cả chục trường một lượt.
+                const truong = [...new Set([...than.matchAll(/"fieldPaths"\s*:\s*\[([^\]]*)/g)].map(m => m[1]))];
                 ghi.push(`WRITE ${ten.join(',')} ${truong.join(';')}`);
                 return route.abort();
             }
@@ -95,11 +97,14 @@ test('2 máy cùng tài khoản: vào app nhanh, cùng dữ liệu, không ghi g
     // ngoài vài khoá nó còn quản — services/syncService.ts → laKhoaDongBoCu). Trước 2026-10-14: ghi settings.active_tab,
     // bộ lọc, lịch tự đồng bộ… của máy này lên, rồi máy khác đăng nhập chép đè xuống.
     const DUONG_CU_CON_QUAN = /^"settings\.(salesFilesRegistry|stickerPrinterState|stickerPrintHistory|stickerSavedLists|last-updates-list|summary-|competition-)/;
+    // Lượt DỌN một lần (2026-10-21, AuthContext): xoá bộ đệm Kho của app bản cũ khỏi users/{uid}.settings (làm tài liệu gần 1 MB).
+    // Tài khoản test luôn còn các khoá này vì test chặn ghi → lần nào cũng thấy; đã có bài riêng: dang-nhap-ho-so-tinh-san.
+    const DON_KHOA_KHO_CU = /^"settings\.`?(khoDataCache_|khoDataAppliedSnapshot::)/;
     for (const m of [laptop, iphone]) {
         const ghi = m.ghi.join('\n');
         expect(ghi, m.ten).not.toContain('setting/configuration');
-        const truongSettings = [...ghi.matchAll(/"settings\.[^"]+"/g)].map(x => x[0]);
-        expect(truongSettings.filter(t => !DUONG_CU_CON_QUAN.test(t)), m.ten).toEqual([]);
+        const truongSettings = [...ghi.matchAll(/"settings\.[^"\n]+"/g)].map(x => x[0]);
+        expect(truongSettings.filter(t => !DUONG_CU_CON_QUAN.test(t) && !DON_KHOA_KHO_CU.test(t)), m.ten).toEqual([]);
         expect(m.biChan.filter(x => x.startsWith('Firestore/commit')), m.ten).toEqual([]);
     }
     await laptop.ctx.close(); await iphone.ctx.close();

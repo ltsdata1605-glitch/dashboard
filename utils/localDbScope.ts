@@ -362,10 +362,14 @@ export const isHeavySyncKey = (key: string): boolean => {
     return false;
 };
 
-/** Trạng thái giao diện riêng từng máy (tab đang mở, bộ lọc đang chọn…) — không đồng bộ. */
+/** Trạng thái riêng từng máy (tab đang mở, bộ lọc đang chọn, mốc bộ đệm…) — không đồng bộ, cả đường mới lẫn đường cũ. */
 export const isLocalOnlyKey = (key: string): boolean => {
     const k = key.startsWith('bi_') ? key.slice(3) : key;
     return (
+        // Mốc bản cấu hình ngành hàng chung mà productConfig TRÊN MÁY NÀY đang giữ (hooks/useDataManagement so với Firestore
+        // để biết có cần tải lại). Đồng bộ nó thì máy khác nhận mốc mới mà cấu hình vẫn bản cũ → tưởng đã mới, không tải lại;
+        // và máy mới tải cấu hình ở nền (2026-10-22) lưu mốc SAU lượt kéo đầu → định ghi lên Cloud ngay lúc mở app.
+        k === 'global_product_config_updated_at' ||
         k === 'nhanvien-active-tab' ||
         k === 'nhanvien-active-competition-tab' ||
         k === 'dashboard-main-tab' ||
