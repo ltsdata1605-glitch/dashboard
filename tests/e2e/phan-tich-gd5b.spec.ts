@@ -172,10 +172,15 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
         await hop.getByText('SO002', { exact: true }).first().click();
         const t = page.locator('[data-app-toast]').filter({ hasText: 'Đã sao chép: SO002' });
         await expect(t).toBeVisible();
-        const hopT = (await t.boundingBox())!;
+        // Đo khi toast ĐÃ DỪNG (trượt xuống 24px + hiện dần ~340 ms): đo lúc đang chạy thì tâm khung đo được đã lệch khỏi toast khi hỏi
+        // elementFromPoint → báo nhầm "bị nền modal phủ" (đỏ ngẫu nhiên khi máy tải nặng: CI, chạy 2 luồng — 22/10).
+        await expect.poll(() => t.evaluate(el => getComputedStyle(el).opacity === '1' && el.getAnimations().length === 0)).toBe(true);
+        const { hopT, trenCung } = await t.evaluate((el) => {
+            const r = el.getBoundingClientRect();
+            return { hopT: { y: r.y }, trenCung: !!document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest('[data-app-toast]') };
+        });
         expect(hopT.y).toBeLessThan(812 / 2);
         // Toast phải nằm TRÊN lớp nền của modal (không bị phủ mờ): điểm giữa toast trỏ vào chính toast.
-        const trenCung = await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('[data-app-toast]'), { x: hopT.x + hopT.width / 2, y: hopT.y + hopT.height / 2 });
         expect(trenCung, 'toast bị lớp nền modal phủ lên').toBe(true);
         await page.screenshot({ path: test.info().outputPath('don-hang.png') });
     });
