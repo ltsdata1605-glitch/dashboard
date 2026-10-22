@@ -179,7 +179,7 @@ const LoginView: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-dvh bg-slate-50 dark:bg-slate-950 flex items-center justify-center bg-static-blobs">
+            <div data-man-cho-khoi-dong className="min-h-dvh bg-slate-50 dark:bg-slate-950 flex items-center justify-center bg-static-blobs">
                 <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );

@@ -49,10 +49,15 @@ await page.setViewportSize({ width: 512, height: 512 });
 await page.setContent(`<style>*{margin:0}body{background:#0284c7;display:grid;place-items:center;width:512px;height:512px}</style><img src="${svgUrl(fullBleed)}" style="width:360px;height:360px">`);
 await page.screenshot({ path: 'public/icons/icon-maskable-512.png' });
 
+// Chữ dùng phông chính của app UTM Avo Bold (nhúng thẳng file) — TRÙNG phông màn khởi động động #ycx-splash trong index.html
+// (2026-10-22). Trước đây "-apple-system" nhưng ảnh dựng trên Linux nên thực tế đóng cứng phông DejaVu: vừa xấu vừa lệch với
+// màn HTML nối tiếp (trên iPhone là SF Pro) → chữ nhảy khi chuyển.
+const phongAvo = 'data:font/ttf;base64,' + readFileSync('public/fonts/UTM AvoBold.ttf').toString('base64');
 for (const [w, h, dpr] of iphones) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
   const p = await ctx.newPage();
-  await p.setContent(`<style>*{margin:0}body{background:#f1f5f9;width:${w}px;height:${h}px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:700 17px -apple-system,system-ui,sans-serif;color:#0f172a}</style><img src="${svgUrl(svg)}" style="width:88px;height:88px"><div>Dashboard YCX</div>`);
+  await p.setContent(`<style>@font-face{font-family:'YCX Splash';src:url(${phongAvo});font-weight:700}*{margin:0}body{background:#f1f5f9;width:${w}px;height:${h}px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:700 17px 'YCX Splash',sans-serif;color:#0f172a}</style><img src="${svgUrl(svg)}" style="width:88px;height:88px"><div>Dashboard YCX</div>`);
+  await p.evaluate(() => document.fonts.ready);
   await p.screenshot({ path: `public/splash/iphone-${w * dpr}x${h * dpr}.png` });
   await ctx.close();
 }

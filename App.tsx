@@ -99,8 +99,9 @@ function taiTruocTabChinh(): void {
 }
 
 /** Vòng quay chờ toàn màn — lúc Firebase đang xác nhận phiên và lúc tải màn đăng nhập/chờ duyệt. */
+// data-man-cho-khoi-dong: màn khởi động động (index.html #ycx-splash) còn che tới khi vòng quay này không còn (public/man-cho-khoi-dong.js).
 const ManChoKhoiDong = () => (
-    <div className="min-h-dvh bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+    <div data-man-cho-khoi-dong className="min-h-dvh bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
     </div>
 );
