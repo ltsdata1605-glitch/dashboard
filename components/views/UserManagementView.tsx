@@ -1026,7 +1026,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                                             {/* Nhóm 2: Hạn dùng, Đăng ký, Lượt vào */}
                                             <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
-                                                <button
+                                                <Button variant="unstyled" size="none"
                                                     type="button"
                                                     onClick={() => handleOpenExtendModal(req)}
                                                     className="flex items-center gap-1 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer"
@@ -1051,7 +1051,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     ) : (
                                                         <span className="font-semibold text-emerald-600 dark:text-emerald-400">Vô hạn</span>
                                                     )}
-                                                </button>
+                                                </Button>
 
                                                 <span className="text-slate-200 dark:text-slate-700 select-none">|</span>
 
