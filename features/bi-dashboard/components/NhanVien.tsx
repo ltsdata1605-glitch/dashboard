@@ -455,21 +455,21 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const renderFilterPill = (isMobileMode: boolean) => (
         <div
             className={cn(
-                "flex flex-row items-center w-auto rounded-full shadow-2xs shrink-0 select-none",
+                "flex flex-row items-center w-auto rounded-full shrink-0 select-none",
                 isMobileMode
-                    ? "h-8 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 p-0.5"
-                    : "h-7 sm:h-7.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    ? "h-[34px] min-h-[34px] box-border bg-white/75 dark:bg-slate-800/75 backdrop-blur-xl border border-white/80 dark:border-slate-700/70 p-[1px] shadow-[0_4px_16px_-2px_rgba(0,0,0,0.07),0_2px_6px_-1px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.95)]"
+                    : "h-7 sm:h-7.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs"
             )}
         >
             <MultiSelectDropdown
-                className="w-auto shrink-0 border-r border-slate-200/70 dark:border-slate-700/70"
+                className="w-auto shrink-0 border-r border-slate-200/60 dark:border-slate-700/60"
                 triggerClassName={cn(
                     "ycx-hit rounded-l-full whitespace-nowrap min-h-0 py-0 font-semibold",
-                    isMobileMode ? "h-7 !px-1.5 text-[11px] !gap-1" : "h-7 sm:h-7.5 px-2 sm:px-2.5 text-xs"
+                    isMobileMode ? "h-[30px] !px-1.5 text-[11px] !gap-1" : "h-7 sm:h-7.5 px-2 sm:px-2.5 text-xs"
                 )}
                 usePortal={isMobileMode}
                 align={isMobileMode ? "left" : "right"}
-                icon={<AppIcon name="store" size={isMobileMode ? "xs" : "sm"} className="text-sky-500 scale-95 shrink-0" />}
+                icon={<AppIcon name="store" size={isMobileMode ? "xs" : "sm"} className="text-sky-500 scale-85 shrink-0" />}
                 triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                 count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
                 allLabel="Chọn tất cả"
@@ -486,7 +486,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 className="w-auto shrink-0"
                 triggerClassName={cn(
                     "ycx-hit rounded-r-full whitespace-nowrap min-h-0 py-0 font-semibold",
-                    isMobileMode ? "h-7 !px-1.5 text-[11px] !gap-1" : "h-7 sm:h-7.5 px-2 sm:px-2.5 text-xs"
+                    isMobileMode ? "h-[30px] !px-1.5 text-[11px] !gap-1" : "h-7 sm:h-7.5 px-2 sm:px-2.5 text-xs"
                 )}
                 usePortal={isMobileMode}
                 align={isMobileMode ? "left" : "right"}

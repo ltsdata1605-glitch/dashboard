@@ -69,9 +69,17 @@ test.describe('Report BI Mobile Topbar Filters Verification', () => {
         await expect(actionsSlot).toBeVisible();
 
         const filterBox = (await filterSlot.boundingBox())!;
-        const actionsBox = (await actionsSlot.boundingBox())!;
+        const navbarActions = page.locator('[data-navbar-actions]');
+        const navbarActionsBox = (await navbarActions.boundingBox())!;
 
-        expect(filterBox.x + filterBox.width, 'Bộ lọc phải nằm bên trái các tab chức năng').toBeLessThanOrEqual(actionsBox.x + 8);
+        console.log('Tab Nhân viên - Chiều cao cụm bộ lọc:', filterBox.height);
+        console.log('Tab Nhân viên - Chiều cao cụm actions:', navbarActionsBox.height);
+
+        expect(Math.abs(filterBox.height - 34)).toBeLessThanOrEqual(1);
+        expect(Math.abs(navbarActionsBox.height - 34)).toBeLessThanOrEqual(1);
+        expect(Math.abs(filterBox.height - navbarActionsBox.height)).toBeLessThanOrEqual(1);
+
+        expect(filterBox.x + filterBox.width, 'Bộ lọc phải nằm bên trái các tab chức năng').toBeLessThanOrEqual(navbarActionsBox.x + 8);
 
         // 4. Kiểm tra hàng lọc cũ bên dưới topbar phải bị ẩn trên mobile
         const legacyBar = page.locator('.hidden.lg\\:flex:has(h2:has-text("Nhân Viên"))');

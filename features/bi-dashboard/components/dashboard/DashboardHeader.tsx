@@ -119,14 +119,14 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const renderMobileFilterPill = () => (
         <div
             data-dashboard-mobile-filters=""
-            className="flex flex-row items-center w-auto rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 p-0.5 shadow-2xs h-8 shrink-0 select-none"
+            className="flex flex-row items-center w-auto rounded-full bg-white/75 dark:bg-slate-800/75 backdrop-blur-xl border border-white/80 dark:border-slate-700/70 p-[1px] shadow-[0_4px_16px_-2px_rgba(0,0,0,0.07),0_2px_6px_-1px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.95)] h-[34px] min-h-[34px] box-border shrink-0 select-none"
         >
             {/* Gôm 2 nút thành 1 => Bấm vào để chuyển đổi giữa Realtime và Luỹ kế */}
             <Button
                 variant="unstyled"
                 size="none"
                 onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
-                className="ycx-hit rounded-l-full whitespace-nowrap min-h-0 h-7 px-2 py-0 font-semibold text-[11px] flex items-center gap-1 border-r border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-700 shadow-2xs cursor-pointer active:scale-95 transition-transform"
+                className="ycx-hit rounded-l-full whitespace-nowrap min-h-0 h-[30px] px-1.5 py-0 font-semibold text-[11px] flex items-center gap-0.5 border-r border-slate-200/60 dark:border-slate-700/60 bg-white/90 dark:bg-slate-700 shadow-2xs cursor-pointer active:scale-95 transition-transform"
                 title={activeMainTab === 'realtime' ? 'Đang xem Realtime (Bấm để chuyển sang Luỹ kế)' : 'Đang xem Luỹ kế (Bấm để chuyển sang Realtime)'}
             >
                 <span className={cn(
@@ -136,16 +136,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <span className={activeMainTab === 'realtime' ? "text-emerald-700 dark:text-emerald-300 font-bold" : "text-indigo-700 dark:text-indigo-300 font-bold"}>
                     {activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}
                 </span>
-                <AppIcon name="swap" size="xs" className="text-slate-400 scale-75 ml-0.5" />
+                <AppIcon name="swap" size="xs" className="text-slate-400 scale-75 ml-0.5 shrink-0" />
             </Button>
 
             {/* Dropdown chọn siêu thị */}
             <MultiSelectDropdown
                 className="w-auto shrink-0"
-                triggerClassName="ycx-hit rounded-r-full whitespace-nowrap min-h-0 h-7 !px-1.5 text-[11px] !gap-1 font-semibold text-slate-700 dark:text-slate-300"
+                triggerClassName="ycx-hit rounded-r-full whitespace-nowrap min-h-0 h-[30px] !px-1.5 text-[11px] !gap-1 font-semibold text-slate-700 dark:text-slate-300"
                 usePortal={true}
                 align="left"
-                icon={<AppIcon name="store" size="xs" className="text-sky-500 scale-90 shrink-0" />}
+                icon={<AppIcon name="store" size="xs" className="text-sky-500 scale-85 shrink-0" />}
                 triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                 count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
                 allLabel="Chọn tất cả"

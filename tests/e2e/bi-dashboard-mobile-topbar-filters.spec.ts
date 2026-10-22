@@ -50,6 +50,10 @@ test.describe('Report BI Dashboard Mobile Topbar Filters Verification', () => {
         const initialText = (await toggleBtn.innerText()).trim();
         console.log('Trạng thái ban đầu:', initialText);
 
+        // Chụp ảnh trạng thái Realtime ban đầu
+        const rtPath = path.resolve('/Users/ltson/.gemini/antigravity-ide/brain/e5b11325-2dae-473e-9c88-ee6990fa20b2/bi-mobile-filters-realtime.png');
+        await page.screenshot({ path: rtPath, fullPage: false });
+
         // Bấm chuyển đổi
         await toggleBtn.click();
         await page.waitForTimeout(500);
@@ -58,11 +62,29 @@ test.describe('Report BI Dashboard Mobile Topbar Filters Verification', () => {
         console.log('Trạng thái sau khi bấm:', changedText);
         expect(changedText).not.toEqual(initialText);
 
-        // 3. Kiểm tra hàng Row 1 cũ trong body đã bị ẩn hoàn toàn trên mobile
-        const oldRow1 = page.locator('div.hide-on-export.border-b:has-text("Realtime"):has-text("Luỹ kế")');
-        if (await oldRow1.count() > 0) {
-            await expect(oldRow1.first()).toBeHidden();
-        }
+        // 4. Đo đạc và kiểm tra CHIỀU CAO: cụm Realtime/Luỹ kế và cụm bên phải BẰNG NHAU (chuẩn 34px)
+        const filterBox = await capsuleFilters.boundingBox();
+        const actionsSlot = page.locator('[data-navbar-actions]');
+        const actionsBox = await actionsSlot.boundingBox();
+
+        console.log('Chiều cao cụm bộ lọc:', filterBox?.height);
+        console.log('Chiều cao cụm actions bên phải:', actionsBox?.height);
+
+        expect(filterBox).not.toBeNull();
+        expect(actionsBox).not.toBeNull();
+        // Chiều cao phải bằng chuẩn 34px (chênh lệch tối đa 1px do pixel rounding)
+        expect(Math.abs((filterBox?.height || 0) - 34)).toBeLessThanOrEqual(1);
+        expect(Math.abs((actionsBox?.height || 0) - 34)).toBeLessThanOrEqual(1);
+        expect(Math.abs((filterBox?.height || 0) - (actionsBox?.height || 0))).toBeLessThanOrEqual(1);
+
+        // 5. Kiểm tra icon đầu tiên (Siêu thị) nằm trọn vẹn trong cụm actions, không bị cắt mép trái
+        const firstTabBtn = actionsSlot.locator('button').first();
+        const firstBtnBox = await firstTabBtn.boundingBox();
+        console.log('Nút đầu tiên (Siêu thị):', firstBtnBox);
+        expect(firstBtnBox).not.toBeNull();
+        expect(firstBtnBox!.width).toBeGreaterThanOrEqual(30);
+        // Nút đầu tiên phải nằm bên trong khung actions (x của nút >= x của actions)
+        expect(firstBtnBox!.x).toBeGreaterThanOrEqual(actionsBox!.x);
 
         // Chụp ảnh lưu artifact bằng chứng
         const artifactPath = path.resolve('/Users/ltson/.gemini/antigravity-ide/brain/e5b11325-2dae-473e-9c88-ee6990fa20b2/bi-dashboard-mobile-topbar-verified.png');

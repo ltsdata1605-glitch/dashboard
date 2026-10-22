@@ -105,22 +105,26 @@
     }
   }
 
-  /* VẬT LIỆU MỜ XUYÊN THẤU CHO FLOATING DOCK (Chuẩn Apple iOS Floating Capsule)
-     Mờ cao cấp 90% chống lem màu biểu đồ bên dưới, hiệu ứng kính mờ chiều sâu 20px blur */
+  /* VẬT LIỆU MỜ THUỶ TINH CHO FLOATING DOCK (Chuẩn Zalo / Apple iOS Frosted Glass)
+     Kính thuỷ tinh trong suốt 75%, vệt sáng specular highlight mép trên, đổ bóng chiều sâu 24px blur */
   .ycx-floating-dock {
-    background-color: rgba(255, 255, 255, 0.92);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
+    background-color: rgba(255, 255, 255, 0.75) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1), 0 2px 8px -1px rgba(0, 0, 0, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
   }
   .dark .ycx-floating-dock {
-    background-color: rgba(15, 23, 42, 0.92);
+    background-color: rgba(15, 23, 42, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
   }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .ycx-floating-dock {
-      background-color: rgb(255 255 255 / 0.96);
+      background-color: rgb(255 255 255 / 0.94) !important;
     }
     .dark .ycx-floating-dock {
-      background-color: rgb(15 23 42 / 0.96);
+      background-color: rgb(15 23 42 / 0.94) !important;
     }
   }
 
@@ -1027,32 +1031,82 @@ summary,
    Gom các nút chức năng thành THANH CON NHỘNG chuẩn Zalo/iOS Navigation Capsule.
    ========================================================================== */
 
-/* Trường hợp 1: Phân tích & Report BI (không có data-thay-tieu-de) -> [data-navbar-actions] là capsule ngoài dồn sát phải */
+/* Trường hợp 1: Phân tích & Report BI (không có data-thay-tieu-de) -> [data-navbar-actions] là capsule thuỷ tinh ngoài dồn sát phải */
 .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
   display: flex !important;
   align-items: center !important;
   margin-left: 0 !important;
-  justify-content: flex-end !important;
+  justify-content: flex-start !important;
+  flex-shrink: 0 !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
   border-radius: 9999px !important;
-  background-color: rgba(241, 245, 249, 0.9) !important;
-  border: 1px solid rgba(226, 232, 240, 0.7) !important;
-  padding: 2px !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  padding: 1px !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
   user-select: none !important;
 }
 
 .dark .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
-  background-color: rgba(30, 41, 59, 0.9) !important;
-  border-color: rgba(51, 65, 85, 0.7) !important;
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Khi có bộ lọc topbar (Report BI Nhân viên): cụm nút actions bám sát bên phải của bộ lọc thay vì tự đẩy tách xa */
+/* Khi có bộ lọc topbar: tối ưu không gian cho các khối chức năng và đồng bộ chiều cao 34px */
 .ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-actions],
 .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-filters:not(:empty)) [data-navbar-actions] {
   margin-left: 0 !important;
+  flex-shrink: 0 !important;
 }
 
-/* Trường hợp 2: Check thưởng (có data-thay-tieu-de) -> dồn sát bên phải như Report BI, [data-action-capsule] chuẩn 34px */
+.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) #mobile-topbar-subtitle {
+  display: none !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-title] {
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  min-width: 0 !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-title] h1 {
+  font-size: 13.5px !important;
+  letter-spacing: -0.02em !important;
+}
+
+#mobile-topbar-filters {
+  display: flex !important;
+  align-items: center !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  flex-shrink: 0 !important;
+}
+
+#mobile-topbar-filters [data-dashboard-mobile-filters],
+#mobile-topbar-filters > div {
+  height: 34px !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+.dark #mobile-topbar-filters [data-dashboard-mobile-filters],
+.dark #mobile-topbar-filters > div {
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Trường hợp 2: Check thưởng (có data-thay-tieu-de) -> dồn sát bên phải như Report BI, [data-action-capsule] chuẩn thuỷ tinh 34px */
 .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-actions] {
   margin-left: auto !important;
   justify-content: flex-end !important;
@@ -1075,16 +1129,19 @@ summary,
   height: 34px !important;
   min-height: 34px !important;
   border-radius: 9999px !important;
-  background-color: rgba(241, 245, 249, 0.9) !important;
-  border: 1px solid rgba(226, 232, 240, 0.7) !important;
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
   padding: 1px !important;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
   user-select: none !important;
 }
 
 .dark .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-action-capsule] {
-  background-color: rgba(30, 41, 59, 0.9) !important;
-  border-color: rgba(51, 65, 85, 0.7) !important;
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Gỡ viền & nền riêng của component con bên trong để hoà nhập vào capsule chung */
@@ -1103,7 +1160,7 @@ summary,
   width: 1px;
   height: 14px;
   background-color: rgba(203, 213, 225, 0.8);
-  margin: 0 2px;
+  margin: 0 1px;
   flex-shrink: 0;
   align-self: center;
 }

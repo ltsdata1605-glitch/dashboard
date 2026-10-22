@@ -88,7 +88,7 @@ export const CapsuleBar: React.FC<CapsuleBarProps> = ({
             role={role}
             aria-label={ariaLabel}
             className={cn(
-                'flex items-center rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 p-0.5 shadow-2xs select-none',
+                'flex items-center rounded-full bg-white/75 dark:bg-slate-800/75 backdrop-blur-xl border border-white/80 dark:border-slate-700/60 p-0.5 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.07),0_2px_6px_-1px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.95)] select-none',
                 className
             )}
         >

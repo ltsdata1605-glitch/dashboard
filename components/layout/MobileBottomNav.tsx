@@ -119,7 +119,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
             <nav
                 data-app-chrome="tabbar"
                 aria-label="Điều hướng chính"
-                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[310px] z-[190] rounded-full p-1 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.08),0_2px_6px_-1px_rgba(0,0,0,0.04)]"
+                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[310px] z-[190] rounded-full p-1 border border-white/85 dark:border-white/10 shadow-[0_8px_32px_-4px_rgba(0,0,0,0.1),0_2px_8px_-1px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.95)]"
             >
                 <div className="flex items-center justify-between gap-0.5 w-full">
                     {mainTabs.map(tab => oTab({
