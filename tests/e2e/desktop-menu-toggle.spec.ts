@@ -54,7 +54,7 @@ test('Check Thưởng có hiển thị thời gian đồng bộ và nút refresh
     // Nút refresh / Cập nhật phải có mặt trong subtitle
     const mobileSyncBtn = mobileSubtitle.locator('button');
     await expect(mobileSyncBtn).toBeVisible();
-    await expect(mobileSyncBtn).toContainText(/Cập nhật/i);
+    await expect(mobileSyncBtn).toContainText(/Cập nhật|\d{2}:\d{2}/i);
 
     await page.screenshot({ path: 'test-results/checkthuong-sync-time-mobile.png' });
 

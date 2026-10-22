@@ -161,39 +161,41 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
     return (
         <div className="bg-white border border-slate-200 rounded-card overflow-hidden shadow-sm">
             {/* Filter Bar */}
-            <div className="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row gap-2.5 items-start sm:items-center justify-between">
+            <div className="p-3 bg-slate-50/70 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch sm:items-center justify-between">
                 <div className="flex items-center gap-2 w-full sm:w-auto flex-1 max-w-md">
                     <Input
+                        dense
                         leftIcon="search"
                         placeholder="Tìm mã nhóm, nhóm cha, nhóm con..."
                         value={search}
                         onChange={e => { setSearch(e.target.value); setPage(1); }}
-                        className="h-8.5 text-xs rounded-control w-full"
+                        className="h-8 text-xs rounded-control w-full"
                     />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
                     {isEditable && (
                         <Button
                             variant="secondary"
-                            size="sm"
+                            size="none"
                             onClick={() => setShowAddForm(!showAddForm)}
-                            className="h-8.5 gap-1.5 text-xs font-semibold border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                            className="ycx-hit h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-semibold rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
                         >
                             <AppIcon name={showAddForm ? 'close' : 'add'} size="sm" />
                             <span>{showAddForm ? 'Đóng' : 'Thêm mới'}</span>
                         </Button>
                     )}
-                    <div className="w-48">
+                    <div className="flex-1 sm:w-48 min-w-0">
                         <Select
+                            dense
                             value={selectedParent}
                             onChange={e => { setSelectedParent(e.target.value); setPage(1); }}
-                            className="h-8.5 text-xs rounded-control"
+                            className="h-8 text-xs rounded-control pl-2 pr-7 truncate"
                         >
                             <option value="all">Tất cả nhóm cha ({parentGroups.length})</option>
                             {parentGroups.map(p => <option key={p} value={p}>{p}</option>)}
                         </Select>
                     </div>
-                    <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1.5 rounded-control border border-slate-200 whitespace-nowrap">
+                    <span className="h-8 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2.5 rounded-control border border-slate-200 dark:border-slate-700 whitespace-nowrap inline-flex items-center justify-center shrink-0">
                         {filtered.length.toLocaleString('vi-VN')} mục
                     </span>
                 </div>
@@ -205,6 +207,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <div className="flex-1 min-w-[100px]">
                         <label htmlFor="cfg-ma-nhom" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Mã nhóm hàng</label>
                         <Input
+                            dense
                             id="cfg-ma-nhom"
                             type="text"
                             placeholder="VD: 4479"
@@ -216,6 +219,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <div className="flex-1 min-w-[140px]">
                         <label htmlFor="cfg-nganh-hang" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Ngành hàng</label>
                         <Input
+                            dense
                             id="cfg-nganh-hang"
                             type="text"
                             placeholder="VD: 164 - VAS hoặc CE"
@@ -227,6 +231,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <div className="flex-1 min-w-[120px]">
                         <label htmlFor="cfg-nhom-cha" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm cha</label>
                         <Input
+                            dense
                             id="cfg-nhom-cha"
                             type="text"
                             placeholder="VD: CE"
@@ -242,6 +247,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <div className="flex-1 min-w-[120px]">
                         <label htmlFor="cfg-nhom-con" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm con</label>
                         <Input
+                            dense
                             id="cfg-nhom-con"
                             type="text"
                             placeholder="VD: Máy lạnh"
@@ -253,6 +259,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <div className="w-24">
                         <label htmlFor="cfg-he-so" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Hệ số</label>
                         <Input
+                            dense
                             id="cfg-he-so"
                             type="number"
                             step="0.01"
@@ -264,29 +271,37 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     </div>
                     <Button
                         variant="primary"
-                        size="sm"
+                        size="none"
                         onClick={handleAddSubmit}
                         disabled={!newItem.code.trim() || !newItem.parentGroup.trim() || !newItem.subgroup.trim()}
-                        className="h-8 gap-1 text-xs font-bold"
+                        className="ycx-hit h-8 px-3 gap-1 text-xs font-bold rounded-control bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <AppIcon name="add" size="sm" />
-                        Thêm
+                        <AppIcon name="save" size="xs" />
                     </Button>
                 </div>
             )}
 
             {/* Table */}
             <div className="overflow-x-auto max-h-[500px]">
-                <table className="w-full text-left text-xs">
+                <table className="w-full table-fixed sm:table-auto text-left text-xs">
                     <thead className="sticky top-0 z-10 bg-slate-100 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
-                        <tr>
-                            <th className="py-2.5 px-3 w-14 text-center">STT</th>
-                            <th className="py-2.5 px-3 min-w-[180px]">Ngành Hàng</th>
-                            <th className="py-2.5 px-3 min-w-[200px]">Nhóm Hàng</th>
-                            <th className="py-2.5 px-3 min-w-[130px]">Nhóm Cha</th>
-                            <th className="py-2.5 px-3 min-w-[160px]">Nhóm Con</th>
-                            <th className="py-2.5 px-3 w-32 text-right">Hệ Số Quy Đổi</th>
-                            {isEditable && <th className="py-2.5 px-3 w-12"></th>}
+                        {/* Header trên Desktop (sm trở lên) */}
+                        <tr className="hidden sm:table-row">
+                            <th className="py-2.5 px-3 w-12 text-center">STT</th>
+                            <th className="py-2.5 px-3 min-w-[160px]">Ngành Hàng</th>
+                            <th className="py-2.5 px-3 min-w-[180px]">Nhóm Hàng</th>
+                            <th className="py-2.5 px-3 min-w-[120px]">Nhóm Cha</th>
+                            <th className="py-2.5 px-3 min-w-[140px]">Nhóm Con</th>
+                            <th className="py-2.5 px-3 w-28 text-right">Hệ Số Quy Đổi</th>
+                            {isEditable && <th className="py-2.5 px-3 w-10 text-center"></th>}
+                        </tr>
+                        {/* Header trên Mobile (< sm) - Vừa khít màn hình */}
+                        <tr className="sm:hidden">
+                            <th className="py-2 px-1 w-8 text-center text-[10px]">STT</th>
+                            <th className="py-2 px-1.5 text-[10px]">Ngành / Nhóm Hàng</th>
+                            <th className="py-2 px-1.5 w-24 text-[10px]">Nhóm Cha / Con</th>
+                            <th className="py-2 px-1.5 w-14 text-right text-[10px]">Hệ Số</th>
+                            {isEditable && <th className="py-2 px-1 w-7 text-center"></th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -304,32 +319,65 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                                         key={item.code}
                                         className="hover:bg-sky-50/50 transition-colors group"
                                     >
-                                        <td className="py-2 px-3 text-center text-slate-400 tabular-nums font-mono text-[11px]">
+                                        {/* Cột STT chung */}
+                                        <td className="py-2 px-1.5 sm:px-3 text-center text-slate-400 tabular-nums font-mono text-[11px] align-middle">
                                             {rowNum}
                                         </td>
-                                        <td className="py-2 px-3 text-slate-700 text-[11px] font-medium">
+
+                                        {/* Mobile: Cột Ngành / Nhóm Hàng gộp (sm:hidden) */}
+                                        <td className="py-2 px-2 sm:hidden align-middle">
+                                            <div className="font-mono font-bold text-sky-700 text-xs leading-snug break-words">
+                                                {item.code}
+                                            </div>
+                                            <div className="text-slate-500 text-[11px] font-medium leading-snug mt-0.5 break-words">
+                                                {renderCell(item, 'industry')}
+                                            </div>
+                                        </td>
+
+                                        {/* Mobile: Cột Nhóm Cha / Con gộp (sm:hidden) */}
+                                        <td className="py-2 px-2 sm:hidden align-middle">
+                                            <div className="font-semibold text-slate-700 text-xs leading-snug break-words">
+                                                {renderCell(item, 'parentGroup')}
+                                            </div>
+                                            <div className="text-slate-500 text-[10px] leading-snug mt-0.5 break-words">
+                                                {renderCell(item, 'subgroup')}
+                                            </div>
+                                        </td>
+
+                                        {/* Desktop: Cột Ngành Hàng riêng (hidden sm:table-cell) */}
+                                        <td className="hidden sm:table-cell py-2 px-3 text-slate-700 text-[11px] font-medium align-middle">
                                             {renderCell(item, 'industry')}
                                         </td>
-                                        <td className="py-2 px-3 font-mono font-bold text-sky-700">
+
+                                        {/* Desktop: Cột Nhóm Hàng riêng (hidden sm:table-cell) */}
+                                        <td className="hidden sm:table-cell py-2 px-3 font-mono font-bold text-sky-700 align-middle">
                                             {item.code}
                                         </td>
-                                        <td className="py-2 px-3 font-bold text-slate-700">
+
+                                        {/* Desktop: Cột Nhóm Cha riêng (hidden sm:table-cell) */}
+                                        <td className="hidden sm:table-cell py-2 px-3 font-bold text-slate-700 align-middle">
                                             {renderCell(item, 'parentGroup')}
                                         </td>
-                                        <td className="py-2 px-3 text-slate-600">
+
+                                        {/* Desktop: Cột Nhóm Con riêng (hidden sm:table-cell) */}
+                                        <td className="hidden sm:table-cell py-2 px-3 text-slate-600 align-middle">
                                             {renderCell(item, 'subgroup')}
                                         </td>
-                                        <td className="py-2 px-3 text-right tabular-nums font-bold text-slate-800">
+
+                                        {/* Cột Hệ Số (hiển thị cả Mobile và Desktop) */}
+                                        <td className="py-2 px-2 sm:px-3 text-right tabular-nums font-bold text-slate-800 text-xs align-middle">
                                             {renderCell(item, 'multiplier')}
                                         </td>
+
+                                        {/* Cột Xoá */}
                                         {isEditable && (
-                                            <td className="py-2 px-1 text-center">
+                                            <td className="py-2 px-1 text-center align-middle">
                                                 <Button
                                                     variant="unstyled"
                                                     size="none"
                                                     type="button"
                                                     onClick={() => onDeleteItem?.(item.code)}
-                                                    className="ycx-hit opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded hover:bg-rose-50 text-slate-300 hover:text-rose-500"
+                                                    className="ycx-hit opacity-60 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-500 cursor-pointer"
                                                     title="Xoá"
                                                     aria-label={`Xoá nhóm hàng ${item.code}`}
                                                 >

@@ -124,7 +124,7 @@ export const BonusView: React.FC<{
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
             <div className="flex flex-wrap justify-between items-center px-3 sm:px-4 py-1 sm:py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
-                <div className="hidden sm:flex gap-1.5 items-center">
+                <div className="hidden lg:flex gap-1.5 items-center">
                     <Button
                         variant="unstyled"
                         size="none"

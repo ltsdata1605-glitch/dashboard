@@ -39,6 +39,9 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
     const [autoSyncMonth, setAutoSyncMonth] = useState<string>('');
 
     const handleStartAutoSync = useCallback(async (mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}) => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            return;
+        }
         if (mode === 'luyke' && !opts.month && !opts.tuChayTiep) {
             setChonThangMo(true);
             return;
@@ -79,7 +82,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
 
     // Tự chạy tiếp lượt dở sau khi tải lại trang (nếu người dùng bấm F5 ngoài tab employees)
     useEffect(() => {
-        if (typeof window !== 'undefined' && window.location.search.includes('tab=employees')) {
+        if (typeof window !== 'undefined' && (window.innerWidth < 1024 || window.location.search.includes('tab=employees'))) {
             return;
         }
         const p = claimPendingAutoSync();

@@ -13,7 +13,6 @@ import { db } from '../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { assembleChunkedHeavyValue, restoreNestedArraysFromFirestore } from '../../services/firestoreService';
 import { extractCloudTimeMs } from '../../services/heavySyncPolicy';
-import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 
 export const CheckThuongView: React.FC = () => {
     const { activeTab } = useActiveTab();
@@ -26,7 +25,6 @@ export const CheckThuongView: React.FC = () => {
     const [uploadTime, setUploadTime] = useState<string>('');
     const { user, isDemoMode } = useAuth();
     const [isSyncingCloud, setIsSyncingCloud] = useState(false);
-    const { totalVisits, onlineUsers } = useSystemTraffic();
     const [cloudFeedback, setCloudFeedback] = useState<{
         message: string;
         mobileMessage: string;
@@ -283,7 +281,7 @@ export const CheckThuongView: React.FC = () => {
         setActiveSubTab('search');
     };
 
-    // Trên mobile: các nút thao tác [Tải file khác] [Đồng bộ Cloud] được đưa vào viên nhộng capsule cùng nút Chuông
+    // Trên mobile: nút thao tác [Tải file khác] được đưa vào viên nhộng capsule cùng nút Chuông (đồng bộ đám mây đã có ở nút giờ cập nhật)
     usePageActions(mounted && activeTab === 'check-thuong' && hasData ? {
         scope: 'mobile',
         title: 'Check thưởng',
@@ -293,13 +291,6 @@ export const CheckThuongView: React.FC = () => {
                 label: 'Tải file khác',
                 icon: 'upload',
                 onSelect: () => fileInputHiddenRef.current?.click(),
-            },
-            {
-                id: 'dong-bo-cloud',
-                label: 'Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)',
-                icon: isSyncingCloud ? 'refresh' : 'cloudDownload',
-                onSelect: handleManualCloudSync,
-                disabled: isSyncingCloud,
             }
         ]
     } : null);
@@ -542,27 +533,6 @@ export const CheckThuongView: React.FC = () => {
                                     : (formattedUploadTime ? `Cập nhật: ${formattedUploadTime}` : 'Đồng bộ đám mây')}
                         </span>
                     </Button>
-                    {totalVisits !== undefined && (
-                        <>
-                            <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                <AppIcon name="users" size="xs" className="text-sky-500/80" />
-                                <span>{totalVisits >= 1000 ? `${(totalVisits / 1000).toFixed(1)}k` : totalVisits} lượt truy cập</span>
-                            </span>
-                        </>
-                    )}
-                    {onlineUsers !== undefined && (
-                        <>
-                            <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                </span>
-                                <span>{onlineUsers} đang online</span>
-                            </span>
-                        </>
-                    )}
                 </div>,
                 document.getElementById('desktop-header-subtitle')!
             )}

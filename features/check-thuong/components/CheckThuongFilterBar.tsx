@@ -82,7 +82,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                             variant="unstyled"
                             size="none"
                             onClick={onReset}
-                            className="p-2 text-slate-500 hover:text-rose-500 bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 rounded-none transition-colors border border-slate-200/80 dark:border-slate-700"
+                            className="p-2 text-slate-500 hover:text-rose-500 bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 rounded-control transition-colors border border-slate-200/80 dark:border-slate-700"
                             title="Đặt lại bộ lọc"
                         >
                             <AppIcon name="reset" size="sm" />
@@ -106,7 +106,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                         size="none"
                         onClick={onExportImage}
                         disabled={isExporting}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-bold text-xs rounded-none shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-bold text-xs rounded-control shadow-2xs transition-all cursor-pointer disabled:opacity-50"
                         title={`Xuất ảnh Top ${exportLimit} siêu thị`}
                     >
                         {isExporting ? (

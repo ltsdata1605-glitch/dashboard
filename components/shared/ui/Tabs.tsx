@@ -273,8 +273,8 @@ const SegmentTrack: React.FC<{
             onClick={() => onPick(item.id)}
             disabled={item.disabled}
             className={cn(
-              'relative z-[1] flex items-center justify-center gap-1.5 px-3 whitespace-nowrap rounded-md shrink-0 snap-center transition-colors',
-              size === 'sm' ? 'text-[13px] min-h-7 pointer-coarse:min-h-11 max-sm:min-h-11' : 'text-[13px] min-h-8 pointer-coarse:min-h-11 max-sm:min-h-11',
+              'relative z-[1] flex items-center justify-center gap-1.5 px-2.5 sm:px-3 whitespace-nowrap rounded-md shrink-0 snap-center transition-colors',
+              size === 'sm' ? 'text-xs min-h-8 py-1 ycx-hit' : 'text-[13px] min-h-8 pointer-coarse:min-h-11 max-sm:min-h-11',
               fullWidth && 'flex-1',
               isActive ? 'text-slate-900 font-semibold' : 'text-slate-600 font-medium hover:text-slate-900',
               item.disabled && 'opacity-40 cursor-not-allowed'

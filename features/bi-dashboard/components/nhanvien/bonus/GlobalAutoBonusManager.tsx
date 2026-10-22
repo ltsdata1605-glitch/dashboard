@@ -129,6 +129,9 @@ export const GlobalAutoBonusManager: React.FC = () => {
     // Lắng nghe sự kiện kích hoạt từ Dock, BonusTab, hoặc Hẹn giờ
     useEffect(() => {
         const handleTrigger = (e: Event) => {
+            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                return;
+            }
             void refreshEmployees();
             if ((e as CustomEvent).detail?.auto) {
                 window.dispatchEvent(new CustomEvent('ycx-auto-bonus-trigger-ack'));

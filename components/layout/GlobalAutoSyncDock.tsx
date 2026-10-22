@@ -42,6 +42,14 @@ export default function GlobalAutoSyncDock() {
     const { handleStartAutoSync: startBiSync, renderAutoSyncModal } = useBiAutoSync(activeSupermarket);
     const [dockThuGonLuu, setIsDockCollapsed] = useIndexedDBState<boolean>('bi-dock-collapsed', false);
 
+    // Trên mobile (< 1024px): Tắt hoàn toàn tính năng đổ dữ liệu tự động của BI, YCX và Thưởng
+    const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 1024 : false));
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Màn hình hẹp < 1536px: mặc định thu gọn thành cột icon để không che dữ liệu
     const [manHep, setManHep] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 1536 : false));
     const [dockMoTam, setDockMoTam] = useState(false);
@@ -153,19 +161,22 @@ export default function GlobalAutoSyncDock() {
     // auto === true: lượt hẹn giờ — chạy thẳng kỳ "Hiện tại".
     // Chạy tại chỗ từ mọi trang/tab mà KHÔNG bắt buộc chuyển màn hình.
     const handleTriggerAutoBonus = useCallback((auto?: unknown) => {
+        if (isMobile) return;
         const tuDong = auto === true;
         window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus', { detail: { auto: tuDong } }));
-    }, []);
+    }, [isMobile]);
 
     // auto: lượt hẹn giờ — không có cú bấm nên mở tab MWG nhờ userscript (tuChayTiep), Luỹ kế lấy tháng mặc định.
     // Chạy tại chỗ từ mọi trang/tab mà KHÔNG chuyển sang mục Nhân viên.
     const handleStartBiSync = useCallback((mode: 'realtime' | 'luyke', auto = false) => {
+        if (isMobile) return;
         if (auto) void startBiSync(mode, { tuChayTiep: true });
         else startBiSync(mode);
-    }, [startBiSync]);
+    }, [startBiSync, isMobile]);
 
     useEffect(() => {
         const handleBiTrigger = (e: any) => {
+            if (isMobile) return;
             const mode = e.detail?.mode;
             if (mode === 'realtime' || mode === 'luyke') {
                 handleStartBiSync(mode);
@@ -173,9 +184,10 @@ export default function GlobalAutoSyncDock() {
         };
         window.addEventListener('ycx-trigger-bi-auto-sync', handleBiTrigger);
         return () => window.removeEventListener('ycx-trigger-bi-auto-sync', handleBiTrigger);
-    }, [handleStartBiSync]);
+    }, [handleStartBiSync, isMobile]);
 
     const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime', opts: { auto?: boolean; autoSend?: AutoSendItem[]; month?: string } = {}) => {
+        if (isMobile) return;
         ycxAutoSendRef.current = opts.autoSend || [];
         // Luỹ kế = 01 → hôm qua; hôm nay ngày 01 thì chưa có ngày nào để luỹ kế → chạy Realtime (chủ dự án chốt)
         const mode = resolveYcxMode(requested);
@@ -289,6 +301,7 @@ export default function GlobalAutoSyncDock() {
     // ─── Hẹn giờ tự chạy cho 5 nút (services/autoSyncSchedule.ts) ───
     const chayTheoLichRef = useRef<(k: ScheduleKey) => void>(() => {});
     chayTheoLichRef.current = (k: ScheduleKey) => {
+        if (isMobile) return;
         if (k === 'bi-realtime' || k === 'bi-luyke') {
             const mode = k === 'bi-realtime' ? 'realtime' : 'luyke';
             handleStartBiSync(mode, true);
@@ -313,6 +326,9 @@ export default function GlobalAutoSyncDock() {
         return () => { window.removeEventListener('ycx-bi-automation:done', onDone); window.removeEventListener('message', onMsg); };
     }, []);
     useEffect(() => {
+        // Trên mobile: Tắt hoàn toàn lịch hẹn giờ đổ dữ liệu tự động của BI, YCX và Thưởng
+        if (isMobile) return;
+
         let daTai = false;
         void loadSchedules().then(() => { daTai = true; });
         const tick = () => {
@@ -359,11 +375,14 @@ export default function GlobalAutoSyncDock() {
             window.removeEventListener('online', tick);
             document.removeEventListener('resume', tick);
         };
-    }, []);
+    }, [isMobile]);
 
     const ycxDangChay = ycxPhase === 'running';
     const ycxStepList = ycxSteps(ycxMode);
     const curYcxStep = ycxStep ? ycxStepList.findIndex((x) => x.id === ycxStep) : -1;
+
+    // Trên mobile (< 1024px): Không render dock và các modal tự động
+    if (isMobile) return null;
 
     return (
         <>

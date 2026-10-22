@@ -26,7 +26,7 @@ test('Check thưởng mobile topbar: các nút nhỏ gọn nằm trên thanh Bar
     await expect(topbarActions.getByRole('button', { name: /tra cứu/i })).toBeVisible();
     await expect(topbarActions.getByRole('button', { name: /top/i })).toBeVisible();
     await expect(topbar.getByTitle(/tải file khác/i)).toBeVisible();
-    await expect(topbar.getByTitle(/Đồng bộ dữ liệu từ Đám Mây/i)).toBeVisible();
+    await expect(topbar.getByTitle(/Đồng bộ dữ liệu từ Đám Mây/i)).toHaveCount(0); // Đã bỏ icon đám mây trên topbar mobile theo yêu cầu
     await page.evaluate(() => document.querySelectorAll('[data-toast], [data-sonner-toast], [role="status"], [class*="toast"]').forEach(e => e.remove()));
     await topbar.screenshot({ path: test.info().outputPath('check-thuong-single-store.png') });
     await kho2Input.fill('911');
@@ -61,7 +61,7 @@ test('Check thưởng mobile topbar: các nút nhỏ gọn nằm trên thanh Bar
     // Ô nhập Kho 2 không bị capsule đè lên: mép phải Kho 2 nằm trước mép trái capsule
     expect(boxKho2.x + boxKho2.width).toBeLessThanOrEqual((await capsule.boundingBox())!.x);
 
-    for (const title of [/tải file khác/i, /Đồng bộ dữ liệu từ Đám Mây/i, /Thông báo/i]) {
+    for (const title of [/tải file khác/i, /Thông báo/i]) {
         const btn = topbar.getByRole('button', { name: title }).first();
         await expect(btn).toBeVisible();
         const hop = (await btn.boundingBox())!;

@@ -8,7 +8,6 @@ import { toast } from '../../shared/ui/toast';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { Banner } from '../../shared/ui/Banner';
-import { ListGroup, ListRow } from '../../shared/ui/ListGroup';
 import { usePageActions } from '../../shared/ui/PageActions';
 import UserManagementView from '../UserManagementView';
 import { ProductConfigManagerTab } from '../../../features/product-config';
@@ -182,15 +181,30 @@ export const SettingsAccountTab: React.FC = () => {
 
                 <div className="bg-white sm:bg-slate-50 p-3 sm:p-5 border border-slate-200 shadow-sm rounded-card">
                     {/* Header: Avatar + Name/Email/Role + Action Button */}
-                    <div className={`flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
-                        <div className="flex items-start gap-3 sm:gap-5 flex-1 min-w-0">
+                    <div className={`flex items-start justify-between gap-2.5 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
+                        <div className="flex items-start gap-2.5 sm:gap-5 flex-1 min-w-0">
                             {/* Avatar */}
-                            <div className="w-12 h-12 sm:w-20 sm:h-20 overflow-hidden shadow-xs bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-popup">
+                            <div className="relative w-12 h-12 sm:w-20 sm:h-20 overflow-hidden shadow-xs bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-popup">
                                 {user?.photoURL ? (
-                                    <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    <AppIcon name="user" size="state" className="text-sky-400" />
-                                )}
+                                    <img 
+                                        src={user.photoURL} 
+                                        alt="Avatar" 
+                                        referrerPolicy="no-referrer"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            const fallback = e.currentTarget.parentElement?.querySelector('[data-profile-avatar-fallback]') as HTMLElement | null;
+                                            if (fallback) fallback.style.display = 'flex';
+                                        }}
+                                        className="w-full h-full object-cover" 
+                                    />
+                                ) : null}
+                                <span
+                                    data-profile-avatar-fallback
+                                    style={{ display: user?.photoURL ? 'none' : 'flex' }}
+                                    className="w-full h-full items-center justify-center font-bold text-sky-700 dark:text-sky-300 text-lg sm:text-2xl uppercase"
+                                >
+                                    {(formatCleanDisplayName(user?.displayName) || user?.email || '?').charAt(0).toUpperCase()}
+                                </span>
                             </div>
 
                             {/* Name & Email & Role + Info Cards */}
@@ -260,33 +274,57 @@ export const SettingsAccountTab: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Action Button — admin cũng sửa được (Super Admin: gắn Kho dùng chung) */}
-                        <div className="flex items-center justify-end gap-2 flex-shrink-0 self-end sm:self-start mt-1 sm:mt-0">
-                            {isEditingProfile && (
-                                <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() => {
-                                        setIsEditingProfile(false);
-                                        setStagedDept(khoDeSua(departmentId));
-                                        setStagedEmployee(employeeName || '');
-                                        setDeptError('');
-                                    }}
-                                    className="h-8 px-3 text-xs font-semibold"
-                                >
-                                    Huỷ
-                                </Button>
+                        {/* Action Buttons — Đưa lên góc trên bên phải */}
+                        <div className="flex items-center justify-end gap-1.5 sm:gap-2 flex-shrink-0 self-start">
+                            {isEditingProfile ? (
+                                <>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => {
+                                            setIsEditingProfile(false);
+                                            setStagedDept(khoDeSua(departmentId));
+                                            setStagedEmployee(employeeName || '');
+                                            setDeptError('');
+                                        }}
+                                        className="h-8 px-2.5 text-xs font-semibold"
+                                    >
+                                        Huỷ
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        icon="save"
+                                        onClick={handleSaveProfile}
+                                        className="h-8 px-2.5 text-xs font-semibold shrink-0"
+                                        title="Lưu"
+                                        aria-label="Lưu"
+                                    >
+                                        Lưu
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        icon="edit"
+                                        onClick={() => setIsEditingProfile(true)}
+                                        className="shrink-0 text-slate-700 dark:text-slate-200"
+                                        title="Đổi mã kho"
+                                        aria-label="Đổi mã kho"
+                                    />
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        icon="delete"
+                                        onClick={() => setIsResetModalOpen(true)}
+                                        className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0"
+                                        title="Xoá tất cả dữ liệu (Người dùng mới)"
+                                        aria-label="Xoá tất cả dữ liệu"
+                                    />
+                                </>
                             )}
-                            <Button
-                                variant={isEditingProfile ? 'primary' : 'secondary'}
-                                size="sm"
-                                icon={isEditingProfile ? 'save' : 'edit'}
-                                onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                className="h-8 px-3 text-xs font-semibold shrink-0"
-                                title={isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
-                            >
-                                {isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
-                            </Button>
                         </div>
                     </div>
 
@@ -372,20 +410,6 @@ export const SettingsAccountTab: React.FC = () => {
                 </div>
             )}
 
-            {/* Cuối trang kiểu Cài đặt iOS (GĐ7, #11): đăng xuất + VÙNG NGUY HIỂM — việc không hoàn tác được nằm cuối cùng, xa
-                các thao tác hằng ngày, chữ đỏ, bấm vẫn phải xác nhận. */}
-            <div className="space-y-6 pt-2">
-                <ListGroup title="Tài khoản">
-                    <ListRow icon="logout" iconTone="slate" label={nhanDangXuat} onClick={logout} data-testid="dang-xuat-cuoi-trang" />
-                </ListGroup>
-                <ListGroup
-                    title="Vùng nguy hiểm"
-                    footer="Xoá sạch dữ liệu đã lưu trên máy này và dữ liệu riêng của bạn trên cloud. Tài khoản đăng nhập vẫn giữ nguyên."
-                    data-testid="vung-nguy-hiem"
-                >
-                    <ListRow icon="delete" destructive label="Xoá tất cả dữ liệu (Người dùng mới)" onClick={() => setIsResetModalOpen(true)} />
-                </ListGroup>
-            </div>
 
             {/* Laptop: nút đăng xuất có chữ ở thanh tiêu đề (khung của chủ dự án) — CHỈ khi đang ở tab 'settings'.
                 iPhone dùng usePageActions ở trên (thanh trên của khung app). */}

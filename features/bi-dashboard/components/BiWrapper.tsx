@@ -19,12 +19,8 @@ import { configStore } from '../store/configStore';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import type { ConfigTab } from './SupermarketConfig';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
-import { toast } from '../../../components/shared/ui/toast';
 import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { pullBiDataFromCloud } from '../services/biCloudSyncService';
-import { useSystemTraffic } from '../../../hooks/useSystemTraffic';
-
-// Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
 import Dashboard from './Dashboard';
 // Các sub-view phụ tải lười an toàn với lazyWithRetry
 const NhanVien = lazyWithRetry(() => import('./NhanVien'), 'BiNhanVien');
@@ -102,7 +98,6 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const [isBiSyncing, setIsBiSyncing] = useState(false);
     const [isSyncingCloud, setIsSyncingCloud] = useState(false);
     const { user, allowedKhos } = useReportBiAuth();
-    const { totalVisits, onlineUsers } = useSystemTraffic();
 
     useEffect(() => {
         const onStart = () => setIsBiSyncing(true);
@@ -142,6 +137,9 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
     // Kích hoạt tự động đồng bộ qua GlobalAutoSyncDock toàn cục
     const handleStartAutoSync = useCallback((mode: 'realtime' | 'luyke') => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            return;
+        }
         window.dispatchEvent(new CustomEvent('ycx-trigger-bi-auto-sync', { detail: { mode } }));
     }, []);
 
@@ -432,27 +430,6 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                         : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
                         </span>
                     </Button>
-                    {totalVisits !== undefined && (
-                        <>
-                            <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                <AppIcon name="users" size="xs" className="text-sky-500/80" />
-                                <span>{totalVisits >= 1000 ? `${(totalVisits / 1000).toFixed(1)}k` : totalVisits} lượt truy cập</span>
-                            </span>
-                        </>
-                    )}
-                    {onlineUsers !== undefined && (
-                        <>
-                            <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                </span>
-                                <span>{onlineUsers} đang online</span>
-                            </span>
-                        </>
-                    )}
                 </div>,
                 document.getElementById('desktop-header-subtitle')!
             )}
