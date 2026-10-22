@@ -14,7 +14,9 @@ let server: ChildProcess | null = null;
 test.skip(!fs.existsSync('dist/sw.js'), 'Chưa build: thiếu dist/sw.js');
 
 test.beforeAll(async () => {
-  server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
+  // Gọi thẳng vite (không qua npx): kill ở afterAll chỉ trúng tiến trình npx, vite con sống tiếp giữ cổng 4179 (đo 22/10) → lần
+  // chạy sau --strictPort hỏng nhưng vòng chờ dưới vẫn thấy máy chủ CŨ trả lời → test chạy trên bản build cũ.
+  server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(PORT), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
   for (let i = 0; i < 60; i++) {
     try { if ((await fetch(BASE)).ok) return; } catch { /* chưa lên */ }
     await new Promise((r) => setTimeout(r, 500));
