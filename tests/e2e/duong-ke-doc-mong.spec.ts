@@ -22,7 +22,7 @@ test.describe('Verify Thin Vertical Borders on Bonus Table', () => {
             localStorage.setItem('ycx_demo_mode', 'true');
         });
 
-        await page.goto('/?tab=employees&view=bonus');
+        await page.goto('/?tab=employees&view=employee'); // view hợp lệ: employee (bonus không phải view — rơi về Tổng quan trống)
         await page.evaluate(async ({ bonus, tsv }) => {
             const db = await new Promise<IDBDatabase>((res, rej) => {
                 const r = indexedDB.open('BI_HUB_DATABASE_V2');
@@ -42,6 +42,13 @@ test.describe('Verify Thin Vertical Borders on Bonus Table', () => {
                 s.put(bonus, `bi_bonus-data-${supermarket}`);
                 s.put(bonus, `bonus-data-${supermarket}`);
                 s.put('bonus', 'bi_nhanvien-active-tab');
+                // Report BI chỉ hiện nhân viên khi đã có danh sách từ Phân tích (57656d79) — thiếu thì ra màn "Chưa có danh sách nhân viên".
+                const ds = { updatedAt: Date.now(), totalCount: 3, employees: ['95970 - T.Út', '17952 - M.Hương', '28679 - H.Đăng'].map(t => {
+                    const [id, ten] = t.split(' - ');
+                    return { id, name: ten, originalName: t, department: 'BP ALL IN ONE - DMX' };
+                }) };
+                s.put(ds, 'analysis-employees-list');
+                s.put(ds, 'bi_analysis-employees-list');
                 tx.oncomplete = () => res();
                 tx.onerror = () => rej(tx.error);
             });
@@ -52,7 +59,9 @@ test.describe('Verify Thin Vertical Borders on Bonus Table', () => {
         await page.waitForTimeout(2000);
 
         // Click tab Thưởng nếu cần
-        const bonusTabBtn = page.locator('button[title*="Thưởng"], button[aria-label*="Thưởng"], button:has-text("Thưởng")').first();
+        // Chỉ tìm trong <main>: bộ chọn cũ khớp cả nút "Check thưởng" ở thanh tab dưới → bấm nhầm sang màn Check thưởng (đỏ cả trên
+        // chính commit tạo bài, f33b3462).
+        const bonusTabBtn = page.locator('main').locator('button[title*="Thưởng"], button[aria-label*="Thưởng"], button:has-text("Thưởng")').first();
         if (await bonusTabBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
             await bonusTabBtn.click();
             await page.waitForTimeout(1000);

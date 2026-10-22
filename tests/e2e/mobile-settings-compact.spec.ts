@@ -76,9 +76,10 @@ test('Xác thực giao diện mobile gọn gàng và resize chuẩn trên tab Ph
     expect(await cao(page.getByRole('button', { name: 'Làm mới danh sách' }))).toBeLessThanOrEqual(36);
     expect(await cao(page.locator('button[title*="Tăng dần"], button[title*="Giảm dần"]').first())).toBeLessThanOrEqual(36);
 
-    // 5. Hai segmented control (3 phân hệ + 3 trạng thái) — mỗi mục gọn chuẩn 32px trên iPhone
+    // 5. Hai segmented control (3 phân hệ + 3 trạng thái) — mỗi mục cao ≥ 44 trên iPhone (chuẩn segmented GĐ3; 19b5dbf1 từng hạ 32px,
+    //    chủ dự án chọn đưa về chuẩn 2026-10-22). Các nút icon ở trên vẫn gọn 32px nhìn thấy — vùng chạm 44 nhờ .ycx-hit.
     for (const ten of ['Phân quyền', 'Ngành hàng', 'Duyệt', 'Chờ duyệt', 'Hoạt động', 'Hết hạn']) {
-        expect(await cao(page.locator('[data-segmented]').getByRole('button', { name: ten, exact: true })), ten).toBeLessThanOrEqual(36);
+        expect(await cao(page.locator('[data-segmented]').getByRole('button', { name: ten, exact: true })), ten).toBeGreaterThanOrEqual(43.5);
     }
 
     // 6. Chụp ảnh màn hình mobile để kiểm chứng
