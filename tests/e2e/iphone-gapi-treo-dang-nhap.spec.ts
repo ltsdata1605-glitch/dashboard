@@ -19,7 +19,7 @@ test('iPhone, apis.google.com treo: đăng nhập vẫn xong trong vài giây', 
     const t0 = Date.now();
     await dangNhapBangToken(page);
     const msDangNhap = Date.now() - t0;
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 30_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 30_000 });
     console.log('DANG_NHAP_MS', msDangNhap, 'GAPI', gapi.length);
     expect(msDangNhap).toBeLessThan(20_000);
     expect(gapi).toEqual([]);

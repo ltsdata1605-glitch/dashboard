@@ -56,7 +56,7 @@ test('đăng nhập mới: không nháy "Cập Nhật Mã Kho" trước khi vào
     await installStubs(page);
 
     await page.goto('/');
-    const loginBtn = page.getByRole('button', { name: /Tiếp tục với Cổng Google/i });
+    const loginBtn = page.getByRole('button', { name: /Tiếp tục với Google/i });
     await loginBtn.waitFor({ state: 'visible', timeout: 20_000 });
     await loginBtn.click();
 
@@ -66,7 +66,7 @@ test('đăng nhập mới: không nháy "Cập Nhật Mã Kho" trước khi vào
     while (Date.now() < deadline) {
         const txt = await page.locator('body').innerText().catch(() => '');
         if (/Cập Nhật Mã Kho|chưa đăng ký mã kho/i.test(txt)) seen.push('PENDING_VIEW');
-        else if (/Tiếp tục với Cổng Google/i.test(txt)) seen.push('LOGIN');
+        else if (/Tiếp tục với Google/i.test(txt)) seen.push('LOGIN');
         else if (await page.locator('.animate-spin').first().isVisible().catch(() => false)) seen.push('SPINNER');
         else seen.push('OTHER');
         await page.waitForTimeout(100);
@@ -89,7 +89,7 @@ test('mở app có cache admin: vào thẳng dashboard, không spinner/không m�
     // Lần tải đầu: chưa đăng nhập (để có DB IndexedDB mà gieo cache), rồi mới đổi stub sang "đã đăng nhập".
     await installStubs(page);
     await page.goto('/');
-    await page.getByRole('button', { name: /Tiếp tục với Cổng Google/i }).waitFor({ state: 'visible', timeout: 20_000 });
+    await page.getByRole('button', { name: /Tiếp tục với Google/i }).waitFor({ state: 'visible', timeout: 20_000 });
     // Gieo cache như lần đăng nhập trước đã lưu (root app ghi key KHÔNG prefix vào BI_HUB_DATABASE_V2/settings)
     await page.evaluate(async () => {
         const db = await new Promise<IDBDatabase>((res, rej) => { const r = indexedDB.open('BI_HUB_DATABASE_V2'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -110,7 +110,7 @@ test('mở app có cache admin: vào thẳng dashboard, không spinner/không m�
     while (Date.now() < deadline) {
         const txt = await page.locator('body').innerText().catch(() => '');
         if (/Cập Nhật Mã Kho|chưa đăng ký mã kho/i.test(txt)) seen.push('PENDING_VIEW');
-        else if (/Tiếp tục với Cổng Google/i.test(txt)) seen.push('LOGIN');
+        else if (/Tiếp tục với Google/i.test(txt)) seen.push('LOGIN');
         else if (await page.locator('aside').first().isVisible().catch(() => false)) seen.push('DASHBOARD');
         else if (await page.locator('.animate-spin').first().isVisible().catch(() => false)) seen.push('SPINNER');
         else seen.push('OTHER');

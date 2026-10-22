@@ -42,7 +42,7 @@ async function moMay(browser: Browser, ten: string, opts: Parameters<Browser['ne
     }
     const t0 = Date.now();
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await expect(page.locator('#root')).not.toBeEmpty();
     const vaoApp = Date.now() - t0;
     return { ten, page, ctx, loi, logs, biChan, vaoApp, ghi };

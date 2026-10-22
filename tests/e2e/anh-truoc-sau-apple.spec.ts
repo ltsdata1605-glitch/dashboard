@@ -109,7 +109,7 @@ test.describe('iPhone 16 Pro Max', () => {
         const { loi, datTab } = ghiLoi(page);
         const biChan = await chanGhiCloud(page);
         await dangNhapBangToken(page);
-        await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+        await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
         const soDo: Record<string, unknown> = {};
         for (const tab of TAB_DT) {
             datTab(tab);
@@ -140,7 +140,7 @@ for (const [rong, cao] of [[1440, 900], [1280, 720]] as const) {
             const { loi, datTab } = ghiLoi(page);
             const biChan = await chanGhiCloud(page);
             await dangNhapBangToken(page);
-            await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+            await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
             const soDo: Record<string, unknown> = {};
             for (const tab of TAB_LAPTOP) {
                 datTab(tab);

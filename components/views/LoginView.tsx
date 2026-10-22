@@ -15,7 +15,7 @@ const LoginView: React.FC = () => {
     const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [error, setError] = useState<string | null>(() =>
-        takePwaHandoffError() ? 'Chưa vào được ứng dụng sau khi đăng nhập Google. Vui lòng bấm "Tiếp tục với Cổng Google" lại.' : null);
+        takePwaHandoffError() ? 'Chưa vào được ứng dụng sau khi đăng nhập Google. Vui lòng bấm "Tiếp tục với Google" lại.' : null);
 
     const [isInAppWebView] = useState(() => isInAppBrowser());
     const [isStandalone] = useState(() => isStandaloneMode());
@@ -64,7 +64,7 @@ const LoginView: React.FC = () => {
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
                 const goc = err instanceof PwaHandoffSignInError ? err.cause : err;
-                setError(`Chưa vào được ứng dụng (${getErrorCode(goc) || getErrorMessage(goc)}). Vui lòng bấm "Tiếp tục với Cổng Google" lại.`);
+                setError(`Chưa vào được ứng dụng (${getErrorCode(goc) || getErrorMessage(goc)}). Vui lòng bấm "Tiếp tục với Google" lại.`);
             } finally {
                 busy = false;
             }
@@ -185,102 +185,63 @@ const LoginView: React.FC = () => {
         );
     }
 
+    // Màn đăng nhập TỐI GIẢN (2026-10-22, chủ dự án: "giao diện phức tạp khó dùng"): 1 nút chính duy nhất. Bỏ hộp "Màn hình chính
+    // (PWA) · Mở Safari", dòng "tối ưu riêng cho iPhone", vạch "HOẶC", đoạn mô tả dài và nút Dùng Thử to ngang nút chính. Đã nhớ tài
+    // khoản thì nút ghi luôn email (Google chọn sẵn). Dùng thử lùi xuống 1 dòng chữ ở đáy (tên trợ năng giữ "Kích hoạt Chế độ Dùng
+    // Thử" — các bài kiểm vào app bằng tên đó). Đăng nhập chuyển hướng (máy tính) chỉ còn trong hộp lỗi khi popup hỏng.
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden select-none">
-            {/* Ambient Lighting Gradients */}
-            <div className="absolute top-1/4 -left-20 w-80 h-80 bg-sky-400/10 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-sky-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Login Card */}
-            <div className="relative max-w-sm sm:max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-2xl shadow-sky-950/5 dark:shadow-black/60 transition-all">
-                {/* Brand Badge & Header */}
-                <div className="flex flex-col items-center text-center mb-6">
-                    <div className="relative mb-4">
-                        <div className="w-16 h-16 rounded-card bg-gradient-to-tr from-sky-500 via-sky-600 to-sky-700 flex items-center justify-center text-white shadow-lg shadow-sky-500/25 ring-4 ring-sky-50 dark:ring-sky-950/40">
-                            <AppIcon name="dashboard" size="state" className="text-white" />
-                        </div>
+        <div data-testid="login-view" className="min-h-dvh bg-white sm:bg-slate-50 flex flex-col items-center justify-center px-6 select-none"
+            style={{ paddingTop: 'max(24px, env(safe-area-inset-top))', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+            <div className="w-full max-w-[360px] flex-1 sm:flex-none flex flex-col justify-center sm:bg-white sm:border sm:border-slate-200 sm:rounded-overlay sm:shadow-xl sm:p-8">
+                <div className="flex flex-col items-center text-center mb-10">
+                    <div className="w-[72px] h-[72px] rounded-card bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-lg shadow-sky-500/25 mb-5">
+                        <AppIcon name="dashboard" size="state" className="text-white" />
                     </div>
-
                     {/* GĐ7: cùng tên với biểu tượng Màn hình chính / tab trình duyệt (manifest: "Dashboard YCX"), không IN HOA */}
-                    <h1 className="type-title font-bold text-slate-900 dark:text-white tracking-tight">
-                        Dashboard YCX
-                    </h1>
-                    
-                    <div className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 text-[11px] font-semibold tracking-wide">
-                        <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
-                        Công cụ phân tích dữ liệu
-                    </div>
-
-                    <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
-                        Đăng nhập để đồng bộ dữ liệu và cài đặt giữa các thiết bị một cách an toàn.
-                    </p>
+                    <h1 className="type-large-title font-bold text-slate-900 tracking-tight">Dashboard YCX</h1>
+                    <p className="mt-1 type-body text-slate-500">Công cụ phân tích dữ liệu</p>
                 </div>
 
-                {/* Standalone PWA Notice */}
-                {isStandalone && (
-                    <div className="mb-4 p-2.5 bg-sky-50/80 dark:bg-sky-950/40 text-sky-900 dark:text-sky-200 rounded-popup text-xs border border-sky-200/70 dark:border-sky-800/60 flex items-center justify-between gap-2 shadow-xs">
-                        <span className="flex items-center gap-1.5 font-medium truncate">
-                            <AppIcon name="phone" size="sm" className="text-sky-600 dark:text-sky-400 shrink-0" />
-                            <span>Màn hình chính (PWA)</span>
-                        </span>
-                        <a
-                            href="https://dashboard.pro.vn"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] font-bold text-sky-700 dark:text-sky-300 hover:underline shrink-0 inline-flex items-center gap-1"
-                        >
-                            <AppIcon name="web" size="xs" /> Mở Safari →
-                        </a>
+                {/* Trình duyệt tích hợp Zalo/Facebook chặn đăng nhập Google — bắt buộc báo (không có cách nào khác) */}
+                {isInAppWebView && (
+                    <div className="mb-4 p-3 bg-amber-50 text-amber-900 rounded-popup type-footnote border border-amber-200 leading-relaxed">
+                        <div className="flex items-center gap-1.5 font-bold mb-1"><AppIcon name="warning" size="sm" /> Mở bằng Safari hoặc Chrome</div>
+                        Trình duyệt trong Zalo/Facebook chặn đăng nhập Google. Bấm <strong>(⋮)</strong> ở góc rồi chọn <strong>"Mở bằng trình duyệt"</strong>.
                     </div>
                 )}
 
-                {/* In-app Browser Notice */}
-                {isInAppWebView && (
-                    <div className="mb-4 p-3 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 rounded-popup text-xs border border-amber-200/80 dark:border-amber-900/50 flex flex-col gap-1.5">
-                        <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
-                            <AppIcon name="warning" size="md" /> Lưu ý trình duyệt Zalo/Facebook:
-                        </div>
-                        <p className="leading-relaxed text-amber-800/90 dark:text-amber-300/90">
-                            Trình duyệt tích hợp chặn đăng nhập Google. Vui lòng bấm vào <strong>(⋮)</strong> ở góc và chọn <strong>"Mở bằng trình duyệt"</strong> (Safari / Chrome).
-                        </p>
-                    </div>
-                )}
-                
-                {/* Error Banner */}
                 {error && (
-                    <div className="mb-5 p-3.5 bg-rose-50/90 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 rounded-card text-xs font-medium border border-rose-200/70 dark:border-rose-900/50 leading-relaxed shadow-xs">
+                    <div role="alert" className="mb-4 p-3 bg-rose-50 text-rose-700 rounded-popup type-footnote font-medium border border-rose-200 leading-relaxed">
                         <div className="flex items-start gap-2">
-                            <AppIcon name="warning" size="md" className="text-rose-500 shrink-0 mt-0.5" />
+                            <AppIcon name="warning" size="sm" className="text-rose-500 shrink-0 mt-0.5" />
                             <div className="flex-1 whitespace-pre-line">{error}</div>
                         </div>
-                        <div className="mt-2.5 pt-2 border-t border-rose-200/60 dark:border-rose-800/50 flex items-center justify-end">
+                        <div className="mt-2 flex justify-end">
                             <Button
                                 type="button"
                                 variant="unstyled"
                                 size="none"
                                 onClick={useHandoff ? handlePwaLogin : handleRedirectLogin}
                                 disabled={isLoggingIn}
-                                className="ycx-hit text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                className="ycx-hit font-bold text-sky-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
                             >
                                 <AppIcon name="refresh" size="sm" />
-                                {useHandoff ? 'Thử đăng nhập lại →' : 'Đăng nhập chuyển hướng →'}
+                                {useHandoff ? 'Thử đăng nhập lại' : 'Đăng nhập chuyển hướng'}
                             </Button>
                         </div>
                     </div>
                 )}
-                
-                {/* Đang chờ phiên từ trang Google (2026-10-13): thay hẳn form — người dùng không phải làm gì thêm. */}
+
+                {/* Đang chờ phiên từ trang Google (2026-10-13): thay hẳn nút — người dùng không phải làm gì thêm. */}
                 {waitingHandoff ? (
-                    <div data-testid="login-handoff-waiting" className="flex flex-col items-center text-center gap-3 py-2">
+                    <div data-testid="login-handoff-waiting" className="flex flex-col items-center text-center gap-3">
                         <div className="w-9 h-9 border-[3px] border-sky-600 border-t-transparent rounded-full animate-spin" />
                         <div>
-                            <p className="text-sm font-bold text-slate-800">Đang hoàn tất đăng nhập…</p>
-                            <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                                Đăng nhập Google xong là ứng dụng tự vào, không cần bấm gì thêm.
-                            </p>
+                            <p className="type-headline font-bold text-slate-800">Đang hoàn tất đăng nhập…</p>
+                            <p className="mt-1 type-footnote text-slate-500">Đăng nhập Google xong là ứng dụng tự vào.</p>
                         </div>
-                        <div className="w-full flex flex-col gap-2 pt-1">
-                            <Button variant="secondary" size="md" icon="refresh" onClick={handlePwaLogin} className="w-full">
+                        <div className="w-full flex flex-col gap-1 pt-2">
+                            <Button variant="secondary" size="lg" icon="refresh" onClick={handlePwaLogin} className="w-full">
                                 Mở lại trang đăng nhập Google
                             </Button>
                             <Button variant="ghost" size="md" onClick={handleCancelPwaLogin} className="w-full">
@@ -289,95 +250,61 @@ const LoginView: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                <div className="space-y-3">
-                    {/* Primary Google Login Button */}
-                    <div>
+                    <div className="flex flex-col items-stretch">
                         <Button
+                            data-testid="login-google"
                             variant="unstyled"
                             size="none"
                             onClick={handleLogin}
                             disabled={isLoggingIn}
-                            className="w-full h-12 flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup hover:bg-slate-50 dark:hover:bg-slate-750 transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 focus:ring-4 focus:ring-sky-100 dark:focus:ring-sky-900/30 font-bold text-slate-700 dark:text-white disabled:opacity-50 cursor-pointer active:scale-[0.99]"
+                            className="w-full min-h-14 px-4 py-2.5 flex items-center justify-center gap-3 bg-white border border-slate-300 rounded-popup shadow-sm hover:bg-slate-50 hover:shadow-md active:scale-[0.99] transition-all disabled:opacity-60 cursor-pointer"
                         >
                             {isLoggingIn ? (
-                                <div className="w-5 h-5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
+                                <div className="w-5 h-5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin shrink-0" />
                             ) : (
-                                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
                             )}
-                            <span>Tiếp tục với Cổng Google</span>
+                            <span className="min-w-0 flex flex-col items-start text-left">
+                                <span className="type-body font-bold text-slate-800">Tiếp tục với Google</span>
+                                {taiKhoanNho && (
+                                    <span data-testid="login-tai-khoan-nho" className="type-footnote text-slate-500 truncate max-w-full">{taiKhoanNho.email}</span>
+                                )}
+                            </span>
                         </Button>
 
                         {taiKhoanNho && (
-                            <div data-testid="login-tai-khoan-nho" className="flex items-center justify-center gap-1.5 pt-2 text-xs text-slate-600 min-w-0">
-                                <AppIcon name="user" size="xs" className="text-slate-400 shrink-0" />
-                                <span className="truncate font-semibold" title={taiKhoanNho.email}>{taiKhoanNho.email}</span>
-                                <span className="text-slate-300">·</span>
-                                <Button
-                                    type="button"
-                                    variant="unstyled"
-                                    size="none"
-                                    onClick={() => { quenTaiKhoan(); setTaiKhoanNho(null); }}
-                                    disabled={isLoggingIn}
-                                    className="ycx-hit shrink-0 font-semibold text-sky-700 hover:underline cursor-pointer disabled:opacity-50"
-                                >
-                                    Dùng tài khoản khác
-                                </Button>
-                            </div>
-                        )}
-
-                        {useHandoff ? (
-                            <div className="text-center pt-2 text-[11px] text-slate-500 leading-relaxed">
-                                Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.
-                            </div>
-                        ) : (
-                        <div className="text-center pt-2">
                             <Button
                                 type="button"
                                 variant="unstyled"
                                 size="none"
-                                onClick={handleRedirectLogin}
+                                onClick={() => { quenTaiKhoan(); setTaiKhoanNho(null); }}
                                 disabled={isLoggingIn}
-                                className="ycx-hit text-[11px] font-medium text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-300 hover:underline inline-flex items-center gap-1 cursor-pointer disabled:opacity-50 transition-colors"
+                                className="ycx-hit self-center mt-3 type-subhead font-semibold text-sky-700 hover:underline cursor-pointer disabled:opacity-50"
                             >
-                                <AppIcon name="refresh" size="xs" />
-                                {isStandalone ? 'Đang kích hoạt đăng nhập chuyển hướng' : 'Gặp lỗi xoay? Đăng nhập chuyển hướng →'}
+                                Dùng tài khoản khác
                             </Button>
-                        </div>
                         )}
                     </div>
-                    
-                    {/* Clean Minimal Divider */}
-                    <div className="relative flex items-center py-1">
-                        <div className="flex-grow border-t border-slate-200/80 dark:border-slate-800" />
-                        <span className="flex-shrink-0 mx-3 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-                            Hoặc
-                        </span>
-                        <div className="flex-grow border-t border-slate-200/80 dark:border-slate-800" />
-                    </div>
-                    
-                    {/* Secondary Trial Mode Button */}
-                    <Button
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => setDemoMode(true)}
-                        className="w-full h-11 flex items-center justify-center gap-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-popup transition-all font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer active:scale-[0.99]"
-                    >
-                        <AppIcon name="glasses" size="md" className="text-slate-500 dark:text-slate-400" />
-                        <span>Kích hoạt Chế độ Dùng Thử</span>
-                    </Button>
-
-                    {/* Muted Offline Note */}
-                    <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 px-2 pt-1 leading-relaxed">
-                        Chế độ Dùng Thử lưu trữ dữ liệu tại máy này và không yêu cầu đăng nhập.
-                    </p>
-                </div>
                 )}
             </div>
+
+            {!waitingHandoff && (
+                <Button
+                    type="button"
+                    variant="unstyled"
+                    size="none"
+                    aria-label="Kích hoạt Chế độ Dùng Thử"
+                    onClick={() => setDemoMode(true)}
+                    className="ycx-hit mt-8 type-subhead text-slate-500 hover:text-slate-800 hover:underline cursor-pointer"
+                >
+                    Dùng thử không cần đăng nhập
+                </Button>
+            )}
         </div>
     );
 };

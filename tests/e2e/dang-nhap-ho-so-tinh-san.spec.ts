@@ -23,7 +23,7 @@ test('có hồ sơ tính sẵn cho đúng tài khoản: vào app KHÔNG gọi re
     let hoSo: Record<string, unknown> | null = null;
     p1.on('response', async r => { if (/\/resolveSession$/.test(r.url())) hoSo = (await r.json().catch(() => ({})))?.result ?? null; });
     await dangNhapBangToken(p1);
-    await expect(p1.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(p1.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await expect.poll(() => hoSo, { timeout: 30_000 }).not.toBeNull();
     const uid = await p1.evaluate(async () => {
         const duongDan = '/services/firebase.ts'; // biến → tsc không đòi phân giải đường dẫn trình duyệt
@@ -38,7 +38,7 @@ test('có hồ sơ tính sẵn cho đúng tài khoản: vào app KHÔNG gọi re
         const goi = demResolve(p);
         const t0 = Date.now();
         await dangNhapBangToken(p);
-        await expect(p.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+        await expect(p.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
         await expect(p.getByText(/Cập Nhật Mã Kho/i)).toHaveCount(0);
         await p.waitForTimeout(4000);
         console.log(ten, 'resolveSession:', goi.length, 'luot | vao app sau', Date.now() - t0, 'ms');
@@ -53,7 +53,7 @@ test('hồ sơ users/{uid} còn khoá dữ liệu Kho cũ (khoDataCache_*): app 
     const log: string[] = [];
     page.on('console', m => { if (/khoá dữ liệu Kho cũ/.test(m.text())) log.push(m.text()); });
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await expect.poll(() => log.length, { timeout: 90_000 }).toBeGreaterThan(0);
     console.log('LOG_DON', log[0]);
     expect(log[0]).toMatch(/Dọn \d+ khoá dữ liệu Kho cũ/);

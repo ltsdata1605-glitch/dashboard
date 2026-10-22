@@ -18,7 +18,7 @@ const openReportBi = async (page: import('@playwright/test').Page) => {
 
 test('tài khoản đăng nhập thật và vào được Report BI', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0);
     await expect(page.locator('aside').first()).toBeVisible({ timeout: 60_000 });
     await page.screenshot({ path: 'test-results/real-01-app.png' });
 });

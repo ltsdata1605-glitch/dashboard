@@ -42,7 +42,7 @@ test('đóng máy quét lúc camera đang khởi động: không còn luồng ca
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/?tab=tools-print-sticker&sub=event');
     await page.waitForTimeout(1200);
-    const demo = page.getByText(/Kích hoạt Chế độ Dùng Thử/i).first();
+    const demo = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first();
     if (await demo.isVisible().catch(() => false)) {
         await demo.click();
         await page.waitForTimeout(2200);

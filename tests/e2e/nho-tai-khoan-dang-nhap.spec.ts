@@ -11,7 +11,7 @@ async function moTrangDangNhap(page: import('@playwright/test').Page, context: i
     await context.route('https://auth.dashboard.pro.vn/**', r => { toi = r.request().url(); return r.fulfill({ status: 200, body: 'stub' }); });
     await context.route('**/pwaHandoffStore', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"result":{"ok":true}}' }));
     await page.goto('/');
-    const btn = page.getByRole('button', { name: /Tiếp tục với Cổng Google/ });
+    const btn = page.getByRole('button', { name: /Tiếp tục với Google/ });
     await expect(btn).toBeVisible({ timeout: 30_000 });
     await page.waitForTimeout(500); // chờ băm mã sẵn
     return { btn, toi: () => toi };

@@ -11,7 +11,7 @@ test('Verify redesigned LoginView appearance in Normal and Error states', async 
     await expect(card).toBeVisible({ timeout: 10_000 });
 
     // 1. Verify Google button & Trial button
-    const googleBtn = page.getByRole('button', { name: /Tiếp tục với Cổng Google/i });
+    const googleBtn = page.getByRole('button', { name: /Tiếp tục với Google/i });
     await expect(googleBtn).toBeVisible();
 
     const trialBtn = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i });

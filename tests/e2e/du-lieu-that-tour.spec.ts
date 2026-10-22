@@ -89,7 +89,7 @@ test('tour Report BI + Phân tích trên dữ liệu thật', async ({ page }) =
     page.on('console', m => { if (m.type() === 'error' || /not found in ICON_MAP/.test(m.text())) loiConsole.push(m.text().slice(0, 160)); });
     const biChan = await chanGhiCloud(page);
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
 
     // ---- Report BI
     await page.goto('/?tab=employees');
@@ -147,7 +147,7 @@ test('tương tác: popup, modal, tab con (chỉ đọc)', async ({ page }) => {
     page.on('console', m => { const k = m.text().match(/Icon "([^"]+)" not found/); if (k) iconThieu.add(k[1]); });
     await chanGhiCloud(page);
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await page.waitForTimeout(4000); // để resolveSession xong trước khi chuyển trang
 
     const mo = async (ten: string, hanhDong: () => Promise<unknown>) => {

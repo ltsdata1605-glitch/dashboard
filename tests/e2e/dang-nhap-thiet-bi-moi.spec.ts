@@ -21,7 +21,7 @@ test('quay về app: hiện ngay "Đang hoàn tất", không hiện lại form',
     const seen = new Set<string>();
     await page.goto('/');
     for (let i = 0; i < 40; i++) {
-        if (await page.getByRole('button', { name: /Tiếp tục với Cổng Google/ }).isVisible().catch(() => false)) seen.add('FORM');
+        if (await page.getByRole('button', { name: /Tiếp tục với Google/ }).isVisible().catch(() => false)) seen.add('FORM');
         if (await page.getByTestId('login-handoff-waiting').isVisible().catch(() => false)) seen.add('WAIT');
         await page.waitForTimeout(150);
     }
@@ -30,7 +30,7 @@ test('quay về app: hiện ngay "Đang hoàn tất", không hiện lại form',
     expect(seen.has('WAIT')).toBe(true);
     await page.screenshot({ path: 'test-results/dang-nhap-dang-hoan-tat.png' });
     await page.getByRole('button', { name: 'Huỷ' }).click();
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/ })).toBeVisible();
 });
 
 test('trang auth: tự sang Google, không bắt bấm thêm', async ({ page }) => {

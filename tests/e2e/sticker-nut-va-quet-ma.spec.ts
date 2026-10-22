@@ -36,7 +36,7 @@ async function moInSticker(page: Page) {
 
     await page.goto('/?tab=tools-print-sticker&sub=event');
     await page.waitForTimeout(1500);
-    const demo = page.getByText(/Kích hoạt Chế độ Dùng Thử/i).first();
+    const demo = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first();
     if (await demo.isVisible().catch(() => false)) {
         await demo.click();
         await page.waitForTimeout(2500);

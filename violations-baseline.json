@@ -105,7 +105,7 @@
   },
   "components/views/LoginView.tsx": {
     "nonSemanticColor": 0,
-    "indigoAlias": 1,
+    "indigoAlias": 0,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
     "iconNumericSize": 0,
@@ -113,8 +113,8 @@
     "iconRawSvg": 1,
     "iconEmoji": 0,
     "offScaleText": 0,
-    "tinyText": 1,
-    "offScaleRadius": 1
+    "tinyText": 0,
+    "offScaleRadius": 0
   },
   "features/bi-dashboard/components/AutoClickGuideModal.tsx": {
     "nonSemanticColor": 0,

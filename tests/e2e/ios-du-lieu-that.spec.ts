@@ -48,7 +48,7 @@ test('đăng nhập tài khoản thật và mở 3 module trên iPhone (chỉ đ
 
     await dangNhapBangToken(page);
     // Vào được app: không còn màn đăng nhập, có thanh điều hướng.
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
 
     for (const tab of ['analysis', 'employees', 'check-thuong']) {
         await page.goto(`/?tab=${tab}`);

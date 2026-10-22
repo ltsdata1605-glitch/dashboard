@@ -54,7 +54,7 @@ test('In Sticker mount được và không ghi Firestore dồn dập khi thao t�
     // BƯỚC 1: qua cổng đăng nhập của APP GỐC. Không dùng tài khoản Google thật — bật Chế độ Dùng
     // Thử, đủ để `TabContent` mount `<StickerPrinterView />` (module sticker có màn đăng nhập
     // RIÊNG, dùng Firebase app riêng tên 'stickerevent').
-    const demoBtn = page.getByText(/Kích hoạt Chế độ Dùng Thử/i).first();
+    const demoBtn = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first();
     if (await demoBtn.isVisible().catch(() => false)) {
         await demoBtn.click();
         await page.waitForTimeout(5000);

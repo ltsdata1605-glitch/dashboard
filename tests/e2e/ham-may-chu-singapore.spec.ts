@@ -13,7 +13,7 @@ test('hàm gọi qua Singapore, đăng nhập thật vẫn vào được', async
     const loi: string[] = []; page.on('pageerror', e => loi.push(e.message));
     await chanGhiCloud(page);
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await page.waitForTimeout(8000);
     console.log('GOI_HAM', JSON.stringify([...new Set(urls)]), 'LOI', loi.length);
     expect(urls.length).toBeGreaterThan(0);

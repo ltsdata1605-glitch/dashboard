@@ -34,7 +34,7 @@ test('chế độ Dùng Thử không gọi listManagedUsers, và không có lỗ
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(4000);
 
-    const demoBtn = page.getByText(/Kích hoạt Chế độ Dùng Thử/i).first();
+    const demoBtn = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first();
     if (await demoBtn.isVisible().catch(() => false)) {
         await demoBtn.click();
         await page.waitForTimeout(5000);

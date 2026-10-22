@@ -12,7 +12,7 @@ const moManNotify = async (page: import('@playwright/test').Page, phanHoi: objec
     await page.context().route(/lineBotWebhook\?action=quota/, route =>
         route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, ...phanHoi }) }));
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await page.goto('/?tab=tools-line-bot');
     await page.getByText('Gửi Notify', { exact: true }).first().click({ timeout: 30_000 });
     await page.waitForTimeout(6000);
@@ -40,7 +40,7 @@ test('Gửi Notify: hiện hạn mức tin LINE thật', async ({ page }) => {
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, type: 'limited', limit: 300, used: 300, exhausted: true }) });
     });
     await dangNhapBangToken(page);
-    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await expect(page.getByRole('button', { name: /Tiếp tục với Google/i })).toHaveCount(0, { timeout: 60_000 });
     await page.goto('/?tab=tools-line-bot');
     await page.getByText('Gửi Notify', { exact: true }).first().click({ timeout: 30_000 });
     await page.waitForTimeout(8000);

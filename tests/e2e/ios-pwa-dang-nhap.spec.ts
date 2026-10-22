@@ -1,7 +1,7 @@
 import { test, expect, devices } from '@playwright/test';
 
 /**
- * App ở Màn hình chính iPhone (2026-10-12): bấm "Tiếp tục với Cổng Google" phải mở trang
+ * App ở Màn hình chính iPhone (2026-10-12): bấm "Tiếp tục với Google" phải mở trang
  * auth.dashboard.pro.vn/pwa-login.html#c=<mã> (KHÔNG signInWithRedirect — redirect quay về app tay không),
  * rồi app hỏi pwaHandoffClaim cho tới khi nhận phiên. Xem functions/src/pwaHandoff.ts.
  */
@@ -29,10 +29,10 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     await context.route('https://auth.dashboard.pro.vn/**', route => route.fulfill({ status: 200, body: 'stub' }));
 
     await page.goto('/');
-    const btn = page.getByRole('button', { name: /Tiếp tục với Cổng Google/ });
+    const btn = page.getByRole('button', { name: /Tiếp tục với Google/ });
     await expect(btn).toBeVisible({ timeout: 30_000 });
     // Dòng gợi ý dưới nút (chữ đổi ở d70baad: mọi thiết bị iOS dùng chung cơ chế handoff).
-    await expect(page.getByText('Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.')).toBeVisible();
+    await expect(page.getByText(/tối ưu riêng cho iPhone/)).toHaveCount(0); // màn tối giản 2026-10-22: bỏ dòng này
     await page.waitForTimeout(500); // chờ băm mã sẵn
 
     const popupP = context.waitForEvent('page');
@@ -78,6 +78,6 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     await expect(waiting).toBeHidden({ timeout: 15_000 });
     await expect(page.getByText(/Chưa vào được ứng dụng/)).toBeVisible();
     await expect(btn).toBeEnabled();
-    await expect(page.getByText('Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.')).toBeVisible();
+    await expect(page.getByText(/tối ưu riêng cho iPhone/)).toHaveCount(0); // màn tối giản 2026-10-22: bỏ dòng này
     await page.screenshot({ path: 'test-results/ios-pwa-dang-nhap.png' });
 });
