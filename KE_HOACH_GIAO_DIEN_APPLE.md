@@ -514,6 +514,8 @@ thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng mà
 
 ## 9. Checklist trên iPhone thật — chủ dự án tự kiểm (GĐ9, ~10 phút)
 
+> **ĐẠT — chủ dự án đã kiểm trên iPhone thật, báo 2026-10-22: "Đã kiểm thử và pass"** (10 mục dưới đây).
+
 Máy của agent chỉ có Chromium giả lập iPhone (WebKit chạy ở CI). Những việc dưới đây chỉ iPhone thật mới kiểm được. Mở
 `https://dashboard.pro.vn` bằng Safari (mục 5–6, 9 dùng bản cài ở Màn hình chính). Mục nào hỏng: **quay màn hình** như 2 video ban
 đầu, gửi kèm số mục. Không mục nào ghi dữ liệu (mục 4 bấm **Hủy**).
