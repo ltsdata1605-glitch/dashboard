@@ -1,0 +1,69 @@
+# QUÉT TOÀN BỘ E2E hằng đêm (2026-10-22). Job e2e của check.yml chỉ chạy ~46 bài chọn lọc mỗi lần push; ~120 bài còn lại trước đây
+# không chạy tự động ở đâu → cũ dần mà không ai biết (quét tay 22/10: 3 bài đỏ vì app đổi có chủ đích 15–19/10 mà test chưa theo, cả
+# 3 nằm ngoài CI). Lượt này chạy CẢ thư mục tests/e2e (Chromium, 1 luồng như máy dev), trừ bài khám phá icon hộp thoại (đã có
+# design-audit). Bài cần tài khoản/dữ liệu thật tự bỏ qua vì job không có bí mật. Repo công khai → phút Actions không tính phí.
+name: e2e-toan-bo
+
+on:
+  schedule:
+    - cron: '47 20 * * *' # 03:47 giờ Việt Nam
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-toan-bo
+  cancel-in-progress: true
+
+jobs:
+  e2e-toan-bo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+
+    env:
+      # Như job e2e của check.yml: server tự dựng ở bước dưới, Playwright bỏ qua khối `webServer`. Dev server (không phải bản build)
+      # vì nhiều bài nạp harness `/tests/e2e/helpers/*.tsx` qua Vite.
+      E2E_BASE_URL: http://127.0.0.1:5173
+      BROWSER: none
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Cài dependency
+        run: npm ci
+
+      - name: Cài trình duyệt Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Khởi động dev server
+        id: server
+        run: |
+          npm run dev > "$RUNNER_TEMP/dev-server.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:5173 > /dev/null; then
+              echo "dev server sẵn sàng sau khoảng $((i * 2))s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::dev server KHÔNG lên sau 120s"
+          cat "$RUNNER_TEMP/dev-server.log"
+          exit 1
+
+      - name: 'E2E toàn bộ (Chromium, trừ khám phá icon hộp thoại)'
+        run: npx playwright test --project=chromium --grep-invert "audit icon modal" --output=test-results/e2e-toan-bo
+
+      - name: Gom log dev server
+        if: failure()
+        run: cp "$RUNNER_TEMP/dev-server.log" test-results/dev-server.log || true
+
+      - name: Lưu báo cáo khi đỏ
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-toan-bo-report
+          path: test-results/
+          retention-days: 7
