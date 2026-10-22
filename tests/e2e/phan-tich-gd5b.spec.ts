@@ -146,6 +146,9 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
     });
 
     test('#14/#23 Chi tiết đơn hàng: 2 nút + ⋯, tên khách không IN HOA 16px; sao chép mã đơn dùng toast chung ở TRÊN', async ({ page }) => {
+        // Chạm mã đơn → clipboard.writeText. Chromium bản CI (headless shell) chưa cấp quyền thì từ chối "Write permission denied"
+        // → không có toast (CI 22/10 đỏ ở đây; bản Chromium đầy đủ trên máy dev lại cho ghi).
+        await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
         await napDuLieu(page, ['SO002', 'SO003']);
         await page.getByRole('button', { name: /^Chờ xuất/ }).first().click();
         const hop = page.getByRole('dialog', { name: /DTQĐ chờ xuất/ });

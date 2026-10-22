@@ -13,9 +13,8 @@ test('WarehouseSettingsModal tự động lưu trạng thái ẩn/hiện cột v
     await page.locator('.fixed.inset-0').getByText('Tệp Realtime (Xem nhanh)').first().click();
     await expect(page.getByText(/CHI TIẾT THEO KHO/i).first()).toBeVisible({ timeout: 30_000 });
 
-    // Bấm nút Cài đặt ở header của Chi tiết theo kho
-    const warehouseHeader = page.locator('div').filter({ hasText: /^Chi tiết theo kho/ }).first();
-    const settingsBtn = warehouseHeader.locator('button[title="Cài đặt"]').first();
+    // Bấm nút Cài đặt ở header của Chi tiết theo kho (tiêu đề in hoa từ 57656d79 — tìm theo khối, không theo chữ tiêu đề)
+    const settingsBtn = page.locator('#warehouse-summary-view').getByRole('button', { name: 'Cài đặt', exact: true });
     await settingsBtn.click();
 
     // Modal Cấu Hình Cột Báo Cáo xuất hiện
