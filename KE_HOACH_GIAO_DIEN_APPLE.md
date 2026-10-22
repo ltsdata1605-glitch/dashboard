@@ -286,6 +286,10 @@ mục "GĐ9".
 gói lúc mở **325,7 KB** gzip ✅ · khung app 1,40 s ✅ · nội dung Phân tích nóng 1,9–2,1 s ✅ / lạnh 4,2–4,9 s · Report BI **0,26 s** ✅ ·
 Check thưởng 0,14 s ✅ · về Phân tích 0,16 s. Ngân sách gói tải đầu chạy trong `npm run check` + CI (`scripts/kiem-goi-tai-dau.cjs`).
 
+**Mở lạnh không chờ cấu hình ngành hàng (2026-10-22, 3 lượt lạnh mỗi bên, xen kẽ trước/sau)**: nội dung Phân tích lần mở ĐẦU (máy chưa có
+cấu hình) **4,52 s → 2,25 s** ✅ · đã có cấu hình giữ 2,11 s · khung app 1,2–1,3 s · chuyển tab không đổi. Bảng đủ: `implementation_plan.md`
+mục "Rà soát … mở lạnh không chờ cấu hình + bỏ Google Sheet (2026-10-22)".
+
 ### 4.3 Việc tăng tốc (GĐ2) và lợi ích ước tính
 
 | # | Việc | Lợi ích ước tính |

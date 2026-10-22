@@ -8961,3 +8961,116 @@ GH/KH/TN/OFF trong `phanca.css`, đối chiếu HỌ màu với luật tô của
   clipboard thì `navigator.clipboard.write` treo → job kẹt ở ảnh 1 (code cũ y hệt). Bài test phải `context.grantPermissions(['clipboard-read',
   'clipboard-write'])`.
 - Chưa tạo được Sheet thật (cần đăng nhập Google của chủ dự án): cách kiểm — Phân ca → Xuất → Sheet, so đầu bảng với lịch trong app.
+
+## Rà soát "thiết kế lại iPhone đã xong thật chưa" + mở lạnh không chờ cấu hình + bỏ Google Sheet (2026-10-22)
+
+Chủ dự án hỏi: *"Công việc iPhone app redesign and optimization đã thật sự hoàn tất, còn vấn đề nào nữa hay không?"* Rà soát ra 5 việc
+còn hở; chủ dự án chốt cả 5 ("Xử lý giúp tôi" · mở lạnh "Duyệt" · checklist "Đã kiểm thử và pass") và thêm: *"Dự án không còn tải cấu
+hình từ Google Sheet, hãy loại bỏ tất cả code liên quan"*.
+
+**1. Bài kiểm thiết kế hằng đêm đỏ** (`design-audit.yml` → `icon-audit-modal`, 4/6 đỏ từ khi bật chạy tự động).
+- Không phải lỗi app. Trace trong artifact: trang trắng, `net::ERR_INSUFFICIENT_RESOURCES` — 3 luồng trình duyệt cùng đập vào dev
+  server Vite (~330 request module mỗi lượt tải trang, mỗi bài 30+ lượt tải lại) → Chromium hết tài nguyên mạng.
+- Sửa (72ef51a4): chạy trên BẢN BUILD (`vite preview`, ~30 request/lượt) + 2 luồng; gom log máy chủ khi đỏ.
+- Kết quả: chạy tay 22/10 trên `main` — **xanh** (design-audit run 10).
+
+**2. 124/170 file e2e không chạy tự động ở đâu** (job e2e của `check.yml` chỉ chạy ~46 file chọn lọc).
+- Quét tay: 3 bài đỏ — cả 3 là test CŨ không theo thay đổi có chủ đích của chủ dự án (nằm ngoài CI nên không ai biết), sửa test theo
+  hành vi mới (f5a32d62): `analysis-only-all-in-one` (hỏi Mã Kho `ShiftWarehouseInputModal` trước khi nạp danh sách NV),
+  `bi-competition-bonus-col` (`shortenName` "TC HOMECREDIT" → "TC HC", c0731b8), `bi-nhan-vien-theo-sieu-thi` (NV lọc theo siêu thị
+  bằng luỹ kế/Mã Kho, 57656d79).
+- Bộ khoá 29 lỗi từ 2 video iPhone gốc (`phan-tich-gd5`, `phan-tich-gd5b`, `report-bi-gd6`, `bi-mobile-iphone`,
+  `mobile-settings-compact`) cũng nằm NGOÀI CI → đưa vào job e2e cùng 3 bài vừa sửa + bài mở lạnh mới (d4ebb672, hạn job 30 → 40 phút).
+- Lượt quét toàn bộ hằng đêm mới `e2e-toan-bo.yml` (03:47 giờ VN, Chromium 1 luồng, dev server; trừ bài khám phá icon hộp thoại đã có
+  design-audit). Chạy tay lần đầu 22/10: **388 đạt · 104 bỏ qua · 2 đỏ** / 43 phút. 2 bài đỏ (fc100877):
+  - `phan-tich-gd5b` #14/#23 (cũng làm đỏ run 431 của `check.yml`): chạm mã đơn → `clipboard.writeText`; Chromium bản CI (headless
+    shell) chưa cấp quyền thì từ chối *"NotAllowedError: Write permission denied"* → không có toast. Máy dev dùng Chromium đầy đủ (cho
+    ghi) nên không thấy. Tái hiện trên máy bằng `E2E_CHROMIUM_PATH=/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell`
+    → đỏ đúng chỗ; cấp quyền như các bài khác → xanh trên cả hai bản.
+    **Mẹo:** bài mới đưa vào CI nên chạy thử một lượt bằng headless shell — CI dùng bản đó, máy dev thì không.
+  - `test-warehouse-auto-save`: tìm khối theo chữ `/^Chi tiết theo kho/` (phân biệt hoa thường) — tiêu đề đã in hoa từ 57656d79 → tìm
+    nút Cài đặt trong `#warehouse-summary-view` theo tên truy cập.
+- 104 bài bỏ qua trên CI = cần hồ sơ Chrome dữ liệu thật của máy chủ dự án (`.e2e-chrome-profile`) / tài khoản test (bí mật không có
+  trên CI) / cờ chạy tay (`PERF`, `ANH`, `AUDIT_IPHONE`, `A13_OUT`…) / gửi LINE đang tắt. Phần chạy được bằng tài khoản test thì quét bù
+  trên máy cloud (10 file): **16 đạt · 1 bỏ qua** (BarcodeDetector không có ở Chromium chạy test) **· 1 đỏ** — `dong-bo-hai-may-du-lieu-that`
+  (2 máy cùng tài khoản thật, chặn ghi): đo lại code TRƯỚC 1753ad35 cũng đỏ y vậy → 3 nguyên nhân:
+  1. Test cũ đi từ 21/10: lượt DỌN khoá Kho cũ (`settings.khoDataCache_*` / `khoDataAppliedSnapshot::*`, AuthContext — có bài riêng
+     `dang-nhap-ho-so-tinh-san`) bị tính là "ghi lúc mở". Tài khoản test luôn còn các khoá này vì test chặn ghi.
+  2. Test tự cắt danh sách trường định ghi ở 300 ký tự → tên khoá cụt dính sang mục sau.
+  3. **Lỗi app thật (9efe81a3):** `global_product_config_updated_at` (mốc bản cấu hình chung mà productConfig TRÊN MÁY NÀY đang giữ)
+     lọt vào đồng bộ cấu hình nhẹ — danh sách loại trừ kiểu "cấm" nên khoá mới tự thành khoá đồng bộ. Máy khác kéo về mốc mới trong khi
+     cấu hình trên máy vẫn bản cũ → lượt kiểm ngầm thấy "cùng mốc", không tải lại; và từ 1753ad35 (tải cấu hình ở nền) máy mới lưu mốc SAU
+     lượt kéo đầu → đẩy transaction lên Cloud lúc mở (iPhone: 5 lượt `Firestore/commit` bị chặn = 1 transaction + 4 lần thử lại).
+     Sửa: khoá vào `isLocalOnlyKey` → loại khỏi CẢ đường mới (lightSync) lẫn đường cũ (`syncService.laKhoaDongBoCu`). Chỉ loại khỏi đường
+     nhẹ thì đường cũ nhận và đẩy `settings.global_product_config_updated_at` (đã thấy khi đo). Test `tests/unit/light-sync-keys` (code
+     cũ: 2 bài đỏ). Sau sửa: `dong-bo-hai-may-du-lieu-that` 3/3 xanh, không còn lượt commit nào lúc mở.
+- Thêm (9ef24161): `offline-app-shell` dựng `vite preview` qua `npx` → kill ở afterAll chỉ trúng npx, vite con sống tiếp giữ cổng 4179
+  (đo: còn chạy 16 phút sau) → lần sau `--strictPort` hỏng nhưng vòng chờ thấy máy chủ CŨ trả lời → test chạy trên bản build cũ. Nay gọi
+  thẳng `node node_modules/vite/bin/vite.js`.
+
+**3. Lần mở đầu chậm — `loadInitialData` chờ cấu hình ngành hàng** (chủ dự án "Duyệt").
+- Trước: máy chưa có cấu hình (máy mới / Safari xoá dữ liệu web) → chờ Firestore `global_product_config` (đua 5 s) rồi (nếu không có)
+  tải Google Sheet CSV → mới hiện màn tải tệp; suốt lúc đó là lớp chờ "Đang tải cấu hình ngành hàng từ Cloud…".
+- Sau (1753ad35): CHƯA có dữ liệu bán hàng đã lưu → hiện màn tải tệp NGAY, tải cấu hình ở nền; người dùng tải tệp trước khi cấu hình về
+  thì effect xử lý tự tải lại cấu hình (`configRetryRef`, có sẵn) rồi chạy tiếp. Có dữ liệu đã lưu thì vẫn chờ cấu hình như cũ (cần để
+  tính bảng).
+- Test `phan-tich-mo-lanh-khong-cho-cau-hinh` (Firestore TREO): theo dõi DOM từ lúc mở — lớp chờ cấu hình không được từng hiện; rồi tải
+  tệp lúc cấu hình còn treo → mạng lành → ra bảng. Code cũ đỏ (màn ra sau 8,9 s), code mới xanh.
+- **Đo bản build** (`perf-apple`, iPhone 440×956, 4G 9 Mbps/60 ms, CPU ×4, Firestore thật; 3 lần chạy × 3 lượt mỗi bên, xen kẽ
+  trước/sau; lượt 1 mỗi lần chạy = LẠNH thật vì context mới, IndexedDB trống; lượt 2–3 đã có cấu hình):
+
+  | Phép đo | Trước (2b6d777d) | Sau |
+  |---|---:|---:|
+  | Nội dung Phân tích hiện — **lạnh** | **4518 ms** (4323 · 4940 · 4291) | **2251 ms** (2113 · 2216 · 2424) |
+  | Nội dung Phân tích hiện — đã có cấu hình | 2108 ms | 2106 ms |
+  | Khung app hiện — lạnh / ấm | 1304 / 1093 ms | 1232 / 1061 ms |
+  | JS đã tải lúc nội dung hiện — lạnh | 913 KB | 578 KB (phần cấu hình tải sau, ở nền) |
+  | Chuyển Report BI · Check thưởng · về Phân tích (ấm) | 237 · 106 · 133 ms | 208 · 113 · 158 ms |
+
+  Lạnh −2,27 s (−50%), đạt mốc "nội dung Phân tích ≤ 2,2 s" của GĐ2 ở cả lạnh lẫn ấm (sai số ~0,1 s). Phần còn lại không đổi (trong
+  sai số đo).
+
+**4. Bỏ hẳn nguồn cấu hình Google Sheet** (1753ad35) — thực tế đã chết từ 13/10 (`configUrl` mặc định `cloud://…` nên nhánh Sheet không
+bao giờ chạy): `loadConfigFromSheet` + `robustCsvParse` (services/dataService), nhánh dự phòng Sheet lúc mở app và lúc tải lại, khối
+"Background Config Check" (HEAD + tải lại Sheet sau 5 s mỗi lần mở app), prop `configUrl` xuyên 4 tầng (useDashboardLogic → DashboardView
+→ LandingPageView → UploadSection) cùng ô "Nguồn cấu hình sản phẩm" + nút bánh răng ở màn tải tệp, `docs.google.com` khỏi CSP
+`connect-src`, 8 route giả docs.google.com trong e2e + `createProductConfigXlsx`. Hộp "Nhóm hàng chưa cấu hình": nút "Mở file Google
+Sheets cấu hình" → "Mở cấu hình ngành hàng" (tab Cấu hình), hướng dẫn theo file Excel (Xuất Excel → dán vào sheet "Ngành hàng" → Tải file
+Excel). Giữ `parseProductConfigFromWorkbook` (tải Excel ở tab Cấu hình). Bản build: không còn `loadConfigFromSheet`/`robustCsvParse`/
+`docs.google.com`.
+
+**5. Checklist 10 mục trên iPhone thật — ĐẠT** (chủ dự án tự kiểm, báo 22/10; ghi ở `KE_HOACH_GIAO_DIEN_APPLE.md` mục 9 — 3b749f6d).
+
+**6. Commit 19b5dbf1 của chủ dự án (22/10 13:47) làm đỏ `npm run check` + job check của CI** (run 434): 1 `<button>` thô (ESLint chặn
+từ 21/10) + 15 chỗ mới ngoài chuẩn theo lint-ratchet. 5c6ddda9: nút → `<Button variant="unstyled" size="none">` (giữ lớp, giao diện không
+đổi); 15 chỗ ghi vào `violations-baseline.json` như ngoại lệ có chủ đích — cỡ/màu chủ dự án gõ tay, KHÔNG đổi giao diện:
+`tinyText` (chữ 9–10px) MobileNavBar 1 · UserManagementView 3 · ConfigTable 5 · ProductCodeConfigTable 1; `offScaleText`
+SettingsAccountTab 2 (tiêu đề 14/15px); `indigoAlias` bi-dashboard DashboardHeader 3 (chấm/chữ chế độ Luỹ kế). Muốn theo chuẩn tối thiểu
+11px thì đổi các chỗ trên rồi hạ baseline.
+
+**7. Vòng chụp dữ liệu thật** (`anh-truoc-sau-apple`, tài khoản test chỉ đọc, iPhone 440 + laptop 1440/1280, bản gộp có 19b5dbf1):
+3/3 đạt; ảnh + số đo ở `.anh-apple/sau-22-10/` (gitignore, KHÔNG commit). Laptop 1440 + 1280, 12 tab: không tràn ngang, không bị
+dock che, không chữ < 11px ngoài 8 chữ ở In Sticker (như 21/10). iPhone 440: không chữ nhỏ mới, nhưng khung nhìn bị NỚI — `innerWidth`
+498 ở Report BI (thanh trên tràn 58px với dữ liệu thật: "Realtime | CỤM 4" + 3 nút phân hệ), 442 ở 6 tab (21/10: 440 cả 11 tab) →
+mục 8. Lỗi console chỉ là lượt ghi / gọi hàm bị chặn có chủ đích (`ERR_FAILED`, `FirebaseError: internal`) và So giá gọi máy chủ cục
+bộ không có (`ERR_CONNECTION_REFUSED`, có từ 21/10).
+
+**8. Hồi quy giao diện iPhone do 19b5dbf1 — CHỜ CHỦ DỰ ÁN QUYẾT** (CI run 434: 7 bộ e2e Chromium + `apple-tuong-thich` WebKit đỏ; run
+431 trước đó xanh hết — bộ khoá 29 lỗi video vừa đưa vào CI bắt được đúng việc này). Không tự sửa: là thiết kế chủ dự án đang làm.
+- Lỗi thật:
+  - Trang TRÀN NGANG: `MobileNavBar` đổi khối phải `min-w-0 shrink` → `shrink-0` (khối tiêu đề `min-w-fit shrink-0`) — bỏ đúng chỗ chú
+    thích cũ dặn "khe portal rộng phải co lại và tự cuộn ngang bên trong, không đẩy trang tràn ngang". Dùng thử: 2px ở Check thưởng / Báo
+    cáo / In Sticker / Coupon / Hướng dẫn (375–820px); dữ liệu thật: 58px ở Report BI.
+  - Toast nằm DƯỚI lớp nền mờ của modal (`phan-tich-gd5b` #14/#23 — đúng lỗi #23 trong video gốc); `Modal.tsx` có đổi trong commit.
+- Đổi cỡ / cấu trúc trái chuẩn đã chốt (GĐ4–GĐ7): tiêu đề thanh trên 17 → 14/15px (`khung-app-gd4`); vùng chạm "Cập nhật dữ liệu" /
+  "Chạm để kiểm tra & đồng bộ" 42px < 44 (`apple-tuong-thich`, `bi-mobile-iphone`, `khung-app-gd4`); nút chế độ In Sticker 44 → 32px
+  (`gd7-mini-app`); segmented "Realtime | Luỹ kế" ở Report BI thay bằng viên "Realtime ⇆" (`report-bi-gd6` #15 không tìm thấy nút
+  "Luỹ kế"); icon trong nút có chữ 12–14px (`icon-audit-man-goc`, nút lịch ô "Hạn:" ở Phân quyền).
+- Hướng đề xuất: giữ dáng gọn mới, sửa 2 lỗi thật (cho khối phải co lại như cũ; toast trên lớp nền modal), vùng chạm ≥ 44 bằng `::after`
+  (giữ cỡ nhìn thấy), rồi cập nhật bài canh theo cỡ mới chủ dự án chốt.
+
+**Còn lại (không làm, ngoài phạm vi):**
+- 3 hộp danh sách đơn (chờ xuất / chưa thu / hiệu suất) gọi `clipboard.writeText(...).then(toast)` không có nhánh lỗi — trình duyệt từ
+  chối thì chạm mã đơn không thấy gì. iPhone Safari / app Màn hình chính cho ghi trong cú chạm nên chưa gặp thật.
+- Máy mới đăng nhập lần đầu đẩy `users/{uid}/configs/productConfig` (khoá nặng) lên Cloud: bản cấu hình chung vừa tải về mang mốc giờ
+  máy → "mới hơn" bản của tài khoản. Có cả ở code trước 1753ad35 (đo bằng bài 2 máy); vô hại (cùng nội dung) nhưng tốn một lượt ghi.
