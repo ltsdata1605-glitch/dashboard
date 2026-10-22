@@ -9098,3 +9098,17 @@ segmented "Realtime | Luỹ kế", chữ ≥ 11px, không tràn ngang, toast n�
 
 **Kiểm:** 8 bộ canh đang đỏ (`apple-tuong-thich`, `khung-app-gd4`, `gd7-mini-app`, `icon-audit-man-goc`, `phan-tich-gd5b`, `report-bi-gd6`,
 `bi-mobile-iphone`) + mọi bài mới của 19b5dbf1/f33b3462 + `npm run check` + vòng chụp dữ liệu thật (Report BI iPhone không còn tràn 58px).
+
+**Kết quả (22/10):**
+- Bước 1 (1613584d): MobileNavBar / DashboardHeader / NhanVien / Tabs / Dashboard.tsx trùng khớp bản trước 19b5dbf1; styles.css giữ kính mờ,
+  trả bố cục capsule; chữ 9–10px → 11px, chữ cái avatar 18/24 → 17/25px, icon lịch nút "Hạn:" → md; baseline ratchet về như trước 5c6ddda9.
+- Toast dưới lớp nền modal (#23): hết sau khi trả bố cục thanh trên — không phải `Modal.tsx`.
+- Bước 2 (837347c2): thay 2 bài "bộ lọc trên thanh trên" bằng `bi-bo-loc-trong-trang-iphone`; `mobile-settings-compact` segmented ≥ 44;
+  sửa `duong-ke-doc-mong` (đỏ cả trên chính f33b3462: view `bonus` không tồn tại, bấm nhầm "Check thưởng" ở thanh dưới, thiếu danh sách
+  nhân viên Phân tích) → xanh, đường kẻ bảng Thưởng 1px đúng thiết kế.
+- Đo: 7 bộ canh từng đỏ ở CI run 434 → 39/39 xanh; mọi bài mới của 19b5dbf1/f33b3462 → xanh (trừ 2 bài đã thay); `npm run check` xanh
+  (gói tải đầu 322,1 KB); trọn danh sách e2e của job CI chạy trên máy (2 luồng) 163/164 — bài còn lại `phan-tich-gd5b` #23 đỏ NGẪU NHIÊN vì bài đo toast lúc còn
+  đang trượt xuống (cũng là lý do đỏ ở CI run 434) → sửa bài: chờ toast dừng rồi đo (1ed473a7), lặp 6×2 luồng trên 2 bản Chromium 12/12; vòng chụp dữ liệu thật (`.anh-apple/chuan-22-10/`, không commit): iPhone 11 tab khung nhìn đúng 440 (Report BI 498 → 440, 6 tab 442 → 440),
+  laptop 1440/1280 sạch, không lỗi mới.
+- Giữ nguyên (chức năng mới của chủ dự án): tắt auto sync trên điện thoại, Báo cáo vào nhóm Công cụ, hệ số số lượng quy đổi, đăng nhập
+  cùng tab, bỏ nút đồng bộ đám mây trùng ở Check thưởng, bỏ dòng lượt truy cập ở Report BI/Check thưởng (đã có ở chân trang), kính mờ.
