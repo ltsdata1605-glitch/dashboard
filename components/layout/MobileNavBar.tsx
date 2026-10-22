@@ -30,7 +30,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBa
         data-app-chrome="topbar"
         className="ycx-navbar mobile-chrome ycx-material lg:hidden sticky top-0 z-[100] border-b border-[color:var(--hairline)] pt-[env(safe-area-inset-top,0px)]"
     >
-        <div className="flex items-center gap-0.5 xs:gap-1 min-h-[52px] pl-1 pr-1">
+        <div className="flex items-center gap-1 min-h-[52px] pl-1.5 pr-1">
             {onBack && (
                 <Button
                     variant="unstyled" size="none"
@@ -43,25 +43,23 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBa
             )}
             <span
                 aria-hidden="true"
-                className={cn('w-7 h-7 shrink-0 rounded-control bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 flex items-center justify-center shadow-sm shadow-sky-300/30', !onBack && 'ml-0.5')}
+                className={cn('w-8 h-8 shrink-0 rounded-control bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 flex items-center justify-center shadow-sm shadow-sky-300/30', !onBack && 'ml-1')}
             >
-                <AppIcon name={tabIcon} size="sm" className="text-white" />
+                <AppIcon name={tabIcon} size="md" className="text-white" />
             </span>
             {/* truncate + leading-[22px]: tiêu đề dài ("Phân quyền & duyệt yêu cầu") không chèn sang nút bên phải; dòng cao đủ
                 cho dấu tiếng Việt (khung quá thấp + overflow hidden từng xén dấu ở iPhone SE). */}
-            <div data-navbar-title="" className="min-w-0 shrink-0 flex flex-col justify-center pl-1 pr-1">
-                <h1 className="text-[13.5px] xs:text-[14.5px] leading-[18px] font-bold tracking-[-0.01em] text-slate-900 dark:text-slate-100 whitespace-nowrap">{title}</h1>
-                <div id="mobile-topbar-subtitle" className="type-footnote text-slate-500 truncate max-w-[85px] empty:hidden text-[10px] leading-tight" />
+            <div data-navbar-title="" className="min-w-0 flex-1 flex flex-col justify-center pl-1.5 pr-1">
+                <h1 className="text-[17px] leading-[22px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-slate-100 truncate">{title}</h1>
+                <div id="mobile-topbar-subtitle" className="type-footnote text-slate-500 truncate max-w-full empty:hidden" />
             </div>
-            {/* Khối dồn sang phải chứa cụm bộ lọc và cụm tab chức năng */}
-            <div className="flex items-center shrink-0 ml-auto gap-0.5 xs:gap-1">
-                <div id="mobile-topbar-filters" className="flex items-center shrink-0 empty:hidden" />
-                <div data-navbar-actions="" className="flex items-center shrink-0">
-                    <div id="mobile-topbar-actions" className="flex items-center shrink-0" />
-                    <div data-action-capsule="" className="flex items-center shrink-0">
-                        <PageActionsBar variant="mobile" />
-                        <NotificationBell buttonClassName="relative flex items-center justify-center w-8 h-8 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0 ycx-hit" />
-                    </div>
+            {/* min-w-0 + shrink (không shrink-0): khe portal rộng phải co lại và tự cuộn ngang bên trong, không đẩy trang tràn
+                ngang; nút khung app + chuông thì giữ nguyên cỡ. ml-auto: dồn sát mép phải như Report BI. */}
+            <div data-navbar-actions="" className="flex items-center min-w-0 shrink ml-auto">
+                <div id="mobile-topbar-actions" className="flex items-center justify-end min-w-0" />
+                <div data-action-capsule="" className="flex items-center min-w-0">
+                    <PageActionsBar variant="mobile" />
+                    <NotificationBell buttonClassName="relative flex items-center justify-center w-11 h-11 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0 ycx-hit" />
                 </div>
             </div>
         </div>

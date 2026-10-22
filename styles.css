@@ -1031,13 +1031,14 @@ summary,
    Gom các nút chức năng thành THANH CON NHỘNG chuẩn Zalo/iOS Navigation Capsule.
    ========================================================================== */
 
-/* Trường hợp 1: Phân tích & Report BI (không có data-thay-tieu-de) -> [data-navbar-actions] là capsule thuỷ tinh ngoài dồn sát phải */
+/* Trường hợp 1: Phân tích & Report BI (không có data-thay-tieu-de) -> [data-navbar-actions] là capsule thuỷ tinh ngoài dồn sát phải.
+   KHÔNG đặt flex-shrink: 0 (2026-10-22, chủ dự án chốt giữ chuẩn): capsule phải co lại được (MobileNavBar `min-w-0 shrink`), không thì
+   tiêu đề + capsule rộng hơn màn là đẩy CẢ TRANG tràn ngang (đo: 2px ở 5 tab, 58px ở Report BI với dữ liệu thật). */
 .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
   display: flex !important;
   align-items: center !important;
-  margin-left: 0 !important;
-  justify-content: flex-start !important;
-  flex-shrink: 0 !important;
+  margin-left: auto !important;
+  justify-content: flex-end !important;
   height: 34px !important;
   min-height: 34px !important;
   box-sizing: border-box !important;
@@ -1052,55 +1053,6 @@ summary,
 }
 
 .dark .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
-  background-color: rgba(30, 41, 59, 0.75) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Khi có bộ lọc topbar: tối ưu không gian cho các khối chức năng và đồng bộ chiều cao 34px */
-.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-actions],
-.ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-filters:not(:empty)) [data-navbar-actions] {
-  margin-left: 0 !important;
-  flex-shrink: 0 !important;
-}
-
-.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) #mobile-topbar-subtitle {
-  display: none !important;
-}
-
-.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-title] {
-  padding-left: 2px !important;
-  padding-right: 2px !important;
-  min-width: 0 !important;
-}
-
-.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-title] h1 {
-  font-size: 13.5px !important;
-  letter-spacing: -0.02em !important;
-}
-
-#mobile-topbar-filters {
-  display: flex !important;
-  align-items: center !important;
-  height: 34px !important;
-  min-height: 34px !important;
-  flex-shrink: 0 !important;
-}
-
-#mobile-topbar-filters [data-dashboard-mobile-filters],
-#mobile-topbar-filters > div {
-  height: 34px !important;
-  min-height: 34px !important;
-  box-sizing: border-box !important;
-  background-color: rgba(255, 255, 255, 0.75) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
-}
-
-.dark #mobile-topbar-filters [data-dashboard-mobile-filters],
-.dark #mobile-topbar-filters > div {
   background-color: rgba(30, 41, 59, 0.75) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1) !important;

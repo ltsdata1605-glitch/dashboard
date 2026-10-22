@@ -54,21 +54,6 @@
     "iconEmoji": 3,
     "offScaleText": 0
   },
-  "components/layout/MobileNavBar.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 1,
-    "offScaleRadius": 0,
-    "offScaleText": 0,
-    "legacyRadius": 0
-  },
   "components/layout/Sidebar.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -131,36 +116,6 @@
     "tinyText": 0,
     "offScaleRadius": 0
   },
-  "components/views/settings/SettingsAccountTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 2,
-    "legacyRadius": 0
-  },
-  "components/views/UserManagementView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 3,
-    "offScaleRadius": 0,
-    "offScaleText": 0,
-    "legacyRadius": 0
-  },
   "features/bi-dashboard/components/AutoClickGuideModal.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -193,21 +148,6 @@
     "iconLegacyCall": 0,
     "iconEmoji": 0,
     "offScaleText": 0
-  },
-  "features/bi-dashboard/components/dashboard/DashboardHeader.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 3,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 0,
-    "legacyRadius": 0
   },
   "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
     "nonSemanticColor": 0,
@@ -325,36 +265,6 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0
-  },
-  "features/product-config/components/ConfigTable.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 5,
-    "offScaleRadius": 0,
-    "offScaleText": 0,
-    "legacyRadius": 0
-  },
-  "features/product-config/components/ProductCodeConfigTable.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 1,
-    "offScaleRadius": 0,
-    "offScaleText": 0,
-    "legacyRadius": 0
   },
   "features/sticker-event/ResultsDisplay.tsx": {
     "nonSemanticColor": 0,

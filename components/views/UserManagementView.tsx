@@ -874,7 +874,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate leading-tight">
                                                     {formatCleanDisplayName(req.displayName)}
                                                 </h3>
-                                                <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                                <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
                                                     {req.email}
                                                 </p>
                                             </div>
@@ -1018,7 +1018,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 </div>
 
                                                 {savingIds.has(req.id) && (
-                                                    <span className="text-[10px] text-sky-500 font-bold flex items-center gap-0.5 animate-pulse ml-1">
+                                                    <span className="text-[11px] text-sky-500 font-bold flex items-center gap-0.5 animate-pulse ml-1">
                                                         <AppIcon name="loading" size="xs" spin />
                                                     </span>
                                                 )}
@@ -1032,7 +1032,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     className="flex items-center gap-1 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                                                     title="Bấm để gia hạn ngày hết hạn"
                                                 >
-                                                    <AppIcon name="calendar" size="xs" className="text-emerald-500 shrink-0" />
+                                                    <AppIcon name="calendar" size="md" className="text-emerald-500 shrink-0" />
                                                     <span className="text-slate-400">Hạn:</span>
                                                     {expiryDates[req.id] ? (
                                                         <span className={`font-semibold ${
@@ -1041,7 +1041,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                                 : 'text-emerald-600 dark:text-emerald-400'
                                                         }`}>
                                                             {new Date(expiryDates[req.id]).toLocaleDateString('vi-VN')}
-                                                            <span className="ml-0.5 text-[10px] font-normal">
+                                                            <span className="ml-0.5 text-[11px] font-normal">
                                                                 {(() => {
                                                                     const diff = Math.round((new Date(expiryDates[req.id]).getTime() - new Date().setHours(0,0,0,0)) / 86400000);
                                                                     return diff > 0 ? `(${diff}n)` : diff === 0 ? '(nay)' : '(hết)';

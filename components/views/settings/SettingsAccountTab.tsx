@@ -201,7 +201,7 @@ export const SettingsAccountTab: React.FC = () => {
                                 <span
                                     data-profile-avatar-fallback
                                     style={{ display: user?.photoURL ? 'none' : 'flex' }}
-                                    className="w-full h-full items-center justify-center font-bold text-sky-700 dark:text-sky-300 text-lg sm:text-2xl uppercase"
+                                    className="w-full h-full items-center justify-center font-bold text-sky-700 dark:text-sky-300 text-[17px] sm:text-[25px] uppercase"
                                 >
                                     {(formatCleanDisplayName(user?.displayName) || user?.email || '?').charAt(0).toUpperCase()}
                                 </span>

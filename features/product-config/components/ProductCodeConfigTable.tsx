@@ -351,7 +351,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             >
                                 <div className="flex flex-col items-center justify-center leading-tight">
                                     <span>HỆ SỐ SL</span>
-                                    <span className="text-[9px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
+                                    <span className="text-[11px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
                                 </div>
                             </th>
                             <th className="px-3 py-2.5 min-w-[130px] border-r border-slate-700">LOẠI</th>

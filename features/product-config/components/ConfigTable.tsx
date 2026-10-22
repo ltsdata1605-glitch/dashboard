@@ -297,10 +297,10 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                         </tr>
                         {/* Header trên Mobile (< sm) - Vừa khít màn hình */}
                         <tr className="sm:hidden">
-                            <th className="py-2 px-1 w-8 text-center text-[10px]">STT</th>
-                            <th className="py-2 px-1.5 text-[10px]">Ngành / Nhóm Hàng</th>
-                            <th className="py-2 px-1.5 w-24 text-[10px]">Nhóm Cha / Con</th>
-                            <th className="py-2 px-1.5 w-14 text-right text-[10px]">Hệ Số</th>
+                            <th className="py-2 px-1 w-8 text-center text-[11px]">STT</th>
+                            <th className="py-2 px-1.5 text-[11px]">Ngành / Nhóm Hàng</th>
+                            <th className="py-2 px-1.5 w-24 text-[11px]">Nhóm Cha / Con</th>
+                            <th className="py-2 px-1.5 w-14 text-right text-[11px]">Hệ Số</th>
                             {isEditable && <th className="py-2 px-1 w-7 text-center"></th>}
                         </tr>
                     </thead>
@@ -339,7 +339,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                                             <div className="font-semibold text-slate-700 text-xs leading-snug break-words">
                                                 {renderCell(item, 'parentGroup')}
                                             </div>
-                                            <div className="text-slate-500 text-[10px] leading-snug mt-0.5 break-words">
+                                            <div className="text-slate-500 text-[11px] leading-snug mt-0.5 break-words">
                                                 {renderCell(item, 'subgroup')}
                                             </div>
                                         </td>

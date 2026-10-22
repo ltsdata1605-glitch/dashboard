@@ -456,7 +456,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                     onBatchExport={() => { }}
                     isBatchExporting={false}
                     onStartAutoSync={handleStartAutoSync}
-                    isActive={isActive}
                 >
                     <div className="py-12 px-6 sm:py-16 sm:px-8 border-t border-slate-200 dark:border-slate-700/60 bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-900/40 dark:to-slate-900/20 flex flex-col items-center justify-center text-center">
                         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-card bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 shadow-sm">
@@ -530,7 +529,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         autoExportAreaId={autoExportAreaId}
                         autoExportAreaName={autoExportAreaName}
                         onTestAutoExport={handleTestAutoExport}
-                        isActive={isActive}
                         onBatchExport={() => {
                             if (activeSubTab === 'competition') runBatchExport('competition');
                             else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
