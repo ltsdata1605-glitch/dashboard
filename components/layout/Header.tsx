@@ -28,8 +28,6 @@ interface HeaderProps {
     salesClearTitle?: string;
     isClearingSalesData?: boolean;
     isSyncingCloud?: boolean;
-    totalVisits?: number;
-    onlineUsers?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -43,9 +41,7 @@ const Header: React.FC<HeaderProps> = ({
     hasSalesData,
     salesClearTitle,
     isClearingSalesData,
-    isSyncingCloud,
-    totalVisits,
-    onlineUsers
+    isSyncingCloud
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
@@ -113,8 +109,8 @@ const Header: React.FC<HeaderProps> = ({
                     {lastError || 'Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy.'}
                 </Banner>
             )}
-            {/* Portal timestamp & traffic stats into mobile top bar subtitle (Chuẩn Apple HIG) */}
-            {mounted && (fileInfo || totalVisits !== undefined) && document.getElementById('mobile-topbar-subtitle') && createPortal(
+            {/* Portal timestamp into mobile top bar subtitle (Chuẩn Apple HIG) */}
+            {mounted && fileInfo && document.getElementById('mobile-topbar-subtitle') && createPortal(
                 <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-full">
                     {fileInfo && (
                         <Button
@@ -158,8 +154,8 @@ const Header: React.FC<HeaderProps> = ({
                 document.getElementById('mobile-topbar-subtitle')!
             )}
 
-            {/* Portal timestamp & traffic stats into desktop header subtitle (Chuẩn Apple HIG) */}
-            {mounted && (fileInfo || totalVisits !== undefined) && document.getElementById('desktop-header-subtitle') && createPortal(
+            {/* Portal timestamp into desktop header subtitle (Chuẩn Apple HIG) */}
+            {mounted && fileInfo && document.getElementById('desktop-header-subtitle') && createPortal(
                 <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
                     {fileInfo && (
                         <Button
@@ -198,27 +194,6 @@ const Header: React.FC<HeaderProps> = ({
                                         : `Cập nhật: ${fileInfo.savedAt}`}
                             </span>
                         </Button>
-                    )}
-                    {totalVisits !== undefined && (
-                        <>
-                            {fileInfo && <span className="text-slate-300 dark:text-slate-700">•</span>}
-                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                                <AppIcon name="users" size="xs" className="text-sky-500/80" />
-                                <span>Tổng: <strong className="font-semibold text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString()}</strong> lượt</span>
-                            </span>
-                        </>
-                    )}
-                    {onlineUsers !== undefined && (
-                        <>
-                            <span className="text-slate-300 dark:text-slate-700">•</span>
-                            <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                </span>
-                                <span>{onlineUsers} đang online</span>
-                            </span>
-                        </>
                     )}
                 </div>,
                 document.getElementById('desktop-header-subtitle')!

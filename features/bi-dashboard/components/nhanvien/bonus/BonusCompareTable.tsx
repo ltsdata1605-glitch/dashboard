@@ -187,7 +187,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         tong: { head: 'text-emerald-900 dark:text-emerald-100 bg-emerald-100/90 dark:bg-emerald-950/70', sub: 'text-emerald-800/80 dark:text-emerald-200/80 bg-emerald-50/60 dark:bg-emerald-950/30', cur: 'text-emerald-900 dark:text-emerald-100 bg-emerald-50/60 dark:bg-emerald-950/30' },
     } as const;
 
-    const groupTh = 'px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-b border-slate-200 dark:border-slate-700';
+    const groupTh = 'px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider border-l border-slate-200 dark:border-slate-700 border-r border-b border-slate-200 dark:border-slate-700';
     const th = (extra = '') => `px-1.5 h-7 text-center text-[11px] font-bold uppercase tracking-wider border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none ${extra}`;
     const sortMark = (field: SortField) => sortField === field ? (sortDir === 'desc' ? ' ▼' : ' ▲') : '';
     const td = 'px-1.5 py-[3px] text-[13px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50';
@@ -199,7 +199,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         const prevBase = prev == null ? 'text-slate-400 dark:text-slate-500 font-normal' : 'text-slate-600 dark:text-slate-400 font-bold';
         return (
             <>
-                <td className={`${td} border-l-2 border-l-slate-300 dark:border-l-slate-600 ${curBase}`}>{cur == null ? '-' : fmtK(f, cur)}</td>
+                <td className={`${td} border-l border-slate-200 dark:border-slate-700 ${curBase}`}>{cur == null ? '-' : fmtK(f, cur)}</td>
                 <td className={`${td} ${prevBase}`}>{prev == null ? '-' : fmtK(f, prev)}</td>
                 <td className={`${td} ${deltaColor(delta)}`}>{delta == null ? '—' : fmtDeltaK(f, delta)}</td>
             </>
@@ -207,7 +207,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
     };
     const subHeaders = (key: SortField, group: 'erp' | 'tnong' | 'tong', prevKey: SortField, deltaKey: SortField) => (
         <>
-            <th className={th(`border-l-2 border-l-slate-300 dark:border-l-slate-600 ${GROUP_STYLE[group].sub}`)} title={curTitle} onClick={() => handleSort(key)}>H.Tại{sortMark(key)}</th>
+            <th className={th(`border-l border-slate-200 dark:border-slate-700 ${GROUP_STYLE[group].sub}`)} title={curTitle} onClick={() => handleSort(key)}>H.Tại{sortMark(key)}</th>
             <th className={th('text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60')} title={prevTitle} onClick={() => handleSort(prevKey)}>CK{sortMark(prevKey)}</th>
             <th className={th('text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60')} title="Chênh lệch H.Tại − CK" onClick={() => handleSort(deltaKey)}>+/-{sortMark(deltaKey)}</th>
         </>
@@ -291,14 +291,14 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                                     {deptRows.map(r => renderCompareRow(r, globalRankMap.get(r.emp.originalName) || 1))}
                                     {deptNames.length > 1 && (
                                         <tr className="bg-emerald-50/60 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-300 border-t border-b border-emerald-200 dark:border-emerald-800">
-                                            <td className="px-2 py-1 text-[12px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700 w-[185px] min-w-[170px] max-w-[200px]">Tổng {deptName}</td>
-                                            <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.erp || 0), 0))}</td>
+                                             <td className="px-2 py-1 text-[12px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700 w-[185px] min-w-[170px] max-w-[200px]">Tổng {deptName}</td>
+                                            <td className={`${tdFoot} border-l border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.erp || 0), 0))}</td>
                                             <td className={tdFoot}>{fmtK(f, deptRows.reduce((s, r) => s + (r.prev?.erp || 0), 0))}</td>
                                             <td className={`${tdFoot} ${deltaColor(deptBothRows.reduce((s, r) => s + (r.dErp || 0), 0))}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptBothRows.reduce((s, r) => s + (r.dErp || 0), 0)) : '—'}</td>
-                                            <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-amber-600 dark:text-amber-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.tNong || 0), 0))}</td>
+                                            <td className={`${tdFoot} border-l border-slate-200 dark:border-slate-700 text-amber-600 dark:text-amber-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.tNong || 0), 0))}</td>
                                             <td className={tdFoot}>{fmtK(f, deptRows.reduce((s, r) => s + (r.prev?.tNong || 0), 0))}</td>
                                             <td className={`${tdFoot} ${deltaColor(deptBothRows.reduce((s, r) => s + (r.dTnong || 0), 0))}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptBothRows.reduce((s, r) => s + (r.dTnong || 0), 0)) : '—'}</td>
-                                            <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, deptCurTong)}</td>
+                                            <td className={`${tdFoot} border-l border-slate-200 dark:border-slate-700 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, deptCurTong)}</td>
                                             <td className={tdFoot}>{fmtK(f, deptPrevTong)}</td>
                                             <td className={`${tdFoot} text-[13px] ${deltaColor(deptDTong)}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptDTong) : '—'}</td>
                                             <td className={`${tdFoot} border-r-0 ${deltaColor(deptDPct)}`}>{deptBothRows.length > 0 ? fmtPct(deptDPct) : '—'}</td>
@@ -312,13 +312,13 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                 <tfoot>
                     <tr style={{ borderLeft: `3px solid ${stripeColor(totals.bothCount > 0 ? totals.dTong : null)}` }} className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800">
                         <td className="px-2 py-1 text-[13px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700 w-[185px] min-w-[170px] max-w-[200px]">Tổng cộng</td>
-                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{fmtK(f, totals.curErp)}</td>
+                        <td className={`${tdFoot} border-l border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-400`}>{fmtK(f, totals.curErp)}</td>
                         <td className={tdFoot}>{fmtK(f, totals.prevErp)}</td>
                         <td className={`${tdFoot} ${deltaColor(totals.dErp)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dErp) : '—'}</td>
-                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-amber-600 dark:text-amber-400`}>{fmtK(f, totals.curTnong)}</td>
+                        <td className={`${tdFoot} border-l border-slate-200 dark:border-slate-700 text-amber-600 dark:text-amber-400`}>{fmtK(f, totals.curTnong)}</td>
                         <td className={tdFoot}>{fmtK(f, totals.prevTnong)}</td>
                         <td className={`${tdFoot} ${deltaColor(totals.dTnong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTnong) : '—'}</td>
-                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, totals.curTong)}</td>
+                        <td className={`${tdFoot} border-l border-slate-200 dark:border-slate-700 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, totals.curTong)}</td>
                         <td className={tdFoot}>{fmtK(f, totals.prevTong)}</td>
                         <td className={`${tdFoot} text-[13px] ${deltaColor(totals.dTong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTong) : '—'}</td>
                         <td className={`${tdFoot} border-r-0 ${deltaColor(totals.dPct)}`}>{totals.bothCount > 0 ? fmtPct(totals.dPct) : '—'}</td>

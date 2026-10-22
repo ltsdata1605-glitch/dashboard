@@ -121,50 +121,11 @@ export const isInAppBrowser = (): boolean => {
 };
 
 export const loginWithGoogle = async () => {
-    // Trên iOS (iPhone/iPad dù là Safari, Chrome hay PWA Màn hình chính) hoặc In-App browser:
-    // Apple WebKit chặn cookie chéo miền ở redirect, đồng thời chặn popup trong PWA.
-    // Tự động dùng quy trình Handoff an toàn qua auth.dashboard.pro.vn!
-    if (isIOSDevice() || isStandaloneMode() || isInAppBrowser()) {
-        console.info('[Auth] Phát hiện iOS / PWA / In-App Browser. Dùng quy trình Handoff an toàn.');
-        const prepared = await preparePwaHandoff();
-        startPwaHandoffLogin(prepared);
-        return;
-    }
-
-    try {
-        // Cho người dùng đủ thời gian (180s = 3 phút) để chọn tài khoản, nhập mật khẩu và hoàn tất xác thực 2 bước (2FA) trên thiết bị mới
-        googleProvider.setCustomParameters(thamSoGoogle());
-        const popupPromise = signInWithPopup(auth, googleProvider, browserPopupRedirectResolver);
-        const timeoutPromise = new Promise<never>((_, reject) => {
-            setTimeout(() => {
-                const err = new Error('Quá thời gian chờ đăng nhập Google (180s).');
-                (err as any).code = 'auth/popup-timeout';
-                reject(err);
-            }, 180000);
-        });
-
-        const result = await Promise.race([popupPromise, timeoutPromise]);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        if (credential?.accessToken) {
-            sessionStorage.setItem('googleOAuthToken', credential.accessToken);
-        }
-        return result.user;
-    } catch (error: any) {
-        console.error("Lỗi đăng nhập Google popup:", error);
-        // Nếu người dùng chủ động tắt cửa sổ popup: ném lỗi ra để component reset spinner, không tự ép redirect
-        if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
-            throw error;
-        }
-        if (error?.code === 'auth/popup-timeout' || 
-            error?.code === 'auth/popup-blocked' || 
-            error?.code === 'auth/operation-not-supported-in-this-environment') {
-            console.warn('[Auth] Popup không khả dụng hoặc bị chặn. Chuyển sang quy trình Handoff an toàn...');
-            const prepared = await preparePwaHandoff();
-            startPwaHandoffLogin(prepared);
-            return;
-        }
-        throw error;
-    }
+    // Trên mọi nền tảng (Desktop Chrome/Mac/PC, iOS, Android, PWA):
+    // Dùng quy trình chuyển hướng an toàn trong cùng tab, không mở popup!
+    console.info('[Auth] Chuyển hướng đăng nhập Google trong cùng tab (không mở popup).');
+    const prepared = await preparePwaHandoff();
+    startPwaHandoffLogin(prepared);
 };
 
 export const loginWithGoogleRedirect = async () => {
@@ -223,10 +184,12 @@ export const preparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
  * nạp thư viện Firebase (~1–3 s, chậm hơn nhiều trên 4G) chỉ để dựng đúng URL này. `m=pwa`: mở từ app Màn hình chính → trang
  * kia xong thì đóng khung nổi. Có tài khoản đã nhớ → login_hint (Google chọn sẵn).
  */
-export const taoUrlDangNhapHandoff = (code: string, laPwa: boolean): string => {
+export const taoUrlDangNhapHandoff = (code: string, laPwa: boolean, retUrl?: string): string => {
     const ve = new URL(PWA_LOGIN_URL);
     ve.searchParams.set('c', code);
     if (laPwa) ve.searchParams.set('m', 'pwa');
+    const ret = retUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    if (ret) ve.searchParams.set('ret', ret);
     const tk = layTaiKhoanGanNhat();
     if (tk) ve.searchParams.set('h', tk.email); // trang kia phải tự mở lại Google (nút thử lại) thì vẫn chọn sẵn tài khoản
     const q = new URLSearchParams({
@@ -242,19 +205,19 @@ export const taoUrlDangNhapHandoff = (code: string, laPwa: boolean): string => {
     return `https://${firebaseConfig.authDomain}/__/auth/handler?${q.toString()}`;
 };
 
-/** Gọi ĐỒNG BỘ trong onClick. */
-export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff): void => {
+/** Gọi ĐỒNG BỘ trong onClick: chuyển hướng trong cùng tab, không mở popup. */
+export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff, retUrl?: string): void => {
     try {
         localStorage.setItem(PWA_HANDOFF_KEY, JSON.stringify({ v: prepared.verifier, at: Date.now() }));
     } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
     warmUpPwaHandoff();
-    if (isStandaloneMode()) {
-        // m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi → xong thì đóng khung, KHÔNG tải app vào khung đó.
-        const win = window.open(taoUrlDangNhapHandoff(prepared.code, true), '_blank');
-        if (!win) window.location.assign(taoUrlDangNhapHandoff(prepared.code, false)); // không mở được khung nổi: đi cùng tab
+    if (isIOSStandalonePwa()) {
+        // m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi iOS → xong thì đóng khung
+        const win = window.open(taoUrlDangNhapHandoff(prepared.code, true, retUrl), '_blank');
+        if (!win) window.location.assign(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
     } else {
-        // Trong trình duyệt thông thường (Safari/Chrome trên iPhone): chuyển hướng mượt mà trong cùng tab
-        window.location.assign(taoUrlDangNhapHandoff(prepared.code, false));
+        // Mọi trình duyệt (Desktop Chrome, Mac/PC, Safari, Android): chuyển hướng mượt mà trong cùng tab
+        window.location.assign(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
     }
 };
 

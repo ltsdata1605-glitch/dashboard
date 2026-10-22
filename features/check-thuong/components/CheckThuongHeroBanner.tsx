@@ -49,9 +49,9 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
                         onClick={onExportBanner}
                         title="Xuất ảnh báo cáo tổng hợp"
                         aria-label="Xuất ảnh báo cáo tổng hợp"
-                        className="ycx-hit p-1 sm:p-1.5 rounded-control bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white transition-all cursor-pointer no-print hide-on-export backdrop-blur-sm"
+                        className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-control bg-white/10 hover:bg-white/20 active:scale-95 text-white/90 hover:text-white transition-all cursor-pointer no-print hide-on-export backdrop-blur-sm flex items-center justify-center"
                     >
-                        <AppIcon name="image" size="xs" />
+                        <AppIcon name="exportImage" size="md" />
                     </Button>
                 )}
             </div>

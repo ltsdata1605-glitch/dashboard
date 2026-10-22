@@ -144,11 +144,39 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     const updatePosition = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      setPortalStyle(
-        align === 'right'
-          ? { position: 'fixed', top: rect.bottom + 8, right: window.innerWidth - rect.right }
-          : { position: 'fixed', top: rect.bottom + 8, left: rect.left }
-      );
+      const viewportWidth = window.innerWidth;
+      const panelWidth = panelRef.current?.offsetWidth || 256;
+
+      let left: number | undefined;
+      let right: number | undefined;
+
+      if (align === 'right') {
+        const calculatedRight = viewportWidth - rect.right;
+        // Nếu mở sang trái bị tràn mép trái màn hình (< 8px)
+        if (rect.right - panelWidth < 8) {
+          left = Math.max(8, rect.left);
+          right = undefined;
+        } else {
+          right = Math.max(8, calculatedRight);
+        }
+      } else {
+        const calculatedLeft = rect.left;
+        // Nếu mở sang phải bị tràn mép phải màn hình
+        if (calculatedLeft + panelWidth > viewportWidth - 8) {
+          right = Math.max(8, viewportWidth - rect.right);
+          left = undefined;
+        } else {
+          left = Math.max(8, calculatedLeft);
+        }
+      }
+
+      setPortalStyle({
+        position: 'fixed',
+        top: rect.bottom + 8,
+        left: left !== undefined ? `${left}px` : undefined,
+        right: right !== undefined ? `${right}px` : undefined,
+        maxWidth: 'calc(100vw - 16px)',
+      });
     };
     updatePosition();
     searchInputRef.current?.focus({ preventScroll: true });
@@ -253,13 +281,13 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 (Report BI › Nhân viên trên iPhone, dữ liệu thật 2026-09-28). */}
             <span className="truncate text-left max-w-[104px] sm:max-w-[160px]">{triggerLabel}</span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-1.5 sm:ml-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-0.5 sm:ml-2">
             {/* Điện thoại: ẩn số đếm khi chỉ chọn ≤1 — nhãn đã ghi đúng tên đang chọn, số "1" chỉ
                 chiếm chỗ khiến chính cái tên bị cắt "Tân…" (iPhone, dữ liệu thật 2026-09-28). */}
             {typeof count === 'number' && (
               <span className={cn('text-[11px] sm:text-[11px] font-black text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5', count <= 1 && 'hidden sm:inline')}>{count}</span>
             )}
-            <AppIcon name="chevronDown" size="sm" className={cn('text-slate-400 transition-transform duration-200', isOpen && 'rotate-180')} />
+            <AppIcon name="chevronDown" size="xs" className={cn('text-slate-400 transition-transform duration-200', isOpen && 'rotate-180')} />
           </div>
         </Button>
       )}

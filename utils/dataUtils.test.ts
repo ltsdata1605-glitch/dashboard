@@ -265,22 +265,21 @@ describe('getHeSoQuyDoi', () => {
         expect(getHeSoQuyDoi('', 'ict1', config)).toBe(1.0);
     });
 
-    it('vasNameMultiplierMap khớp theo TÊN sản phẩm được ưu tiên trước NhomCha', () => {
+    it('hệ số doanh thu DTQĐ theo nhóm hàng lấy từ originalCategoryItems khi có', () => {
         const config = emptyConfig();
-        config.childToParentMap = { 'pk1': 'Phụ kiện' }; // sẽ cho 3.37 nếu không có override
-        config.vasNameMultiplierMap = { 'Gói VAS đặc biệt': 7 };
-        expect(getHeSoQuyDoi('', 'pk1', config, 'Gói VAS đặc biệt')).toBe(7);
+        config.originalCategoryItems = [{ nhomHang: 'pk1', nhomCha: 'Phụ kiện', nhomCon: 'Cáp sạc', heSoQuyDoi: 2.5 }];
+        expect(getHeSoQuyDoi('', 'pk1', config)).toBe(2.5);
     });
 
-    it('quantityMultiplierMap theo MÃ sản phẩm được ưu tiên cao nhất', () => {
+    it('hệ số doanh thu DTQĐ theo nhóm hàng lấy từ quantityMultiplierMap khi key là nhóm hàng', () => {
         const config = emptyConfig();
         config.childToParentMap = { 'pk1': 'Phụ kiện' };
-        config.quantityMultiplierMap = { 'SP001': 2.5 };
-        expect(getHeSoQuyDoi('', 'pk1', config, 'Tên bất kỳ', 'SP001')).toBe(2.5);
+        config.quantityMultiplierMap = { 'pk1': 2.8 };
+        expect(getHeSoQuyDoi('', 'pk1', config)).toBe(2.8);
     });
 });
 
-describe('calculateRowMetrics — nguồn chân lý duy nhất cho DTQĐ (CLAUDE.md mục 1)', () => {
+describe('calculateRowMetrics — nguồn chân lý duy nhất cho DTQĐ và WeightedQuantity (CLAUDE.md mục 1)', () => {
     const baseRow = (overrides: Record<string, unknown> = {}) => ({
         'Giá bán_1': 1000,
         'Số Lượng': 1,
@@ -315,42 +314,47 @@ describe('calculateRowMetrics — nguồn chân lý duy nhất cho DTQĐ (CLAUDE
         expect(revenueQD).toBeCloseTo(revenue * 3.37 + revenue * 0.3, 6);
     });
 
-    it('weightedQuantity dùng quantityMultiplierMap theo mã sản phẩm khi ngành KHÔNG PHẢI bảo hiểm', () => {
+    it('Hệ số theo Mã sản phẩm là hệ số của SỐ LƯỢNG (Weighted Quantity), KHÔNG PHẢI doanh thu', () => {
         const config = emptyConfig();
-        config.childToParentMap = { pk1: 'Phụ kiện' };
-        config.quantityMultiplierMap = { SP001: 4 };
-        const { weightedQuantity } = calculateRowMetrics(baseRow({ 'Số Lượng': 2 }), config);
-        expect(weightedQuantity).toBe(2 * 4);
+        config.childToParentMap = { vas1: 'ICT' }; // Hệ số ngành ICT = 1.0
+        config.quantityMultiplierMap = {
+            '1640571000003': 1, // VieON VIP 1T: hệ số 1
+            '1640571000004': 2, // VieON VIP 3T: hệ số 2
+        };
+
+        // Bán gói 1T SL 1 => tính số lượng là 1
+        const row1 = baseRow({
+            'Nhóm Hàng': 'vas1',
+            'Mã sản phẩm': '1640571000003',
+            'Tên Sản Phẩm': 'VieON VIP_01 tháng',
+            'Số Lượng': 1,
+            'Giá bán_1': 69000,
+        });
+        const m1 = calculateRowMetrics(row1, config);
+        expect(m1.weightedQuantity).toBe(1);
+        expect(m1.revenueQD).toBe(69000); // Không nhân hệ số số lượng vào doanh thu
+
+        // Bán gói 3T SL 1 => tính số lượng là 2
+        const row2 = baseRow({
+            'Nhóm Hàng': 'vas1',
+            'Mã sản phẩm': '1640571000004',
+            'Tên Sản Phẩm': 'VieON VIP_03 tháng',
+            'Số Lượng': 1,
+            'Giá bán_1': 199000,
+        });
+        const m2 = calculateRowMetrics(row2, config);
+        expect(m2.weightedQuantity).toBe(2);
+        expect(m2.revenueQD).toBe(199000); // Doanh thu quy đổi không bị nhân x2
     });
 
-    it('BẢO HIỂM bỏ qua quantityMultiplierMap dù có cấu hình (tránh nhân đôi hệ số)', () => {
+    it('VieON fallback theo tên: 01 tháng (hs 1), 03 tháng (hs 2), 06 tháng (hs 4), 12 tháng (hs 8)', () => {
         const config = emptyConfig();
-        config.childToParentMap = { bh1: 'Bảo hiểm' };
-        config.quantityMultiplierMap = { SP001: 4 }; // phải bị bỏ qua vì industry === 'Bảo hiểm'
-        const row = baseRow({ 'Nhóm Hàng': 'bh1', 'Số Lượng': 3 });
-        const { weightedQuantity } = calculateRowMetrics(row, config);
-        expect(weightedQuantity).toBe(3); // = quantity thô, không nhân hệ số
-    });
-
-    it('VieON dùng weightedQuantity = quantity * hệ số (không phải quantity thô)', () => {
-        // Không cấu hình quantityMultiplierMap/vasMultiplierMap cho SP001 — qtyMultiplier sẽ
-        // undefined. Với sản phẩm THƯỜNG (không VieON), weightedQuantity khi đó = quantity thô
-        // (nhánh `: quantity`). VieON đi nhánh khác: LUÔN nhân với heso NhomCha (Phụ kiện = 3.37),
-        // nên 2 kết quả phải khác nhau dù cùng 1 cấu hình — đây là điều cần chứng minh, không phải
-        // suy luận từ đọc code.
-        const config = emptyConfig();
-        config.childToParentMap = { vieon1: 'Phụ kiện' };
-        config.childToSubgroupMap = { vieon1: 'Vieon' };
-
-        const vieonRow = baseRow({ 'Nhóm Hàng': 'vieon1', 'Số Lượng': 2 });
-        const { weightedQuantity: vieonQty } = calculateRowMetrics(vieonRow, config);
-        expect(vieonQty).toBeCloseTo(2 * 3.37, 6);
-
-        const normalConfig = emptyConfig();
-        normalConfig.childToParentMap = { pk2: 'Phụ kiện' }; // cùng hệ số, KHÔNG phải VieON
-        const normalRow = baseRow({ 'Nhóm Hàng': 'pk2', 'Số Lượng': 2 });
-        const { weightedQuantity: normalQty } = calculateRowMetrics(normalRow, normalConfig);
-        expect(normalQty).toBe(2); // quantity thô, không nhân hệ số
+        const row12M = baseRow({
+            'Tên Sản Phẩm': 'VieON VIP_12 tháng',
+            'Số Lượng': 2,
+        });
+        const { weightedQuantity } = calculateRowMetrics(row12M, config);
+        expect(weightedQuantity).toBe(2 * 8); // 2 gói * hệ số 8 = 16
     });
 
     it('không có productConfig vẫn tính được (fallback về logic cũ, không throw)', () => {

@@ -77,13 +77,22 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                             <img 
                                 src={user.photoURL} 
                                 alt={user.displayName || 'User'} 
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const fallback = e.currentTarget.parentElement?.querySelector('[data-pending-avatar-fallback]') as HTMLElement | null;
+                                    if (fallback) fallback.style.display = 'flex';
+                                }}
                                 className="w-full h-full rounded-full object-cover"
                             />
-                        ) : (
-                            <div className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 flex items-center justify-center text-[28px] font-bold uppercase leading-9">
-                                {user?.email ? user.email[0] : '?'}
-                            </div>
-                        )}
+                        ) : null}
+                        <div 
+                            data-pending-avatar-fallback
+                            style={{ display: user?.photoURL ? 'none' : 'flex' }}
+                            className="w-full h-full rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 items-center justify-center text-[28px] font-bold uppercase leading-9"
+                        >
+                            {user?.email ? user.email[0] : '?'}
+                        </div>
                         <div className={`absolute bottom-0 right-0 w-6 h-6 ${forceDeptUpdate ? 'bg-rose-500' : 'bg-amber-400'} rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center shadow-sm`}>
                             <AppIcon name={forceDeptUpdate ? 'warning' : status === 'new' ? 'userAdd' : 'clock'} size="sm" className="text-white" />
                         </div>

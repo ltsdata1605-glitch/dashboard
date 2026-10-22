@@ -764,7 +764,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     size="sm"
                                     onClick={() => fetchRequests(true)}
                                     disabled={isLoading}
-                                    className="shrink-0 max-sm:w-11 max-sm:px-0 gap-1.5"
+                                    className="shrink-0 max-sm:h-8 max-sm:w-8 max-sm:min-h-0 max-sm:min-w-0 max-sm:p-0 ycx-hit gap-1.5"
                                     title="Làm mới danh sách"
                                     aria-label="Làm mới danh sách"
                                 >
@@ -774,21 +774,22 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             </div>
 
                             <div className="flex items-center gap-2 w-full">
-                                <div className="flex items-center shrink-0 border border-slate-200 bg-slate-50 rounded-control overflow-hidden">
-                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} aria-label="Sắp xếp theo" className="h-8 text-xs rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 py-0">
+                                <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-control overflow-hidden h-8">
+                                    <Select dense fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} aria-label="Sắp xếp theo" className="h-8 text-xs rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 py-0 pl-2 pr-6">
                                         <option value="date">Ngày ĐK</option>
                                         <option value="name">Tên</option>
                                         <option value="role">Vai trò</option>
                                         <option value="dept">Mã Kho</option>
                                         <option value="logins">Truy cập</option>
                                     </Select>
-                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-8 w-8 max-sm:min-h-11 max-sm:w-11 pointer-coarse:min-h-11 flex items-center justify-center text-slate-500 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200" title={sortAsc ? 'Tăng dần' : 'Giảm dần'} aria-label={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-8 w-8 ycx-hit flex items-center justify-center text-slate-500 hover:bg-sky-50 hover:text-sky-700 dark:hover:bg-slate-800 dark:hover:text-sky-400 transition-colors border-l border-slate-200 dark:border-slate-700 cursor-pointer" title={sortAsc ? 'Tăng dần' : 'Giảm dần'} aria-label={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                         <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="md" />
                                     </Button>
                                 </div>
 
                                 <div className="relative flex-1 min-w-0">
                                     <Input
+                                        dense
                                         type="search"
                                         leftIcon="search"
                                         placeholder="Tìm email, mã kho…"
@@ -836,40 +837,67 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         case 'date': default: return dir * ((a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
                                     }
                                 }).map((req) => (
-                                    <div key={req.id} className={`animate-in fade-in slide-in-from-bottom-2 duration-200 bg-white dark:bg-slate-800 border rounded-md ${actionLoadingId === req.id ? 'ring-2 ring-sky-500/60 border-sky-400 dark:border-sky-500 shadow-md' : !req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200 dark:border-slate-700/50'} shadow-sm transition-all overflow-hidden`}>
-                                        {/* Row 1: Avatar + Name + Role + Actions */}
-                                        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/30">
-                                            <div className="relative shrink-0">
+                                    <div key={req.id} className={`animate-in fade-in slide-in-from-bottom-2 duration-200 bg-white dark:bg-slate-800 border rounded-card ${actionLoadingId === req.id ? 'ring-2 ring-sky-500/60 border-sky-400 dark:border-sky-500 shadow-md' : !req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200/80 dark:border-slate-700/60'} shadow-2xs transition-all overflow-hidden`}>
+                                        {/* Row 1: Avatar + Name/Email + Role Select + Actions */}
+                                        <div className="flex items-center gap-2.5 sm:gap-3 px-3 py-2 sm:px-3.5 sm:py-2.5">
+                                            {/* Avatar với referrerPolicy và tự động fallback sang chữ cái nếu ảnh Google lỗi */}
+                                            <div className="relative shrink-0 w-8 h-8">
                                                 {req.photoURL ? (
-                                                    <img src={req.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
-                                                ) : (
-                                                    <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 text-xs font-semibold flex items-center justify-center">
-                                                        {(formatCleanDisplayName(req.displayName) || req.email || '?').charAt(0).toUpperCase()}
-                                                    </span>
-                                                )}
-                                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${listMode === 'expired' || req.status === 'expired' ? 'bg-rose-500' : req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
+                                                    <img
+                                                        src={req.photoURL}
+                                                        alt={formatCleanDisplayName(req.displayName) || ''}
+                                                        referrerPolicy="no-referrer"
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = 'none';
+                                                            const fallback = e.currentTarget.parentElement?.querySelector('[data-avatar-fallback]') as HTMLElement | null;
+                                                            if (fallback) fallback.style.display = 'flex';
+                                                        }}
+                                                        className="w-8 h-8 rounded-full object-cover border border-slate-200/80 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-800"
+                                                    />
+                                                ) : null}
+                                                <span
+                                                    data-avatar-fallback
+                                                    style={{ display: req.photoURL ? 'none' : 'flex' }}
+                                                    className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 text-xs font-bold items-center justify-center border border-sky-200 dark:border-sky-800 uppercase shadow-2xs"
+                                                >
+                                                    {(formatCleanDisplayName(req.displayName) || req.email || '?').charAt(0).toUpperCase()}
+                                                </span>
+                                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${
+                                                    listMode === 'expired' || req.status === 'expired' ? 'bg-rose-500' :
+                                                    req.status === 'approved' ? 'bg-emerald-500' :
+                                                    req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'
+                                                }`} />
                                             </div>
+
+                                            {/* Thông tin tên & email */}
                                             <div className="min-w-0 flex-1">
-                                                <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate leading-tight">{formatCleanDisplayName(req.displayName)}</h3>
-                                                <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{req.email}</p>
+                                                <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate leading-tight">
+                                                    {formatCleanDisplayName(req.displayName)}
+                                                </h3>
+                                                <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                                    {req.email}
+                                                </p>
                                             </div>
+
+                                            {/* Vai trò */}
                                             <div className="shrink-0">
                                                 {userRole === 'admin' ? (
-                                                     <Select 
-                                                         value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} 
-                                                         onChange={(e) => { 
-                                                             setEditRoles(prev => ({...prev, [req.id]: e.target.value})); 
-                                                             if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'role', e.target.value); 
-                                                         }} 
-                                                         fullWidth={false}
-                                                         className="h-8 py-1 pl-2 pr-7 text-xs w-[110px] font-semibold cursor-pointer"
-                                                     >
-                                                         <option value="pending">Chờ duyệt</option>
-                                                         <option value="employee">Nhân Viên</option>
-                                                         <option value="manager">Quản Lý</option>
-                                                         <option value="admin">Admin</option>
-                                                         <option value="blocked">Khoá</option>
-                                                     </Select>
+                                                    <Select 
+                                                        dense
+                                                        value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} 
+                                                        onChange={(e) => { 
+                                                            setEditRoles(prev => ({...prev, [req.id]: e.target.value})); 
+                                                            if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'role', e.target.value); 
+                                                        }} 
+                                                        fullWidth={false}
+                                                        className="h-7 py-0 pl-2 pr-6 text-[11px] sm:text-xs w-[92px] sm:w-[105px] font-semibold cursor-pointer rounded-md bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                                                    >
+                                                        <option value="pending">Chờ duyệt</option>
+                                                        <option value="employee">Nhân Viên</option>
+                                                        <option value="manager">Quản Lý</option>
+                                                        <option value="admin">Admin</option>
+                                                        <option value="blocked">Khoá</option>
+                                                    </Select>
                                                 ) : (
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'}`}>
                                                         <AppIcon name={resolveIconName(req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users') ?? 'help'} size="xs" />
@@ -877,21 +905,23 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
+
+                                            {/* Thao tác nút */}
+                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                                 {listMode === 'pending' ? (
-                                                    <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
+                                                    <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs">
                                                         <Button 
                                                             variant="unstyled" 
                                                             size="none" 
                                                             disabled={actionLoadingId === req.id}
                                                             onClick={() => handleApproval(req.id, false)} 
-                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700 cursor-pointer" 
+                                                            className="ycx-hit h-7 px-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center border-r border-slate-200 dark:border-slate-700 cursor-pointer" 
                                                             title="Từ chối"
                                                         >
                                                             {actionLoadingId === req.id && actionLoadingType === 'reject' ? (
-                                                                <AppIcon name="loading" size="sm" spin className="text-rose-600" />
+                                                                <AppIcon name="loading" size="xs" spin className="text-rose-600" />
                                                             ) : (
-                                                                <AppIcon name="close" size="sm" />
+                                                                <AppIcon name="close" size="xs" />
                                                             )}
                                                         </Button>
                                                         <Button 
@@ -899,177 +929,141 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             size="none" 
                                                             disabled={actionLoadingId === req.id}
                                                             onClick={() => handleApproval(req.id, true)} 
-                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 disabled:bg-sky-500/80 disabled:cursor-wait transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
+                                                            className="ycx-hit h-7 px-2.5 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 disabled:bg-sky-500/80 disabled:cursor-wait transition-all flex items-center gap-1 active:scale-95 cursor-pointer shadow-2xs" 
                                                             title="Phê duyệt yêu cầu"
                                                         >
                                                             {actionLoadingId === req.id && actionLoadingType === 'approve' ? (
                                                                 <>
-                                                                    <AppIcon name="loading" size="sm" spin className="text-white" />
-                                                                    <span>Đang duyệt...</span>
+                                                                    <AppIcon name="loading" size="xs" spin className="text-white" />
+                                                                    <span>Duyệt...</span>
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <AppIcon name="check" size="sm" />
+                                                                    <AppIcon name="check" size="xs" />
                                                                     <span>Duyệt</span>
                                                                 </>
                                                             )}
                                                         </Button>
                                                     </div>
-                                                ) : listMode === 'expired' ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Button
-                                                            variant="unstyled"
-                                                            size="none"
-                                                            onClick={() => handleOpenExtendModal(req)}
-                                                            disabled={actionLoadingId === req.id}
-                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-semibold active:scale-95"
-                                                            title="Gia hạn quyền truy cập"
-                                                        >
-                                                            {actionLoadingId === req.id ? (
-                                                                <AppIcon name="loading" size="sm" spin className="text-emerald-600" />
-                                                            ) : (
-                                                                <AppIcon name="refresh" size="sm" />
-                                                            )}
-                                                            Gia hạn
-                                                        </Button>
-                                                        <Button
-                                                            variant="unstyled"
-                                                            size="none"
-                                                            onClick={() => setConfirmRevokeUser(req)}
-                                                            disabled={actionLoadingId === req.id}
-                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
-                                                            title="Thu hồi"
-                                                        >
-                                                            <AppIcon name="userRemove" size="sm" />
-                                                        </Button>
-                                                        {savingIds.has(req.id) && (
-                                                            <span className="text-[11px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
-                                                                <AppIcon name="loading" size="xs" spin /> Lưu...
-                                                            </span>
-                                                        )}
-                                                    </div>
                                                 ) : (
-                                                    <div className="flex items-center gap-1.5">
+                                                    <div className="flex items-center gap-1">
                                                         <Button
                                                             variant="unstyled"
                                                             size="none"
                                                             onClick={() => handleOpenExtendModal(req)}
                                                             disabled={actionLoadingId === req.id}
-                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-medium active:scale-95"
+                                                            className="ycx-hit h-7 px-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 dark:hover:bg-emerald-950/40 transition-colors rounded-md shadow-2xs flex items-center gap-1 text-[11px] font-semibold active:scale-95 cursor-pointer"
                                                             title="Gia hạn / Đổi thời hạn"
                                                         >
-                                                            <AppIcon name="schedule" size="sm" className="text-emerald-600" />
-                                                            Gia hạn
+                                                            <AppIcon name="schedule" size="xs" className="text-emerald-600 shrink-0" />
+                                                            <span>Gia hạn</span>
                                                         </Button>
                                                         <Button
                                                             variant="unstyled"
                                                             size="none"
                                                             onClick={() => setConfirmRevokeUser(req)}
                                                             disabled={actionLoadingId === req.id}
-                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
-                                                            title="Thu hồi"
+                                                            className="ycx-hit h-7 w-7 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:hover:bg-rose-950/40 transition-colors rounded-md shadow-2xs flex items-center justify-center active:scale-95 shrink-0 cursor-pointer"
+                                                            title="Thu hồi quyền"
                                                         >
-                                                            <AppIcon name="userRemove" size="sm" />
+                                                            <AppIcon name="userRemove" size="xs" />
                                                         </Button>
-                                                        {savingIds.has(req.id) && (
-                                                            <span className="text-[11px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
-                                                                <AppIcon name="loading" size="xs" spin /> Lưu...
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                        {/* Row 2: Fields */}
-                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 px-4 py-2.5 bg-slate-50/50 sm:flex sm:items-center sm:gap-3 sm:py-2 sm:flex-nowrap">
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                {userRole === 'admin' ? (
-                                                    <div className="flex flex-col gap-1 w-[100px]">
-                                                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">KHO/BỘ PHẬN</span>
-                                                        <Input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px] font-mono uppercase" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[11px] uppercase font-bold text-slate-400">Mã Kho:</span>
-                                                        <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{req.departmentId || '—'}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                {userRole === 'admin' ? (
-                                                    <div className="flex flex-col gap-1 w-[100px]">
-                                                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">MÃ NHÂN VIÊN</span>
-                                                        <Input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px]" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[11px] uppercase font-bold text-slate-400">Mã NV:</span>
-                                                        <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{req.employeeName || '—'}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="col-span-2 flex flex-col gap-1 shrink-0">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">NGÀY HẾT HẠN</span>
-                                                    {expiryDates[req.id] ? (
-                                                        <span className={`text-[11px] font-bold ${
-                                                            new Date(expiryDates[req.id]).getTime() < Date.now() 
-                                                                ? 'text-rose-500 font-semibold' 
-                                                                : 'text-emerald-600 dark:text-emerald-400'
-                                                        }`}>
-                                                            {(() => {
-                                                                const targetTime = new Date(expiryDates[req.id]).getTime();
-                                                                const nowTime = new Date().setHours(0, 0, 0, 0);
-                                                                const diff = Math.round((targetTime - nowTime) / 86400000);
-                                                                return diff > 0 ? `(còn ${diff} ngày)` : diff === 0 ? '(hết hạn hôm nay)' : '(đã hết hạn)';
-                                                            })()}
-                                                        </span>
+
+                                        {/* Row 2: Thanh thông tin chi tiết siêu gọn (Mã Kho, NV, Hạn, ĐK, Truy cập) */}
+                                        <div className="px-3 py-1.5 sm:px-3.5 sm:py-1.5 bg-slate-50/70 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-700/40 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+                                            {/* Nhóm 1: Kho & Mã Nhân Viên */}
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    <AppIcon name="location" size="xs" className="text-rose-500 shrink-0" />
+                                                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">Kho:</span>
+                                                    {userRole === 'admin' ? (
+                                                        <input
+                                                            type="text"
+                                                            value={editDepartments[req.id] || ''}
+                                                            onChange={e => {
+                                                                setEditDepartments(prev => ({...prev, [req.id]: e.target.value}));
+                                                                if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'departmentId', e.target.value);
+                                                            }}
+                                                            placeholder="Mã kho"
+                                                            className="h-6 w-16 sm:w-20 px-1.5 text-xs font-mono font-bold uppercase bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500 shadow-2xs"
+                                                        />
                                                     ) : (
-                                                        <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                                                            (Vô hạn)
-                                                        </span>
+                                                        <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">{req.departmentId || '—'}</span>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-1.5">
-                                                    {/* Nhập trực tiếp số ngày (vd: 30) */}
-                                                    <div className="relative flex items-center">
+
+                                                <span className="text-slate-200 dark:text-slate-700 select-none">|</span>
+
+                                                <div className="flex items-center gap-1 min-w-0">
+                                                    <AppIcon name="userCheck" size="xs" className="text-amber-500 shrink-0" />
+                                                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">NV:</span>
+                                                    {userRole === 'admin' ? (
                                                         <input
-                                                            type="number" inputMode="decimal"
-                                                            min="1"
-                                                            placeholder="+ngày"
-                                                            title="Nhập số ngày hết hạn (vd: 30)"
-                                                            value={expiryDaysInput[req.id] !== undefined ? expiryDaysInput[req.id] : (
-                                                                expiryDates[req.id] ? Math.max(0, Math.round((new Date(expiryDates[req.id]).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000)) : ''
-                                                            )}
-                                                            onChange={e => handleInlineDaysChange(req.id, e.target.value)}
-                                                            className="h-7 w-[56px] text-xs font-bold px-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-center shadow-sm placeholder:text-slate-400 placeholder:font-normal"
+                                                            type="text"
+                                                            value={editNames[req.id] || ''}
+                                                            onChange={e => {
+                                                                setEditNames(prev => ({...prev, [req.id]: e.target.value}));
+                                                                if (listMode === 'active' || listMode === 'expired') autoSave(req.id, 'employeeName', e.target.value);
+                                                            }}
+                                                            placeholder="Tên/Mã NV"
+                                                            className="h-6 w-20 sm:w-28 px-1.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500 shadow-2xs truncate"
                                                         />
-                                                        <span className="text-[11px] text-slate-400 ml-1 font-medium select-none">ngày</span>
-                                                    </div>
-
-                                                    <span className="text-[11px] font-semibold text-slate-400 select-none">hoặc</span>
-
-                                                    {/* Chọn ngày kết thúc trên lịch */}
-                                                    <Input
-                                                        type="date"
-                                                        title="Hoặc chọn ngày kết thúc trên lịch"
-                                                        value={expiryDates[req.id] || ''}
-                                                        onChange={e => handleInlineDateChange(req.id, e.target.value)}
-                                                        className="h-7 text-xs px-1.5 w-[125px] font-medium shadow-sm"
-                                                    />
+                                                    ) : (
+                                                        <span className="text-xs font-bold text-amber-700 dark:text-amber-400 truncate">{req.employeeName || '—'}</span>
+                                                    )}
                                                 </div>
+
+                                                {savingIds.has(req.id) && (
+                                                    <span className="text-[10px] text-sky-500 font-bold flex items-center gap-0.5 animate-pulse ml-1">
+                                                        <AppIcon name="loading" size="xs" spin />
+                                                    </span>
+                                                )}
                                             </div>
-                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex flex-col gap-1 shrink-0">
-                                                <span className="text-[11px] uppercase font-bold text-slate-400 whitespace-nowrap">Đăng ký:</span>
-                                                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString('vi-VN') : '—'}</span>
-                                            </div>
-                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-1.5 shrink-0">
-                                                <span className="text-[11px] uppercase font-bold text-slate-400 whitespace-nowrap">Truy cập:</span>
-                                                <span className="text-xs font-bold text-sky-700 dark:text-sky-400">{req.loginCount ?? 0} lần</span>
+
+                                            {/* Nhóm 2: Hạn dùng, Đăng ký, Lượt vào */}
+                                            <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleOpenExtendModal(req)}
+                                                    className="flex items-center gap-1 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                                    title="Bấm để gia hạn ngày hết hạn"
+                                                >
+                                                    <AppIcon name="calendar" size="xs" className="text-emerald-500 shrink-0" />
+                                                    <span className="text-slate-400">Hạn:</span>
+                                                    {expiryDates[req.id] ? (
+                                                        <span className={`font-semibold ${
+                                                            new Date(expiryDates[req.id]).getTime() < Date.now() 
+                                                                ? 'text-rose-500' 
+                                                                : 'text-emerald-600 dark:text-emerald-400'
+                                                        }`}>
+                                                            {new Date(expiryDates[req.id]).toLocaleDateString('vi-VN')}
+                                                            <span className="ml-0.5 text-[10px] font-normal">
+                                                                {(() => {
+                                                                    const diff = Math.round((new Date(expiryDates[req.id]).getTime() - new Date().setHours(0,0,0,0)) / 86400000);
+                                                                    return diff > 0 ? `(${diff}n)` : diff === 0 ? '(nay)' : '(hết)';
+                                                                })()}
+                                                            </span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Vô hạn</span>
+                                                    )}
+                                                </button>
+
+                                                <span className="text-slate-200 dark:text-slate-700 select-none">|</span>
+
+                                                <span className="text-slate-400 whitespace-nowrap">
+                                                    ĐK: <strong className="font-medium text-slate-600 dark:text-slate-300">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString('vi-VN') : '—'}</strong>
+                                                </span>
+
+                                                <span className="text-slate-200 dark:text-slate-700 select-none">|</span>
+
+                                                <span className="text-slate-400 whitespace-nowrap">
+                                                    Vào: <strong className="font-bold text-sky-700 dark:text-sky-400">{req.loginCount ?? 0}</strong>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>

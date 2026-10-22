@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from '../../../../../components/shared/ui/toast';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { UseBonusAutoBridgeResult, BonusAutoStatus } from '../../../hooks/useBonusAutoBridge';
@@ -86,6 +87,10 @@ export const AutoBonusPanel: React.FC<AutoBonusPanelProps> = ({
     }, [onCompareDone, onPeriodLabelChange, onUseManual]);
 
     const handleTrigger = () => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            toast.info('Tính năng tự động đổ thưởng chỉ hỗ trợ trên máy tính qua Tampermonkey.');
+            return;
+        }
         window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus'));
     };
 

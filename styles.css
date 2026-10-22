@@ -1031,7 +1031,7 @@ summary,
 .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
   display: flex !important;
   align-items: center !important;
-  margin-left: auto !important;
+  margin-left: 0 !important;
   justify-content: flex-end !important;
   border-radius: 9999px !important;
   background-color: rgba(241, 245, 249, 0.9) !important;
@@ -1044,6 +1044,12 @@ summary,
 .dark .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
   background-color: rgba(30, 41, 59, 0.9) !important;
   border-color: rgba(51, 65, 85, 0.7) !important;
+}
+
+/* Khi có bộ lọc topbar (Report BI Nhân viên): cụm nút actions bám sát bên phải của bộ lọc thay vì tự đẩy tách xa */
+.ycx-navbar:has(#mobile-topbar-filters:not(:empty)) [data-navbar-actions],
+.ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-filters:not(:empty)) [data-navbar-actions] {
+  margin-left: 0 !important;
 }
 
 /* Trường hợp 2: Check thưởng (có data-thay-tieu-de) -> dồn sát bên phải như Report BI, [data-action-capsule] chuẩn 34px */

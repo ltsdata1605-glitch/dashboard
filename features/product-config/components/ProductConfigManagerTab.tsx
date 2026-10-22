@@ -396,32 +396,21 @@ export const ProductConfigManagerTab: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Thống kê inline + metadata */}
-                {summary && (
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-slate-500 bg-slate-50 px-3.5 py-2 rounded-control border border-slate-200/80">
-                        <span><strong className="text-slate-700 tabular-nums">{summary.parentGroupCount}</strong> nhóm cha</span>
-                        <span className="text-slate-300">|</span>
-                        <span><strong className="text-slate-700 tabular-nums">{summary.subgroupCount}</strong> nhóm con</span>
-                        <span className="text-slate-300">|</span>
-                        <span><strong className="text-slate-700 tabular-nums">{summary.categoryCodeCount}</strong> mã ngành hàng</span>
-                        <span className="text-slate-300">|</span>
-                        <span><strong className="text-slate-700 tabular-nums">{summary.productCodeCount ?? productCodeTableItems.length}</strong> mã sản phẩm</span>
-                        <span className="text-slate-300">|</span>
-                        <span><strong className="text-slate-700 tabular-nums">{summary.multiplierCount}</strong> hệ số quy đổi</span>
-                        <span className="ml-auto flex items-center gap-3">
-                            {formattedDate && (
-                                <span className="flex items-center gap-1">
-                                    <AppIcon name="clock" size="xs" className="text-slate-400" />
-                                    {formattedDate}
-                                </span>
-                            )}
-                            {updatedBy && (
-                                <span className="flex items-center gap-1">
-                                    <AppIcon name="user" size="xs" className="text-slate-400" />
-                                    {updatedBy}
-                                </span>
-                            )}
-                        </span>
+                {/* Metadata ngày cập nhật & người cập nhật */}
+                {(formattedDate || updatedBy) && (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500 bg-slate-50 dark:bg-slate-900/40 px-3 py-1.5 rounded-control border border-slate-200/80 dark:border-slate-700/60">
+                        {formattedDate && (
+                            <span className="flex items-center gap-1">
+                                <AppIcon name="clock" size="xs" className="text-slate-400" />
+                                <span>{formattedDate}</span>
+                            </span>
+                        )}
+                        {updatedBy && (
+                            <span className="flex items-center gap-1">
+                                <AppIcon name="user" size="xs" className="text-slate-400" />
+                                <span className="truncate">{updatedBy}</span>
+                            </span>
+                        )}
                     </div>
                 )}
             </div>

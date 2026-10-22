@@ -50,7 +50,7 @@ test('Super Admin gắn được Kho dùng chung 910', async ({ page }) => {
     // Chưa gắn: chủ dự án ẩn hẳn mục "Kho dùng chung" (2026-10-11, trước hiện "chưa gắn") — hồ sơ chỉ còn "Kho: ALL".
     await expect(page.getByText(/Kho dùng chung:/)).toHaveCount(0);
     await page.screenshot({ path: `test-results/sa-1-truoc.png` });
-    await page.getByRole('button', { name: /Gắn kho dùng chung/ }).click();
+    await page.getByRole('button', { name: /Gắn kho dùng chung|Đổi mã kho/ }).click();
     const o = page.getByPlaceholder('Ví dụ: 1032, 3717, 910, 58614');
     await expect(o).toHaveValue('');
     await o.fill('910');
@@ -71,7 +71,7 @@ test('Sau khi gắn: hiện nhãn + Kho dùng chung, ô sửa chỉ có Kho th�
     await expect(page.getByText('Hồ Sơ Định Danh')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(/Kho dùng chung:\s*910/)).toBeVisible();
     await page.screenshot({ path: `test-results/sa-3-sau-iphone.png`, fullPage: true });
-    await page.getByRole('button', { name: /Gắn kho dùng chung/ }).click();
+    await page.getByRole('button', { name: /Gắn kho dùng chung|Đổi mã kho/ }).click();
     const o = page.getByPlaceholder('Ví dụ: 1032, 3717, 910, 58614');
     await expect(o).toHaveValue('910');
     await o.fill('');
@@ -124,7 +124,7 @@ test('"Xoá tất cả dữ liệu": Super Admin có Kho gắn thêm 910 — bá
     test.setTimeout(120_000);
     await stubs(page, 'ALL (Super Admin),910', []);
     await page.goto('/?tab=settings');
-    await expect(page.getByRole('button', { name: /Gắn kho dùng chung/ })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('button', { name: /Gắn kho dùng chung|Đổi mã kho/ })).toBeVisible({ timeout: 30_000 });
     await page.getByRole('button', { name: /Xoá tất cả dữ liệu/ }).click();
     const hop = page.locator('p', { hasText: 'xoá luôn trên cloud' });
     await expect(hop).toContainText('Báo cáo dùng chung của các Kho được giữ nguyên');

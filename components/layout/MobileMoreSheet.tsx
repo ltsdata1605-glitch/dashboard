@@ -48,12 +48,25 @@ const MobileMoreSheet: React.FC<{
                         >
                             <span className="w-11 h-11 shrink-0 rounded-full bg-sky-100 flex items-center justify-center overflow-hidden">
                                 {user?.photoURL ? (
-                                    <img src={user.photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                ) : (
-                                    <span className="font-semibold text-[17px] text-sky-700">
-                                        {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? 'T' : 'U')}
-                                    </span>
-                                )}
+                                    <img 
+                                        src={user.photoURL} 
+                                        alt="" 
+                                        referrerPolicy="no-referrer" 
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            const fallback = e.currentTarget.parentElement?.querySelector('[data-sheet-avatar-fallback]') as HTMLElement | null;
+                                            if (fallback) fallback.style.display = 'flex';
+                                        }}
+                                        className="w-full h-full object-cover" 
+                                    />
+                                ) : null}
+                                <span 
+                                    data-sheet-avatar-fallback 
+                                    style={{ display: user?.photoURL ? 'none' : 'flex' }}
+                                    className="font-semibold text-[17px] text-sky-700 items-center justify-center w-full h-full"
+                                >
+                                    {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? 'T' : 'U')}
+                                </span>
                             </span>
                             <span className="min-w-0 flex-1">
                                 <span className="flex items-center gap-1.5 min-w-0">

@@ -534,6 +534,9 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const [autoSyncMonth, setAutoSyncMonth] = useState<string>('');
 
     const handleStartAutoSync = async (mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}) => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            return;
+        }
         setAutoSyncMode(mode);
         setAutoSyncMonth(mode === 'luyke' ? (opts.month || thangLuyKeMacDinh()) : '');
         setAutoSyncProgress(null);
@@ -574,6 +577,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const handleStartRef = React.useRef(handleStartAutoSync);
     handleStartRef.current = handleStartAutoSync;
     useEffect(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
         const p = claimPendingAutoSync(); // đọc + xoá: chỉ MỘT nơi tự chạy tiếp (xem claimPendingAutoSync)
         if (!p) return;
         pendingReloadsRef.current = p.reloads;

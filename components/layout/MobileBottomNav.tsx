@@ -44,6 +44,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
     ];
 
     const toolTabs: TabItem[] = [
+        { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'], tone: 'sky' },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: NAV_TAB_ICONS['tools-print-sticker'], tone: 'sky' },
         { id: 'tools-phanca', label: 'Phân ca', icon: NAV_TAB_ICONS['tools-phanca'], tone: 'emerald' },
         { id: 'tools-line-bot', label: 'Bot LINE', icon: NAV_TAB_ICONS['tools-line-bot'], tone: 'emerald' },
@@ -52,7 +53,6 @@ const MobileBottomNav: React.FC = React.memo(() => {
         { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: NAV_TAB_ICONS['tools-price-compare'], tone: 'slate' },
     ];
     const systemTabs: TabItem[] = [
-        { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'], tone: 'sky' },
         { id: 'settings', label: 'Phân quyền', icon: NAV_TAB_ICONS['settings'], tone: 'slate' },
         { id: 'help', label: 'Giới thiệu', icon: NAV_TAB_ICONS['help'], tone: 'slate' },
     ];

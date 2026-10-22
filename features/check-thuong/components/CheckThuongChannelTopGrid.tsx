@@ -184,7 +184,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                 disabled={isExporting}
                                 title={`Xuất ảnh Top 10 siêu thị thưởng cao kênh ${channel}`}
                                 aria-label={`Xuất ảnh Top 10 kênh ${channel}`}
-                                className={`ycx-hit p-1.5 ${theme.button} border rounded-none transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
+                                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 ${theme.button} border rounded-control transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
                             >
                                 <AppIcon name="exportImage" size="md" className={theme.icon} />
                             </Button>

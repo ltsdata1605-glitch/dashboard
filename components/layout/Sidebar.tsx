@@ -210,7 +210,6 @@ export default function Sidebar() {
         { id: 'analysis', label: 'Phân tích YCX', icon: NAV_TAB_ICONS['analysis'], path: '/analysis' },
         { id: 'employees', label: 'Report BI', icon: NAV_TAB_ICONS['employees'], path: '/employees' },
         { id: 'check-thuong', label: 'Check thưởng', icon: NAV_TAB_ICONS['check-thuong'], path: '/' },
-        { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'], path: '/reports' },
         ...(isDemoMode || userRole === 'admin' || userRole === 'manager' ? [
             { id: 'tools-line-bot', label: 'Bot LINE', icon: NAV_TAB_ICONS['tools-line-bot'], path: '/line-bot' }
         ] : []),
@@ -220,6 +219,7 @@ export default function Sidebar() {
             icon: NAV_TAB_ICONS['tools'], 
             path: '/tools',
             subItems: [
+                { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'] },
                 { id: 'tools-print-sticker', label: 'In Sticker', icon: NAV_TAB_ICONS['tools-print-sticker'] },
                 { id: 'tools-phanca', label: 'Phân ca', icon: NAV_TAB_ICONS['tools-phanca'] },
                 { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: NAV_TAB_ICONS['tools-coupon'] },
@@ -302,12 +302,25 @@ export default function Sidebar() {
                                 <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
                                     <div className="w-9 h-9 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shrink-0">
                                         {user?.photoURL ? (
-                                            <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                        ) : (
-                                            <span className="font-bold text-xs text-sky-700 dark:text-sky-400">
-                                                {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
-                                            </span>
-                                        )}
+                                            <img 
+                                                src={user.photoURL} 
+                                                alt={user.displayName || "User"} 
+                                                className="w-full h-full object-cover" 
+                                                referrerPolicy="no-referrer" 
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                    const fallback = e.currentTarget.parentElement?.querySelector('[data-sidebar-avatar-fallback]') as HTMLElement | null;
+                                                    if (fallback) fallback.style.display = 'flex';
+                                                }}
+                                            />
+                                        ) : null}
+                                        <span 
+                                            data-sidebar-avatar-fallback 
+                                            style={{ display: user?.photoURL ? 'none' : 'flex' }}
+                                            className="font-bold text-xs text-sky-700 dark:text-sky-400 items-center justify-center w-full h-full"
+                                        >
+                                            {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
+                                        </span>
                                     </div>
                                     <div className="flex flex-col min-w-0 flex-1">
                                         <div className="flex items-center gap-1.5 flex-wrap">

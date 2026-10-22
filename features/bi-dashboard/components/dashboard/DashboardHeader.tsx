@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
@@ -8,6 +9,7 @@ import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelec
 import { MOBILE_GUTTER } from '../../utils/mobileUi';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
+import { cn } from '../../../../components/shared/ui/utils';
 
 import { AreaAutoExportButton } from '../../../../components/shared/export/AreaAutoExportButton';
 
@@ -35,6 +37,8 @@ interface DashboardHeaderProps {
     onStartAutoSync?: (mode: 'realtime' | 'luyke') => void;
     /** Content to render inside the header container (e.g. merged table) */
     children?: React.ReactNode;
+    /** Màn hình đang active hay không (dùng để portal lên mobile topbar) */
+    isActive?: boolean;
 }
 
 const SUB_TABS: { tab: SubTab; label: string }[] = [
@@ -64,10 +68,33 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     autoExportAreaId, autoExportAreaName, onTestAutoExport,
     toolbarSlot,
     onStartAutoSync,
-    children
+    children,
+    isActive = true
 }) => {
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
     const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
+
+    // Quản lý responsive mobile & slot portal topbar
+    const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const [filterPortalTarget, setFilterPortalTarget] = useState<HTMLElement | null>(null);
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const el = document.getElementById('mobile-topbar-filters');
+        if (el) {
+            setFilterPortalTarget(el);
+        } else {
+            const timer = setTimeout(() => {
+                setFilterPortalTarget(document.getElementById('mobile-topbar-filters'));
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isActive]);
 
     // Nhận diện ngày tháng từ dữ liệu Luỹ kế để tính đúng tiến độ thời gian (hỗ trợ tháng đã qua và ngày mùng 1)
     const [summaryLuyKeRaw] = useIndexedDBState<string>('summary-luy-ke', '');
@@ -88,10 +115,62 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         return `LUỸ KẾ ĐẾN NGÀY ${dateStr} - ${smLabel}`;
     }, [activeMainTab, activeSupermarket, monthProgress]);
 
+    // Cụm Capsule chuyển đổi Realtime/Luỹ kế (gôm 2 nút thành 1) + Chọn Siêu thị đưa lên Topbar Mobile
+    const renderMobileFilterPill = () => (
+        <div
+            data-dashboard-mobile-filters=""
+            className="flex flex-row items-center w-auto rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 p-0.5 shadow-2xs h-8 shrink-0 select-none"
+        >
+            {/* Gôm 2 nút thành 1 => Bấm vào để chuyển đổi giữa Realtime và Luỹ kế */}
+            <Button
+                variant="unstyled"
+                size="none"
+                onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
+                className="ycx-hit rounded-l-full whitespace-nowrap min-h-0 h-7 px-2 py-0 font-semibold text-[11px] flex items-center gap-1 border-r border-slate-200/70 dark:border-slate-700/70 bg-white dark:bg-slate-700 shadow-2xs cursor-pointer active:scale-95 transition-transform"
+                title={activeMainTab === 'realtime' ? 'Đang xem Realtime (Bấm để chuyển sang Luỹ kế)' : 'Đang xem Luỹ kế (Bấm để chuyển sang Realtime)'}
+            >
+                <span className={cn(
+                    "w-1.5 h-1.5 rounded-full shrink-0",
+                    activeMainTab === 'realtime' ? "bg-emerald-500 animate-pulse" : "bg-indigo-500"
+                )} />
+                <span className={activeMainTab === 'realtime' ? "text-emerald-700 dark:text-emerald-300 font-bold" : "text-indigo-700 dark:text-indigo-300 font-bold"}>
+                    {activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}
+                </span>
+                <AppIcon name="swap" size="xs" className="text-slate-400 scale-75 ml-0.5" />
+            </Button>
+
+            {/* Dropdown chọn siêu thị */}
+            <MultiSelectDropdown
+                className="w-auto shrink-0"
+                triggerClassName="ycx-hit rounded-r-full whitespace-nowrap min-h-0 h-7 !px-1.5 text-[11px] !gap-1 font-semibold text-slate-700 dark:text-slate-300"
+                usePortal={true}
+                align="left"
+                icon={<AppIcon name="store" size="xs" className="text-sky-500 scale-90 shrink-0" />}
+                triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
+                count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
+                allLabel="Chọn tất cả"
+                allChecked={activeSupermarket === 'Tổng'}
+                onToggleAll={() => setActiveSupermarket('Tổng')}
+                options={Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => ({
+                    key: sm,
+                    label: shortenSupermarketName(sm),
+                    checked: activeSupermarket === sm,
+                }))}
+                onToggleOption={(key) => setActiveSupermarket(key === activeSupermarket ? 'Tổng' : key)}
+            />
+        </div>
+    );
+
     return (
         <div className="space-y-0">
-            {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
-            <div className={`relative z-50 mb-3 flex flex-row flex-wrap items-center justify-between gap-x-2.5 gap-y-1.5 pt-1 pb-1.5 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export ${MOBILE_GUTTER}`}>
+            {/* Mobile Topbar Filters Portal: đưa nút chuyển đổi Realtime/Luỹ kế và bộ lọc siêu thị lên thanh bar như Hình 1 */}
+            {isActive && isMobile && filterPortalTarget && createPortal(
+                renderMobileFilterPill(),
+                filterPortalTarget
+            )}
+
+            {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector — ẩn trên mobile, chỉ hiện trên desktop */}
+            <div className={`hidden lg:flex relative z-50 mb-3 flex-row flex-wrap items-center justify-between gap-x-2.5 gap-y-1.5 pt-1 pb-1.5 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export ${MOBILE_GUTTER}`}>
                 {/* iPhone: tên phân hệ đã nằm trên segmented "Siêu thị | Nhân viên | Cập nhật" (BiWrapper) → không lặp lại tiêu đề IN HOA. */}
                 <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
                     <h2 className="text-[17px] lg:text-[25px] font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">

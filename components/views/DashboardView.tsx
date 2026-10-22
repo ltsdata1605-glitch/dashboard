@@ -7,7 +7,6 @@ import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
-import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 import { getSetting, saveSetting } from '../../services/dbService';
 import { listenSystemAnnouncement, isAnnouncementExpired } from '../../services/systemAnnouncementService';
@@ -107,7 +106,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     } = logic;
     const { user, userRole, departmentId } = useAuth();
     const { forceSync } = useSync();
-    const { totalVisits, onlineUsers } = useSystemTraffic();
     const pendingRequestsCount = usePendingApprovalCount();
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(defaultVisibilityState);
@@ -472,8 +470,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         hasSalesData={hasSalesData}
                         onClearSalesData={handleSalesDataClear}
                         salesClearTitle={salesClearTitle}
-                        totalVisits={totalVisits}
-                        onlineUsers={onlineUsers}
                     />
 
                     {/* Thông báo của Super Admin — luôn hiện cho mọi người dùng. Lỗi #18 (video v2:003–012): trước là dải đỏ chữ CHẠY liên

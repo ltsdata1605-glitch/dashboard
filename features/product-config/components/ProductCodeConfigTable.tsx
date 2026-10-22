@@ -176,10 +176,11 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                 <div className="flex flex-wrap items-center gap-2 flex-1">
                     <div className="relative flex-1 min-w-[200px] max-w-sm">
                         <Input
+                            dense
                             placeholder="Tìm mã sản phẩm, tên sản phẩm, loại, nhóm..."
                             value={search}
                             onChange={e => handleSearchChange(e.target.value)}
-                            className="h-8.5 text-xs pl-8 pr-2"
+                            className="h-8 text-xs pl-8 pr-2"
                         />
                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                             <AppIcon name="search" size="xs" />
@@ -188,9 +189,10 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
 
                     {uniqueNhoms.length > 0 && (
                         <Select
+                            dense
                             value={selectedNhom}
                             onChange={e => handleNhomChange(e.target.value)}
-                            className="h-8.5 text-xs w-36"
+                            className="h-8 text-xs w-36"
                         >
                             <option value="all">Tất cả nhóm ({uniqueNhoms.length})</option>
                             {uniqueNhoms.map(n => (
@@ -203,9 +205,10 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
 
                     {uniqueSheets.length > 1 && (
                         <Select
+                            dense
                             value={selectedSheet}
                             onChange={e => handleSheetChange(e.target.value)}
-                            className="h-8.5 text-xs w-36"
+                            className="h-8 text-xs w-36"
                         >
                             <option value="all">Tất cả nguồn sheet</option>
                             {uniqueSheets.map(s => (
@@ -218,22 +221,30 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                    <span className="h-8 text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 rounded-control inline-flex items-center justify-center">
                         {filteredItems.length} sản phẩm
                     </span>
 
                     {isEditable && (
                         <Button
                             variant="primary"
-                            size="sm"
+                            size="none"
                             onClick={() => setIsAdding(true)}
-                            className="h-8.5 gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                            className="ycx-hit h-8 px-3 gap-1 text-xs font-semibold rounded-control bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center cursor-pointer"
                         >
                             <AppIcon name="add" size="xs" />
-                            <span>Thêm mã SP</span>
+                            <span>Thêm mới</span>
                         </Button>
                     )}
                 </div>
+            </div>
+
+            {/* Banner hướng dẫn nghiệp vụ: Hệ số này là hệ số của SỐ LƯỢNG, KHÔNG PHẢI doanh thu */}
+            <div className="flex items-center gap-2 p-2.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-control text-xs text-sky-800 dark:text-sky-200">
+                <AppIcon name="info" size="xs" className="shrink-0 text-sky-600 dark:text-sky-400" />
+                <span>
+                    <strong>Hệ số quy đổi số lượng:</strong> Được áp dụng khi tính <strong>số lượng bán ra</strong> (Weighted Quantity) cho từng mã sản phẩm/dịch vụ (VD: VieON, Bản quyền phần mềm, Bảo hiểm...). <strong>Không nhân vào doanh thu</strong>. (Ví dụ: VieON 1T hệ số 1 bán 1 tính 1; VieON 3T hệ số 2 bán 1 tính 2).
+                </span>
             </div>
 
             {/* Modal/Form thêm mới */}
@@ -292,7 +303,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                     </div>
                     <div className="flex items-center justify-between pt-1">
                         <div className="flex items-center gap-2">
-                            <label htmlFor="cfg-ma-sp-he-so" className="text-[11px] font-semibold text-slate-500">Hệ số quy đổi:</label>
+                            <label htmlFor="cfg-ma-sp-he-so" className="text-[11px] font-semibold text-slate-500">Hệ số QĐ số lượng:</label>
                             <Input
                                 id="cfg-ma-sp-he-so"
                                 type="number"
@@ -302,6 +313,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                 onChange={e => setNewHeSo(e.target.value)}
                                 className="w-20 h-7 text-xs px-2 font-semibold text-slate-700"
                             />
+                            <span className="text-[11px] text-slate-400 italic">(bán 1 tính SL là {newHeSo || 1}, không nhân doanh thu)</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
@@ -333,7 +345,15 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             <th className="px-3 py-2.5 w-12 text-center border-r border-slate-700">STT</th>
                             <th className="px-3 py-2.5 min-w-[150px] border-r border-slate-700">MÃ SẢN PHẨM</th>
                             <th className="px-3 py-2.5 min-w-[280px] border-r border-slate-700">TÊN SẢN PHẨM</th>
-                            <th className="px-3 py-2.5 w-24 text-center border-r border-slate-700">HỆ SỐ</th>
+                            <th 
+                                className="px-3 py-2.5 w-28 text-center border-r border-slate-700 select-none"
+                                title="Hệ số quy đổi số lượng (Weighted Quantity). Ví dụ: bán 1 gói 3 tháng có hệ số 2 sẽ tính số lượng là 2. Tuyệt đối không nhân vào doanh thu."
+                            >
+                                <div className="flex flex-col items-center justify-center leading-tight">
+                                    <span>HỆ SỐ SL</span>
+                                    <span className="text-[9px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
+                                </div>
+                            </th>
                             <th className="px-3 py-2.5 min-w-[130px] border-r border-slate-700">LOẠI</th>
                             <th className="px-3 py-2.5 min-w-[100px] border-r border-slate-700">NHÓM</th>
                             {isEditable && <th className="px-3 py-2.5 w-20 text-center">Thao tác</th>}
@@ -421,7 +441,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                                             ? 'bg-amber-100 text-amber-800 border border-amber-200'
                                                             : 'bg-slate-100 text-slate-600'
                                                     }`}
-                                                    title={isEditable ? 'Nhấp đúp để sửa hệ số' : undefined}
+                                                    title={isEditable ? 'Nhấp đúp để sửa hệ số quy đổi số lượng (VD: bán 1 gói tính SL là...)' : 'Hệ số quy đổi số lượng bán (không nhân doanh thu)'}
                                                 >
                                                     {item.heSo.toLocaleString('vi-VN')}
                                                 </span>

@@ -258,45 +258,26 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
 }
 
 function computeHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productConfig: ProductConfig | null, productName?: string, productCode?: string): number {
-    // 0. Logic đặc thù cho Vieon dựa trên mã sản phẩm hoặc tên sản phẩm (Ưu tiên cao nhất)
-    if (productCode) {
-        const trimmedCode = String(productCode).trim();
-        if (productConfig?.quantityMultiplierMap?.[trimmedCode] !== undefined) {
-            return productConfig.quantityMultiplierMap[trimmedCode];
-        }
-        if (DEFAULT_QUANTITY_MULTIPLIER_MAP[trimmedCode] !== undefined) {
-            return DEFAULT_QUANTITY_MULTIPLIER_MAP[trimmedCode];
-        }
-    }
+    const trimmedNhomHang = String(maNhomHang || '').trim();
 
-    const name = (productName || '').toString().trim();
-
-    // Dò tìm hệ số theo Tên sản phẩm từ cấu hình Vas tải từ Google Sheet
-    if (productConfig?.vasNameMultiplierMap) {
-        if (productConfig.vasNameMultiplierMap[name] !== undefined) {
-            return productConfig.vasNameMultiplierMap[name];
-        }
-        for (const [pattern, val] of Object.entries(productConfig.vasNameMultiplierMap)) {
-            if (name.includes(pattern)) {
-                return val;
-            }
+    // 1. Kiểm tra cấu hình hệ số theo nhóm hàng từ bảng Khai báo ngành hàng (originalCategoryItems)
+    if (trimmedNhomHang && productConfig?.originalCategoryItems) {
+        const item = productConfig.originalCategoryItems.find(it => it.nhomHang === trimmedNhomHang);
+        if (item && item.heSoQuyDoi !== undefined && !isNaN(item.heSoQuyDoi) && item.heSoQuyDoi > 0) {
+            return item.heSoQuyDoi;
         }
     }
 
-    // Dò tìm hệ số theo Tên sản phẩm từ cấu hình cứng cũ (Fallback nếu chưa tải được cấu hình từ sheet)
-    for (const item of PRODUCT_NAME_COEFFICIENTS) {
-        if (name.includes(item.pattern)) {
-            return item.value;
-        }
+    // 2. Tra theo nhóm hàng trong quantityMultiplierMap (nếu lưu theo mã nhóm hàng)
+    if (trimmedNhomHang && productConfig?.quantityMultiplierMap?.[trimmedNhomHang] !== undefined) {
+        return productConfig.quantityMultiplierMap[trimmedNhomHang];
+    }
+    const idMatch = trimmedNhomHang.match(/^(\d+)/);
+    if (idMatch && productConfig?.quantityMultiplierMap?.[idMatch[1]] !== undefined) {
+        return productConfig.quantityMultiplierMap[idMatch[1]];
     }
 
-    if (name.includes('VieON VIP')) {
-        if (name.includes('01 tháng')) return 1;
-        if (name.includes('03 tháng')) return 2;
-        if (name.includes('06 tháng')) return 4;
-        return 1;
-    }
-
+    // 3. Tra theo nhóm cha / ngành hàng từ cấu hình
     const parentGroup = getParentGroup(maNhomHang, productConfig);
 
     // Priority 1: Use parent group from config file for primary categories
@@ -1017,6 +998,66 @@ export function getRowPrice(row: DataRow, priceType: 'discounted' | 'original' =
     return parseNumber(getRowValue(row, fallbackCol)) || 0;
 }
 
+/**
+ * Lấy hệ số quy đổi số lượng (Quantity Multiplier) cho từng sản phẩm.
+ * Nghiệp vụ chuẩn: Cột hệ số theo Mã sản phẩm là hệ số của SỐ LƯỢNG, KHÔNG PHẢI hệ số doanh thu!
+ * Ví dụ:
+ *  - Khi bán 1640571000003 - VieON VIP_01 tháng: SL 1 => Hệ số QĐ: 1 => Sẽ tính số lượng là 1
+ *  - Khi bán 1640571000004 - VieON VIP_03 tháng: SL 1 => Hệ số QĐ: 2 => Sẽ tính số lượng là 2
+ *  - Khi bán 1640571000015 - VieON VIP_06 tháng: SL 1 => Hệ số QĐ: 4 => Sẽ tính số lượng là 4
+ *  - Khi bán 1640571000005 - VieON VIP_12 tháng: SL 1 => Hệ số QĐ: 8 => Sẽ tính số lượng là 8
+ */
+export function getProductQuantityMultiplier(
+    productCode: string | undefined,
+    productName: string | undefined,
+    productConfig: ProductConfig | null
+): number {
+    const trimmedCode = String(productCode || '').trim();
+    if (trimmedCode) {
+        if (productConfig?.quantityMultiplierMap?.[trimmedCode] !== undefined) {
+            return productConfig.quantityMultiplierMap[trimmedCode];
+        }
+        if (productConfig?.vasMultiplierMap?.[trimmedCode] !== undefined) {
+            return productConfig.vasMultiplierMap[trimmedCode];
+        }
+        if (DEFAULT_QUANTITY_MULTIPLIER_MAP[trimmedCode] !== undefined) {
+            return DEFAULT_QUANTITY_MULTIPLIER_MAP[trimmedCode];
+        }
+    }
+
+    const name = (productName || '').toString().trim();
+
+    // Dò tìm hệ số theo Tên sản phẩm từ cấu hình Vas tải từ Google Sheet
+    if (productConfig?.vasNameMultiplierMap) {
+        if (productConfig.vasNameMultiplierMap[name] !== undefined) {
+            return productConfig.vasNameMultiplierMap[name];
+        }
+        for (const [pattern, val] of Object.entries(productConfig.vasNameMultiplierMap)) {
+            if (name.includes(pattern)) {
+                return val;
+            }
+        }
+    }
+
+    // Dò tìm hệ số theo Tên sản phẩm từ cấu hình cứng cũ (Fallback)
+    for (const item of PRODUCT_NAME_COEFFICIENTS) {
+        if (name.includes(item.pattern)) {
+            return item.value;
+        }
+    }
+
+    // Quy tắc VieON VIP theo tên
+    if (name.includes('VieON VIP')) {
+        if (name.includes('01 tháng') || name.includes('1 tháng')) return 1;
+        if (name.includes('03 tháng') || name.includes('3 tháng')) return 2;
+        if (name.includes('06 tháng') || name.includes('6 tháng')) return 4;
+        if (name.includes('12 tháng')) return 8;
+        return 1;
+    }
+
+    return 1;
+}
+
 export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, weightedQuantity: number, isTraCham: boolean } {
     const price = getRowPrice(row, 'discounted');
     const quantity = parseNumber(getRowValue(row, COL.QUANTITY)) || 0;
@@ -1027,41 +1068,19 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     const productName = getRowValue(row, COL.PRODUCT);
     const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
     
-    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
+    // 1. Hệ số Doanh Thu Quy Đổi (DTQĐ): lấy theo ngành hàng / nhóm hàng (KHÔNG dùng hệ số mã sản phẩm)
+    const hesoDT = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
     
-    // Gọi thẳng getHinhThucThanhToan() thay vì tự viết lại logic phân loại — bản tự viết trước đây
-    // (Object.keys(...).length > 0 rồi so === 'tra_gop' trực tiếp) BỎ SÓT fallback về danh sách
-    // hardcode (normalizedTraGopSet) khi productConfig.htxClassification có DỮ LIỆU nhưng không
-    // phủ đúng giá trị HTX của dòng này — 1 dòng "Hình thức xuất" lạ, chưa được admin cấu hình
-    // trong bảng phân loại, silently tính isTraCham = false (mất +30% DTQĐ) dù getHinhThucThanhToan
-    // (dùng ở nơi khác để hiển thị) vẫn nhận diện đúng qua fallback.
+    // Gọi thẳng getHinhThucThanhToan() thay vì tự viết lại logic phân loại
     const isTraCham = getHinhThucThanhToan(row, productConfig) === 'tra_gop';
     
-    // DTQĐ = Doanh thu thực * Hệ số + (30% Doanh thu thực nếu là đơn hàng Trả góp/Trả chậm)
-    const revenueQD = revenue * heso + (isTraCham ? revenue * 0.3 : 0);
+    // DTQĐ = Doanh thu thực * Hệ số DT + (30% Doanh thu thực nếu là đơn hàng Trả góp/Trả chậm)
+    const revenueQD = revenue * hesoDT + (isTraCham ? revenue * 0.3 : 0);
     
-    // weightedQuantity (Số lượng quy đổi)
-    const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
-    const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
-    // Khớp đúng nhóm "Bảo hiểm" của computeHeSoQuyDoi() (dòng ~273) — thiếu 'Bảo Dưỡng' khiến
-    // sản phẩm cùng hệ số 4.18 (bảo hiểm/bảo dưỡng) bị xử lý weightedQuantity khác nhau tuỳ tên.
-    const isInsurance = industry === 'Bảo hiểm' || industry === 'Bảo hiểm ĐMX' || industry === 'Bảo Dưỡng'
-        || group === 'Bảo hiểm' || group === 'Bảo hiểm ĐMX' || group === 'Bảo Dưỡng';
-
-    let qtyMultiplier = undefined;
-    if (!isInsurance) {
-        qtyMultiplier = (productConfig?.vasMultiplierMap?.[productCode]) ?? (productConfig?.quantityMultiplierMap?.[productCode]);
-    }
-
-    // Dùng getSubgroup() (có fallback lowercase + prefix số) thay vì tra cứu exact-match thô —
-    // khớp đúng cách `group` ở trên đã tính, tránh bỏ sót sản phẩm VieON có mã dạng
-    // "7161 - Dịch vụ VAS" (chỉ "7161" có trong childToSubgroupMap).
-    const subgroup = getSubgroup(maNhomHang, productConfig) || '';
-    const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
-    
-    const weightedQuantity = isVieon 
-        ? (quantity * heso) 
-        : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+    // 2. Hệ số quy đổi số lượng (Quantity Multiplier): Áp dụng theo mã sản phẩm hoặc tên sản phẩm
+    // (VieON, Phần mềm bản quyền, Bảo hiểm...). Tuyệt đối không nhân vào doanh thu.
+    const qtyMultiplier = getProductQuantityMultiplier(productCode, productName, productConfig);
+    const weightedQuantity = quantity * qtyMultiplier;
     
     return { revenue, revenueQD, quantity, weightedQuantity, isTraCham };
 }

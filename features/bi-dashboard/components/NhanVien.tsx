@@ -1,7 +1,9 @@
+import { createPortal } from 'react-dom';
 import { useWorker } from "../hooks/useWorker";
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
+import { cn } from '../../../components/shared/ui/utils';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
 import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
@@ -428,17 +430,94 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         return new Set(allEmployees.map(e => e.originalName));
     }, [hasAnalysisEmployees, allEmployees]);
 
+    const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+    const [filterPortalTarget, setFilterPortalTarget] = useState<HTMLElement | null>(null);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const el = document.getElementById('mobile-topbar-filters');
+        if (el) {
+            setFilterPortalTarget(el);
+        } else {
+            const timer = setTimeout(() => {
+                setFilterPortalTarget(document.getElementById('mobile-topbar-filters'));
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isActive]);
+
+    const renderFilterPill = (isMobileMode: boolean) => (
+        <div
+            className={cn(
+                "flex flex-row items-center w-auto rounded-full shadow-2xs shrink-0 select-none",
+                isMobileMode
+                    ? "h-8 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 p-0.5"
+                    : "h-7 sm:h-7.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            )}
+        >
+            <MultiSelectDropdown
+                className="w-auto shrink-0 border-r border-slate-200/70 dark:border-slate-700/70"
+                triggerClassName={cn(
+                    "ycx-hit rounded-l-full whitespace-nowrap min-h-0 py-0 font-semibold",
+                    isMobileMode ? "h-7 !px-1.5 text-[11px] !gap-1" : "h-7 sm:h-7.5 px-2 sm:px-2.5 text-xs"
+                )}
+                usePortal={isMobileMode}
+                align={isMobileMode ? "left" : "right"}
+                icon={<AppIcon name="store" size={isMobileMode ? "xs" : "sm"} className="text-sky-500 scale-95 shrink-0" />}
+                triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
+                count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
+                allLabel="Chọn tất cả"
+                allChecked={activeSupermarkets.length === supermarkets.length}
+                onToggleAll={() => toggleSupermarket('all')}
+                options={Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => ({
+                    key: sm,
+                    label: shortenSupermarketName(sm),
+                    checked: activeSupermarkets.some(a => shortenSupermarketName(a) === shortenSupermarketName(sm)),
+                }))}
+                onToggleOption={toggleSupermarket}
+            />
+            <MultiSelectDropdown
+                className="w-auto shrink-0"
+                triggerClassName={cn(
+                    "ycx-hit rounded-r-full whitespace-nowrap min-h-0 py-0 font-semibold",
+                    isMobileMode ? "h-7 !px-1.5 text-[11px] !gap-1" : "h-7 sm:h-7.5 px-2 sm:px-2.5 text-xs"
+                )}
+                usePortal={isMobileMode}
+                align={isMobileMode ? "left" : "right"}
+                icon={<AppIcon name="restore" size={isMobileMode ? "xs" : "sm"} className="text-sky-500 scale-95 shrink-0" />}
+                triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
+                count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}
+                allLabel="All"
+                allChecked={activeDepartments.includes('all')}
+                onToggleAll={() => toggleDepartment('all')}
+                options={departmentOptions.map(dept => ({
+                    key: dept,
+                    label: dept,
+                    checked: activeDepartments.includes(dept) || activeDepartments.includes('all'),
+                }))}
+                onToggleOption={toggleDepartment}
+            />
+        </div>
+    );
+
     return (
         <ExportOptionsProvider value={exportOptionsContextValue}>
         <div className="space-y-4 sm:space-y-6 relative">
+            {/* Mobile Topbar Filters Portal: đưa 2 bộ lọc lên thanh bar bên trái các tab chức năng */}
+            {isActive && isMobile && filterPortalTarget && createPortal(
+                renderFilterPill(true),
+                filterPortalTarget
+            )}
 
-
-            {/* Title + Filter Toolbar */}
-            {/* Khung <main> của Report BI cố ý `p-0` trên điện thoại để BẢNG dùng hết bề ngang
-                (BiWrapper.tsx), nhưng hàng tiêu đề ăn theo thì chữ "NHÂN VIÊN" dính sát mép máy,
-                trên iPhone trông như bị cắt. Hàng này là chữ + nút nên phải có lề riêng. */}
-            <div className={`relative z-50 mb-3 flex flex-row flex-wrap items-center justify-between gap-x-2.5 gap-y-1.5 pt-1 pb-1.5 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
-                <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Desktop Title + Filter Toolbar — ẩn hoàn toàn trên mobile để mở rộng không gian */}
+            <div className={`hidden lg:flex relative z-50 mb-3 flex-row flex-wrap items-center justify-between gap-x-2.5 gap-y-1.5 pt-1 pb-1.5 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <h2 className="text-[17px] lg:text-[25px] font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
@@ -448,47 +527,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                     </div>
                 </div>
                 <div className="flex flex-none justify-end ml-auto">
-                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx.
-                        BUG FIX: KHÔNG dùng overflow-hidden ở đây — panel dropdown của MultiSelectDropdown định vị
-                        absolute và xổ xuống NGOÀI khung pill (top-[calc(100%+8px)]), nên overflow-hidden của pill
-                        (dù chỉ để bo tròn góc 2 nút) sẽ cắt mất panel, làm dropdown "mở" trong state nhưng không
-                        hiện gì để bấm chọn được (user báo cáo thật). */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-7 sm:h-7.5">
-                        {/* `w-auto`: mặc định `w-full` trên điện thoại khiến 2 nút chia ĐỀU khung (~95px mỗi nút)
-                            → "Tân Hiệp" bị cắt "Tân…" trong khi nút "All" thừa chỗ (iPhone, 2026-09-28). */}
-                        <MultiSelectDropdown
-                            className="w-auto border-r border-slate-200 dark:border-slate-700"
-                            triggerClassName="ycx-hit rounded-l-full whitespace-nowrap min-h-0 h-7 sm:h-7.5 px-2 sm:px-2.5 py-0 text-xs font-semibold"
-                            icon={<AppIcon name="store" size="sm" className="text-sky-500 scale-90" />}
-                            triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
-                            count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
-                            allLabel="Chọn tất cả"
-                            allChecked={activeSupermarkets.length === supermarkets.length}
-                            onToggleAll={() => toggleSupermarket('all')}
-                            options={Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => ({
-                                key: sm,
-                                label: shortenSupermarketName(sm),
-                                checked: activeSupermarkets.some(a => shortenSupermarketName(a) === shortenSupermarketName(sm)),
-                            }))}
-                            onToggleOption={toggleSupermarket}
-                        />
-                        <MultiSelectDropdown
-                            className="w-auto"
-                            triggerClassName="ycx-hit rounded-r-full whitespace-nowrap min-h-0 h-7 sm:h-7.5 px-2 sm:px-2.5 py-0 text-xs font-semibold"
-                            icon={<AppIcon name="restore" size="sm" className="text-sky-500 scale-90" />}
-                            triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
-                            count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}
-                            allLabel="All"
-                            allChecked={activeDepartments.includes('all')}
-                            onToggleAll={() => toggleDepartment('all')}
-                            options={departmentOptions.map(dept => ({
-                                key: dept,
-                                label: dept,
-                                checked: activeDepartments.includes(dept) || activeDepartments.includes('all'),
-                            }))}
-                            onToggleOption={toggleDepartment}
-                        />
-                    </div>
+                    {renderFilterPill(false)}
                 </div>
             </div>
 

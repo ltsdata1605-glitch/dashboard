@@ -86,30 +86,17 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                         <AppIcon name="copy" size="md" />
                     </Button>
                     {onExportAnalysis && (
-                        <>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                onClick={onExportAnalysis}
-                                title="Chụp ảnh phân tích"
-                                aria-label="Chụp ảnh phân tích"
-                                className="lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700"
-                            >
-                                <AppIcon name="exportImage" size="md" />
-                            </Button>
-                            <Button
-                                variant="unstyled"
-                                size="icon"
-                                type="button"
-                                onClick={onExportAnalysis}
-                                title="Xuất ảnh phân tích"
-                                aria-label="Xuất ảnh phân tích"
-                                className="lg:w-9 lg:h-9 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors"
-                            >
-                                <AppIcon name="image" size="md" />
-                            </Button>
-                        </>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            type="button"
+                            onClick={onExportAnalysis}
+                            title="Chụp ảnh phân tích"
+                            aria-label="Chụp ảnh phân tích"
+                            className="ycx-hit lg:w-9 lg:h-9 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                        >
+                            <AppIcon name="exportImage" size="md" />
+                        </Button>
                     )}
                 </div>
             </div>

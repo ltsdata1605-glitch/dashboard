@@ -46,13 +46,13 @@ test('thống kê lượt truy cập vẫn hiển thị sau khi gộp 2 lượt 
     await expect(page.getByText(/Doanh Thu/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(2000);
 
-    // Dòng thống kê nằm trong DashboardView: "Tổng: N lượt • M đang online"
-    const statLine = page.getByText(/Tổng:/i).first();
+    // Dòng thống kê nằm trong chân trang AppFooter: "N lượt truy cập • M người đang online"
+    const statLine = page.getByText(/lượt truy cập/i).first();
     const statVisible = await statLine.isVisible().catch(() => false);
     const onlineVisible = await page.getByText(/đang online/i).first().isVisible().catch(() => false);
 
     const statText = statVisible ? (await statLine.innerText()).replace(/\s+/g, ' ').trim() : '(không thấy)';
-    console.log(`[KẾT QUẢ] dòng "Tổng: ... lượt" hiển thị = ${statVisible} → "${statText}"`);
+    console.log(`[KẾT QUẢ] dòng "lượt truy cập" hiển thị = ${statVisible} → "${statText}"`);
     console.log(`[KẾT QUẢ] cụm "đang online" hiển thị = ${onlineVisible}`);
     console.log(`[KẾT QUẢ] lỗi JS runtime = ${pageErrors.length} ${JSON.stringify(pageErrors.slice(0, 5))}`);
     const trafficErrors = consoleErrors.filter(m => /total visits|Traffic Counter|Online Query/i.test(m));

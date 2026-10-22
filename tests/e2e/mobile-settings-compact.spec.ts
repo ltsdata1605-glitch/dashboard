@@ -61,31 +61,24 @@ test('Xác thực giao diện mobile gọn gàng và resize chuẩn trên tab Ph
     expect(vungCham.h).toBeGreaterThanOrEqual(43.5);
     expect(vungCham.w).toBeGreaterThanOrEqual(43.5);
 
-    // 2. "Xoá tất cả dữ liệu" nằm trong nhóm "Vùng nguy hiểm" ở CUỐI trang — dưới danh sách duyệt, cả hàng là vùng chạm
-    const vungNguyHiem = page.getByTestId('vung-nguy-hiem');
-    const resetBtn = vungNguyHiem.getByRole('button', { name: /Xoá tất cả dữ liệu/ });
-    await resetBtn.scrollIntoViewIfNeeded();
+    // 2. "Xoá tất cả dữ liệu" là icon button nằm cạnh "Đổi mã kho" trong Hồ sơ định danh (vùng chạm 44×44 nhờ .ycx-hit)
+    const resetBtn = page.getByRole('button', { name: /Xoá tất cả dữ liệu/ });
     await expect(resetBtn).toBeVisible();
-    expect(await cao(resetBtn)).toBeGreaterThanOrEqual(43.5);
-    const yReset = (await resetBtn.boundingBox())!.y + (await page.evaluate(() => window.scrollY));
-    const choDuyet = page.getByRole('button', { name: 'Chờ duyệt', exact: true }).first();
-    const yChoDuyet = (await choDuyet.boundingBox())!.y + (await page.evaluate(() => window.scrollY));
-    expect(yReset, '"Xoá tất cả dữ liệu" phải nằm dưới danh sách duyệt').toBeGreaterThan(yChoDuyet);
-    // Đầu trang (cạnh tiêu đề hồ sơ) không còn nút xoá nào
-    expect(await page.locator('button[title*="Xoá tất cả dữ liệu"]').count()).toBe(0);
+    expect(await cao(resetBtn)).toBeGreaterThanOrEqual(31.5);
 
-    // 3. Gắn kho dùng chung / Đổi mã kho: có chữ (không còn icon bút chì trơn), cao ≥ 44
+    // 3. Đổi mã kho: dạng icon button gọn chuẩn 32px (size bằng nút Xoá tất cả dữ liệu), nằm ở góc trên bên phải
     const actionProfileBtn = page.getByRole('button', { name: /Gắn kho dùng chung|Đổi mã kho/ }).first();
     await expect(actionProfileBtn).toBeVisible();
-    expect(await cao(actionProfileBtn)).toBeGreaterThanOrEqual(43.5);
+    expect(await cao(actionProfileBtn)).toBeGreaterThanOrEqual(31.5);
+    expect(await cao(actionProfileBtn)).toBeLessThanOrEqual(36);
 
-    // 4. Làm mới + sắp xếp đảo chiều: ≥ 44
-    expect(await cao(page.getByRole('button', { name: 'Làm mới danh sách' }))).toBeGreaterThanOrEqual(43.5);
-    expect(await cao(page.locator('button[title*="Tăng dần"], button[title*="Giảm dần"]').first())).toBeGreaterThanOrEqual(43.5);
+    // 4. Làm mới + sắp xếp đảo chiều: chuẩn gọn 32px trên mobile
+    expect(await cao(page.getByRole('button', { name: 'Làm mới danh sách' }))).toBeLessThanOrEqual(36);
+    expect(await cao(page.locator('button[title*="Tăng dần"], button[title*="Giảm dần"]').first())).toBeLessThanOrEqual(36);
 
-    // 5. Hai segmented control (3 phân hệ + 3 trạng thái) — mỗi mục cao ≥ 44 trên iPhone
+    // 5. Hai segmented control (3 phân hệ + 3 trạng thái) — mỗi mục gọn chuẩn 32px trên iPhone
     for (const ten of ['Phân quyền', 'Ngành hàng', 'Duyệt', 'Chờ duyệt', 'Hoạt động', 'Hết hạn']) {
-        expect(await cao(page.locator('[data-segmented]').getByRole('button', { name: ten, exact: true })), ten).toBeGreaterThanOrEqual(43.5);
+        expect(await cao(page.locator('[data-segmented]').getByRole('button', { name: ten, exact: true })), ten).toBeLessThanOrEqual(36);
     }
 
     // 6. Chụp ảnh màn hình mobile để kiểm chứng

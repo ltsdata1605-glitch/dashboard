@@ -77,6 +77,8 @@ export interface ModalProps {
   panelClassName?: string;
   /** Nội dung tùy chỉnh (nút phụ...) hiển thị cạnh nút đóng trong header. */
   controls?: React.ReactNode;
+  /** Nút thao tác hiển thị cùng hàng cạnh nút đóng ở góc trên bên phải (cả mobile và desktop) */
+  headerActions?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   /**
@@ -123,6 +125,7 @@ export function Modal({
   titleColorClass = 'text-slate-900 dark:text-slate-100',
   panelClassName,
   controls,
+  headerActions,
   children,
   footer,
   primaryAction,
@@ -334,19 +337,21 @@ export function Modal({
                 {controls}
               </div>
             )}
-            {!hideCloseButton && (
-              <Button
-                type="button"
-                variant="unstyled"
-                size="none"
-                onClick={onClose}
-                aria-label="Đóng"
-                // Nút đóng từng chỉ 22px trên iPhone (icon 14px + p-1) — nhỏ nhất trong mọi modal.
-                className="order-2 sm:order-3 shrink-0 min-h-11 min-w-11 -mr-2 sm:min-h-0 sm:min-w-0 sm:mr-0 p-1.5 flex items-center justify-center rounded-full text-slate-500 bg-slate-200/50 hover:bg-slate-200 hover:text-slate-700 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50 sm:bg-transparent"
-              >
-                <AppIcon name="close" size="md" />
-              </Button>
-            )}
+            <div className="order-2 sm:order-3 shrink-0 flex items-center gap-1 sm:gap-1.5 -mr-1 sm:mr-0">
+              {headerActions}
+              {!hideCloseButton && (
+                <Button
+                  type="button"
+                  variant="unstyled"
+                  size="none"
+                  onClick={onClose}
+                  aria-label="Đóng"
+                  className="ycx-hit min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 flex items-center justify-center rounded-full text-slate-500 bg-slate-200/50 hover:bg-slate-200 hover:text-slate-700 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50 sm:bg-transparent"
+                >
+                  <AppIcon name="close" size="md" />
+                </Button>
+              )}
+            </div>
           </div>
         )}
 
