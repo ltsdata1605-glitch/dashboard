@@ -41,7 +41,8 @@ test('bảng Thi đua Luỹ kế có cột THƯỞNG khớp theo tên nhóm vớ
     await expect(page.locator('table thead th', { hasText: /^THƯỞNG$/ })).toBeVisible({ timeout: 10_000 });
 
     const readBonus = async (name: string) => (await page.locator('table tbody tr').filter({ hasText: name }).first().locator('[data-testid="bonus-cell"]').innerText()).trim();
-    const got = { VAS: await readBonus('VAS'), SIM: await readBonus('SIM TỔNG'), HC: await readBonus('TC HOMECREDIT'), NR: await readBonus('NẠP/RÚT'), LAP: await readBonus('LAPTOP') };
+    // Bảng hiện tên RÚT GỌN (shortenName, c0731b8 của chủ dự án 19/10): "TC HOMECREDIT" → "TC HC"; thưởng vẫn tra theo tên đầy đủ.
+    const got = { VAS: await readBonus('VAS'), SIM: await readBonus('SIM TỔNG'), HC: await readBonus('TC HC'), NR: await readBonus('NẠP/RÚT'), LAP: await readBonus('LAPTOP') };
     console.log('CỘT THƯỞNG:', JSON.stringify(got));
     expect(got.VAS).toBe('3,002tr');
     expect(got.SIM).toBe('2,174tr');

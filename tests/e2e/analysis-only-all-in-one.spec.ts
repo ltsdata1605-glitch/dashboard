@@ -49,6 +49,10 @@ test('nạp danh sách nhân viên: chỉ giữ BP All In One, báo rõ số b�
         }
     })();
     await shiftInput.setInputFiles(SHIFT_FILE);
+    // Nạp danh sách nay hỏi Mã Kho trước (ShiftWarehouseInputModal) — tên file mẫu không có số nên phải tự điền.
+    const hopMaKho = page.getByRole('dialog', { name: /Nhập Mã Kho Siêu Thị/i });
+    await hopMaKho.getByPlaceholder(/VD: 1024/).fill('1024');
+    await hopMaKho.getByRole('button', { name: /Xác nhận & Nạp danh sách/ }).click();
     await page.waitForTimeout(4000);
     stop.v = true;
     await watcher;
