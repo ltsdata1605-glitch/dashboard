@@ -49,14 +49,8 @@ export function useCouponManager(overrideUserId?: string) {
 
             const data = await lineBotFirestoreService.getCoupons(userId);
             const todayVN = getVietnamTodayString();
-            // Lọc bỏ toàn bộ các mã hết hạn khỏi kho (không hiển thị trên giao diện)
-            const activeData = data.filter(c => {
-                const isStockCoupon = c.status !== 'SENT';
-                if (isStockCoupon && c.expiryDate && isDateExpired(c.expiryDate, todayVN)) {
-                    return false;
-                }
-                return true;
-            });
+            // PMH HẾT HẠN SẼ ĐƯỢC TỰ ĐỘNG XOÁ KHỎI KHO (không hiển thị trên giao diện)
+            const activeData = data.filter(c => !(c.expiryDate && isDateExpired(c.expiryDate, todayVN)));
             setCoupons(activeData);
         } catch (error) {
             console.error('Lỗi tải danh sách coupon:', error);
@@ -125,9 +119,8 @@ export function useCouponManager(overrideUserId?: string) {
         const todayVN = getVietnamTodayString();
 
         return coupons.filter(c => {
-            // Đảm bảo không hiển thị mã hết hạn trong kho
-            const isStockCoupon = c.status !== 'SENT';
-            if (isStockCoupon && c.expiryDate && isDateExpired(c.expiryDate, todayVN)) {
+            // PMH HẾT HẠN SẼ ĐƯỢC TỰ ĐỘNG XOÁ KHỎI KHO
+            if (c.expiryDate && isDateExpired(c.expiryDate, todayVN)) {
                 return false;
             }
 

@@ -6,6 +6,7 @@ import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import FontSelector, { FontPickerSheet } from '../../../components/layout/FontSelector';
+import HeaderSystemGroup from '../../../components/layout/HeaderSystemGroup';
 import { usePageActions } from '../../../components/shared/ui/PageActions';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
@@ -317,27 +318,28 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         <div data-density="compact" className="flex flex-col w-full min-h-dvh bi-report-module">
             {/* Luật "không bo góc" của phân hệ: features/bi-dashboard/biDensity.css (trước là thẻ <style> chèn lúc gắn — GĐ9 2026-10-14). */}
             {mounted && isTabActive && !isMobile && document.getElementById('global-header-actions') && createPortal(
-                // Chuẩn pill bo tròn rounded-full thống nhất với Header.tsx (hình 2)
-                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
-                    {navigationLinks.map((tab, idx) => {
-                        const isActive = activeView === tab.id;
-                        return (
-                            <Button
-                                variant="unstyled" size="none"
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
-                                className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
-                                title={tab.label}
-                            >
-                                <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
-                                <span>{tab.label}</span>
-                            </Button>
-                        );
-                    })}
-
-                    <div className="border-l border-slate-100 dark:border-slate-700">
-                        <FontSelector />
+                <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+                    {/* Nhóm chuyển Tab chức năng */}
+                    <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        {navigationLinks.map((tab, idx) => {
+                            const isActive = activeView === tab.id;
+                            return (
+                                <Button
+                                    variant="unstyled" size="none"
+                                    key={tab.id}
+                                    onClick={() => handleTabChange(tab.id)}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
+                                    title={tab.label}
+                                >
+                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
+                                    <span>{tab.label}</span>
+                                </Button>
+                            );
+                        })}
                     </div>
+
+                    {/* Cụm công cụ hệ thống chuẩn (Font chữ + Chuông thông báo) */}
+                    <HeaderSystemGroup />
                 </div>,
                 document.getElementById('global-header-actions')!
             )}

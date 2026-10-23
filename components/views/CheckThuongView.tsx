@@ -6,6 +6,7 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { saveSettingOrThrow, saveSettingFromCloud } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
+import HeaderSystemGroup from '../layout/HeaderSystemGroup';
 import { usePageActions } from '../shared/ui/PageActions';
 import { getUnifiedCheckThuongData } from '../../services/checkThuongIframeService';
 import { CheckThuongLeaderboardView, CheckThuongSearchView } from '../../features/check-thuong';
@@ -297,17 +298,17 @@ export const CheckThuongView: React.FC = () => {
 
     const renderSearchBar = (isMobile: boolean) => (
         // data-thay-tieu-de (iPhone): cả thanh công cụ nằm trên thanh trên → khung app ẩn chữ tiêu đề dưới 540px (styles.css)
-        <div data-thay-tieu-de={isMobile ? '' : undefined} className={`flex items-center ${isMobile ? 'gap-1 shrink-0 ml-auto justify-end' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
+        <div data-thay-tieu-de={isMobile ? '' : undefined} className={`flex items-center ${isMobile ? 'gap-1 shrink-0 ml-auto justify-end' : 'hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
             {/* CỤM NÚT CHUYỂN TAB: TRA CỨU / TOP THƯỞNG — Đồng bộ kích thước capsule 34px / nút 32px chuẩn Zalo/iOS */}
-            <div className={`flex items-center ${isMobile ? 'h-[34px] min-h-[34px] p-0.5 shadow-2xs' : 'p-0.5 shadow-xs'} rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 shrink-0`}>
+            <div className={`flex items-center ${isMobile ? 'h-[34px] min-h-[34px] p-0.5 shadow-2xs rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70' : 'p-0.5 shadow-sm rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'} shrink-0`}>
                 <Button
                     variant="unstyled"
                     size="none"
                     onClick={() => setActiveSubTab('search')}
-                    className={`flex items-center justify-center gap-1 ${isMobile ? 'w-8 h-8 min-w-[32px] min-h-[32px] p-0 text-xs ycx-hit' : 'px-2.5 py-1 text-xs'} rounded-full font-bold transition-all ${
+                    className={`flex items-center justify-center gap-1 ${isMobile ? 'w-8 h-8 min-w-[32px] min-h-[32px] p-0 text-xs ycx-hit' : 'px-3 py-1.5 text-xs'} rounded-full font-bold transition-all ${
                         activeSubTab === 'search'
-                            ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            ? (isMobile ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs' : 'bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 shadow-2xs')
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/50'
                     }`}
                     title="Tra cứu & So sánh siêu thị"
                     aria-label="Tra cứu"
@@ -320,10 +321,10 @@ export const CheckThuongView: React.FC = () => {
                     variant="unstyled"
                     size="none"
                     onClick={() => setActiveSubTab('leaderboard')}
-                    className={`flex items-center justify-center gap-1 ${isMobile ? 'h-8 px-2 text-xs ycx-hit' : 'px-2.5 py-1 text-xs'} rounded-full font-bold transition-all ${
+                    className={`flex items-center justify-center gap-1 ${isMobile ? 'h-8 px-2 text-xs ycx-hit' : 'px-3 py-1.5 text-xs'} rounded-full font-bold transition-all ${
                         activeSubTab === 'leaderboard'
-                            ? 'bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 shadow-xs font-black'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                            ? (isMobile ? 'bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 shadow-xs font-black' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-bold shadow-2xs')
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/50'
                     }`}
                     title="Xem Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao"
                     aria-label="Top thưởng"
@@ -334,23 +335,23 @@ export const CheckThuongView: React.FC = () => {
                 </Button>
             </div>
 
-            {/* CỤM Ô NHẬP MÃ KHO (KHI Ở TAB TRA CỨU) — Đồng bộ kích thước capsule 34px / ô nhập 32px chuẩn Zalo/iOS */}
+            {/* CỤM Ô NHẬP MÃ KHO (KHI Ở TAB TRA CỨU) — Nền trắng bg-white trên laptop */}
             {activeSubTab === 'search' && (
                 <>
-                    <div className={`flex items-center rounded-full overflow-hidden bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 shadow-2xs shrink-0 ${isMobile ? 'h-[34px] min-h-[34px] p-0.5' : ''}`}>
+                    <div className={`flex items-center rounded-full overflow-hidden ${isMobile ? 'h-[34px] min-h-[34px] p-0.5 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 shadow-2xs' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'} shrink-0`}>
                         <input
                             type="text"
                             placeholder="Kho 1"
-                            className={`${isMobile ? 'w-10 min-[400px]:w-11 min-[430px]:w-13 sm:w-20 h-8 px-0.5 text-[13px] rounded-full' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:shadow-xs focus:outline-none transition-colors`}
+                            className={`${isMobile ? 'w-10 min-[400px]:w-11 min-[430px]:w-13 sm:w-20 h-8 px-0.5 text-[13px] rounded-full' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal bg-transparent focus:bg-slate-50 dark:focus:bg-slate-700 focus:shadow-xs focus:outline-none transition-colors`}
                             value={codes.code1}
                             onChange={(e) => handleCodeChange('code1', e.target.value)}
                         />
-                        <div className={`w-px ${isMobile ? 'h-4' : 'h-3.5'} bg-slate-300/80 dark:bg-slate-600/80 shrink-0 mx-0.5`} />
+                        <div className={`w-px ${isMobile ? 'h-4' : 'h-3.5'} bg-slate-200 dark:bg-slate-700 shrink-0 mx-0.5`} />
                         <div className="relative flex items-center">
                             <input
                                 type="text"
                                 placeholder="Kho 2"
-                                className={`${isMobile ? (codes.code2 ? 'w-12 pr-5 pl-0.5 text-[13px]' : 'w-10 min-[400px]:w-11 min-[430px]:w-13 sm:w-20 px-0.5 text-[13px]') : 'w-20 px-2.5 py-1 text-xs'} h-8 font-bold text-center text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:shadow-xs focus:outline-none transition-colors rounded-full`}
+                                className={`${isMobile ? (codes.code2 ? 'w-12 pr-5 pl-0.5 text-[13px]' : 'w-10 min-[400px]:w-11 min-[430px]:w-13 sm:w-20 px-0.5 text-[13px]') : 'w-20 px-2.5 py-1 text-xs'} h-8 font-bold text-center text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal bg-transparent focus:bg-slate-50 dark:focus:bg-slate-700 focus:shadow-xs focus:outline-none transition-colors rounded-full`}
                                 value={codes.code2}
                                 onChange={(e) => handleCodeChange('code2', e.target.value)}
                             />
@@ -369,12 +370,12 @@ export const CheckThuongView: React.FC = () => {
                     </div>
                     {/* Trên desktop: hiển thị nút xoá so sánh, tải file, đồng bộ cloud */}
                     {!isMobile && (
-                        <div className="flex items-center gap-1 shrink-0 rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="flex items-center shrink-0 rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                             {codes.code2 && (
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => handleCodeChange('code2', '')}
-                                    className="p-1.5 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors"
+                                    className="p-2 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors"
                                     title="Xoá mã kho đang so sánh"
                                 >
                                     <AppIcon name="reset" size="xs" />
@@ -383,19 +384,19 @@ export const CheckThuongView: React.FC = () => {
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => fileInputHiddenRef.current?.click()}
-                                className="p-1.5 border-l border-slate-100 dark:border-slate-700 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
+                                className={`p-2 ${codes.code2 ? 'border-l' : ''} border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors`}
                                 title="Tải file khác"
                             >
-                                <AppIcon name="upload" size="xs" />
+                                <AppIcon name="upload" size="md" />
                             </Button>
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={handleManualCloudSync}
                                 disabled={isSyncingCloud}
-                                className={`p-1.5 border-l border-slate-100 dark:border-slate-700 flex items-center justify-center bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 transition-colors ${isSyncingCloud ? 'opacity-70' : ''}`}
+                                className={`p-2 border-l border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors ${isSyncingCloud ? 'opacity-70' : ''}`}
                                 title="Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)"
                             >
-                                <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="xs" className={isSyncingCloud ? 'animate-spin' : ''} />
+                                <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="md" className={isSyncingCloud ? 'animate-spin' : ''} />
                             </Button>
                         </div>
                     )}
@@ -404,28 +405,31 @@ export const CheckThuongView: React.FC = () => {
 
             {/* KHI Ở TAB TOP THƯỞNG TRÊN LAPTOP: NÚT ĐỔI FILE & ĐỒNG BỘ CLOUD (MOBILE ĐÃ CÓ CON NHỘNG) */}
             {activeSubTab === 'leaderboard' && !isMobile && (
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center shrink-0 rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => fileInputHiddenRef.current?.click()}
-                        className="px-2.5 py-1 text-xs rounded-full border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors font-bold"
+                        className="px-3 py-1.5 text-xs flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-300 transition-colors font-semibold"
                         title="Tải file khác"
                     >
-                        <AppIcon name="upload" size="xs" />
+                        <AppIcon name="upload" size="sm" />
                         <span>Đổi file</span>
                     </Button>
                     <Button
                         variant="unstyled" size="none"
                         onClick={handleManualCloudSync}
                         disabled={isSyncingCloud}
-                        className={`px-2.5 py-1 text-xs rounded-full border border-sky-200 dark:border-sky-800 shadow-sm flex items-center gap-1 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 transition-colors font-bold ${isSyncingCloud ? 'opacity-70' : ''}`}
+                        className={`px-3 py-1.5 text-xs border-l border-slate-100 dark:border-slate-700 flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-sky-600 dark:text-sky-400 transition-colors font-semibold ${isSyncingCloud ? 'opacity-70' : ''}`}
                         title="Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)"
                     >
-                        <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="xs" className={isSyncingCloud ? 'animate-spin' : ''} />
+                        <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="sm" className={isSyncingCloud ? 'animate-spin' : ''} />
                         <span>Đồng bộ Cloud</span>
                     </Button>
                 </div>
             )}
+
+            {/* CỤM CÔNG CỤ HỆ THỐNG CHUẨN [ T | 🔔 ] TRÊN LAPTOP */}
+            {!isMobile && <HeaderSystemGroup />}
         </div>
     );
 

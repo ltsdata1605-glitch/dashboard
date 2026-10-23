@@ -7,6 +7,7 @@ import { Banner } from '../shared/ui/Banner';
 
 import FontSelector from './FontSelector';
 import NotificationBell from './NotificationBell';
+import HeaderSystemGroup from './HeaderSystemGroup';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useSync } from '../../contexts/SyncContext';
@@ -254,12 +255,7 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
                 
                 {/* View, Font & Notification Group (3 chức năng cùng 1 nhóm) */}
-                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative z-[150]">
-                    <FontSelector 
-                        containerClassName="relative flex items-center"
-                        buttonClassName="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                    />
-
+                <HeaderSystemGroup>
                     {onToggleFilters && (
                         <div className="border-l border-slate-100 dark:border-slate-700">
                             <Button
@@ -272,11 +268,7 @@ const Header: React.FC<HeaderProps> = ({
                             </Button>
                         </div>
                     )}
-
-                    <div className="border-l border-slate-100 dark:border-slate-700">
-                        <NotificationBell buttonClassName="relative w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
-                    </div>
-                </div>
+                </HeaderSystemGroup>
             </div>,
             document.getElementById('global-header-actions')!
         )}

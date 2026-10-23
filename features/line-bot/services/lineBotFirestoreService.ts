@@ -32,7 +32,7 @@ import {
     FilteredCouponRecord,
     GroupFeatureConfig
 } from '../types/lineBot.types';
-import { getVietnamTodayString, getCouponCategoryMeta } from './couponParser';
+import { getVietnamTodayString, getCouponCategoryMeta, isDateExpired } from './couponParser';
 
 const ROOT_COLLECTION = 'line_bots';
 
@@ -169,8 +169,15 @@ export const lineBotFirestoreService = {
             const snap = await getDocs(q);
             const needsSyncDocs: Array<{ id: string; newType: string }> = [];
 
-            const coupons = snap.docs.map(d => {
+            const todayVN = getVietnamTodayString();
+            const coupons: Coupon[] = [];
+
+            for (const d of snap.docs) {
                 const data = d.data();
+                // PMH HẾT HẠN SẼ ĐƯỢC TỰ ĐỘNG LOẠI TRỪ KHỎI KHO
+                if (data.expiryDate && isDateExpired(data.expiryDate, todayVN)) {
+                    continue;
+                }
                 const meta = getCouponCategoryMeta(data);
                 const rawType = (data.type || '').trim().toLowerCase();
                 let actualType = (data.type || '').trim() || meta.name;
@@ -178,8 +185,8 @@ export const lineBotFirestoreService = {
                     actualType = meta.name;
                     needsSyncDocs.push({ id: d.id, newType: actualType });
                 }
-                return { id: d.id, ...data, type: actualType } as Coupon;
-            });
+                coupons.push({ id: d.id, ...data, type: actualType } as Coupon);
+            }
 
             // Tự động đồng bộ ngầm lên Firestore để chuẩn hoá dữ liệu vĩnh viễn
             if (needsSyncDocs.length > 0) {
@@ -417,11 +424,8 @@ export const lineBotFirestoreService = {
             const expiredDocs: Array<{ doc: any; data: Coupon }> = [];
             for (const d of snap.docs) {
                 const data = d.data() as Coupon;
-                // Thu gom các mã hết hạn CÒN TRONG KHO (chưa dùng UNUSED / đã thu hồi REVOKED). Audit D10:
-                // trước đây chỉ loại SENT nên mã ĐÃ DÙNG (USED) hết hạn cũng bị xoá — mất lịch sử sử dụng
-                // mà báo cáo/đối soát cần.
-                const isStockCoupon = !data.status || data.status === 'UNUSED' || data.status === 'REVOKED';
-                if (isStockCoupon && data.expiryDate && data.expiryDate < todayVN) {
+                // PMH HẾT HẠN SẼ ĐƯỢC TỰ ĐỘNG XOÁ KHỎI KHO (quá hạn sử dụng < todayVN)
+                if (data.expiryDate && isDateExpired(data.expiryDate, todayVN)) {
                     expiredDocs.push({ doc: d, data });
                 }
             }

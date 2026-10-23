@@ -120,7 +120,12 @@ export const lineBotUserSchedules = onSchedule(
                     const template = String(data.messageTemplate || '');
                     if (tonKho === null && template.includes('{ton_kho}')) {
                         const cSnap = await botDoc.ref.collection('coupons').get();
-                        tonKho = cSnap.docs.filter((c) => { const st = c.data()?.status; return st === 'UNUSED' || !st; }).length;
+                        tonKho = cSnap.docs.filter((c) => {
+                            const d = c.data();
+                            const st = d?.status;
+                            const isExpired = d?.expiryDate && d.expiryDate < now.date;
+                            return (st === 'UNUSED' || !st) && !isExpired;
+                        }).length;
                     }
                     const text = renderTemplate(template, { date: now.date, botName: config.botName, tonKho }).slice(0, 5000);
                     if (!text.trim() || targets.length === 0) {
@@ -147,6 +152,56 @@ export const lineBotUserSchedules = onSchedule(
             }
         } catch (error) {
             console.error('[Scheduler Notify Error]', error);
+        }
+    }
+);
+
+/**
+ * Tự động quét và xoá sạch PMH hết hạn khỏi kho mỗi ngày lúc 00:01 (giờ Việt Nam)
+ */
+export const lineBotDailyExpiredCouponsCleanup = onSchedule(
+    {
+        schedule: '1 0 * * *',
+        timeZone: 'Asia/Ho_Chi_Minh',
+        region: SCHEDULER_REGION
+    },
+    async () => {
+        try {
+            const botsSnap = await db.collection('line_bots').get();
+            const todayVN = vnNow().date;
+            let totalDeleted = 0;
+
+            for (const botDoc of botsSnap.docs) {
+                const uid = botDoc.id;
+                const colRef = botDoc.ref.collection('coupons');
+                const snap = await colRef.get();
+                if (snap.empty) continue;
+
+                const expiredDocs: FirebaseFirestore.QueryDocumentSnapshot[] = [];
+                for (const d of snap.docs) {
+                    const data = d.data();
+                    if (data.expiryDate && data.expiryDate < todayVN) {
+                        expiredDocs.push(d);
+                    }
+                }
+
+                if (expiredDocs.length > 0) {
+                    const batchSize = 450;
+                    for (let i = 0; i < expiredDocs.length; i += batchSize) {
+                        const chunk = expiredDocs.slice(i, i + batchSize);
+                        const b = db.batch();
+                        for (const doc of chunk) {
+                            b.delete(doc.ref);
+                        }
+                        await b.commit();
+                    }
+                    totalDeleted += expiredDocs.length;
+                    console.info(`[lineBotDailyExpiredCouponsCleanup] Đã tự động xoá ${expiredDocs.length} mã hết hạn của bot ${uid}`);
+                }
+            }
+            console.info(`[lineBotDailyExpiredCouponsCleanup] Hoàn tất xoá ${totalDeleted} mã PMH hết hạn trên toàn hệ thống`);
+        } catch (err) {
+            console.error('[lineBotDailyExpiredCouponsCleanup Error]', err);
         }
     }
 );

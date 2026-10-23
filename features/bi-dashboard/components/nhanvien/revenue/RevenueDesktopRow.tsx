@@ -88,25 +88,29 @@ export const RevenueDesktopRow = React.memo(({
                 <Pill className="font-bold" color={getDkhtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
                 <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
             </td>
-            {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN */}
-            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
-                {row.comp_total ? (
-                    <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-bold'}>
-                        {row.comp_dat ?? 0}/{row.comp_total}
-                    </span>
-                ) : (
-                    <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
-                )}
-            </td>
-            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
-                {row.comp_total ? (
-                    <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold'}>
-                        {roundUp(row.comp_pct_dat || 0)}%
-                    </span>
-                ) : (
-                    <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
-                )}
-            </td>
+            {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN (Ẩn ở chế độ Realtime) */}
+            {!isRealtimeMode && (
+                <>
+                    <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
+                        {row.comp_total ? (
+                            <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-bold'}>
+                                {row.comp_dat ?? 0}/{row.comp_total}
+                            </span>
+                        ) : (
+                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                        )}
+                    </td>
+                    <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60">
+                        {row.comp_total ? (
+                            <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold'}>
+                                {roundUp(row.comp_pct_dat || 0)}%
+                            </span>
+                        ) : (
+                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                        )}
+                    </td>
+                </>
+            )}
             {isShowRemaining && (
                 <>
                     <td className="export-col-revenue px-2 py-[3px] text-[13px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400">

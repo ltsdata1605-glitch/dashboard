@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
+import HeaderSystemGroup from '../../../components/layout/HeaderSystemGroup';
 import { usePageActions } from '../../../components/shared/ui/PageActions';
 
 const LINK_DS_NV = 'https://office.thegioididong.com/quan-ly-phan-ca';
@@ -49,89 +50,100 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
         <>
             {/* GLOBAL HEADER ACTIONS PORTAL */}
             {mounted && activeTab === 'tools-phanca' && document.getElementById('global-header-actions') && createPortal(
-                <div className="hidden lg:flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
-                    {/* Data management group */}
+                <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+                    {/* Data management group — Nền trắng bg-white đồng bộ Hình 1 */}
                     <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <Button
-                            variant="tinted"
-                            size="sm"
+                            variant="unstyled"
+                            size="none"
                             onClick={onImportClick}
-                            icon="add"
-                            className="rounded-none border-0 font-semibold"
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold text-sm transition-colors"
+                            title="Nhập danh sách nhân viên từ file Excel"
                         >
-                            Nhập NV
+                            <AppIcon name="add" size="md" />
+                            <span>Nhập NV</span>
                         </Button>
-                        <a href={LINK_DS_NV} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
+                        <a 
+                            href={LINK_DS_NV} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" 
+                            title="Lấy danh sách nhân viên từ hệ thống"
+                        >
                             <AppIcon name="externalLink" size="md" />
                         </a>
                         <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="unstyled"
+                            size="none"
                             onClick={onDeleteStaffList}
-                            icon="delete"
-                            title="Xóa danh sách"
+                            title="Xóa danh sách nhân viên"
                             aria-label="Xóa danh sách"
-                            className="rounded-none border-l border-slate-100 dark:border-slate-700 text-slate-500 hover:text-rose-500 hover:bg-rose-50"
-                        />
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onOpenEditPattern}
-                            icon="repeat"
-                            className="rounded-none border-l border-slate-100 dark:border-slate-700 font-semibold hover:bg-sky-50 hover:text-sky-700"
+                            className="p-2 transition-colors border-l border-slate-100 dark:border-slate-700 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer"
                         >
-                            Ca Xoay
+                            <AppIcon name="delete" size="md" />
+                        </Button>
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={onOpenEditPattern}
+                            title="Cấu hình ca xoay"
+                            className="flex items-center gap-1.5 px-3 py-2 border-l border-slate-100 dark:border-slate-700 font-semibold text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                        >
+                            <AppIcon name="repeat" size="md" />
+                            <span>Ca Xoay</span>
                         </Button>
                     </div>
-                    {/* Export group */}
+                    {/* Export group — Nền trắng bg-white đồng bộ Hình 1 */}
                     <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
                         <Button
-                            variant="ghost"
-                            size="sm"
+                            variant="unstyled" size="none"
                             onClick={onExportAll}
                             disabled={!hasStaff}
-                            className="rounded-none font-semibold"
+                            className="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors disabled:opacity-40"
+                            title="Xuất lịch tất cả nhân viên"
                         >
                             Tất cả
                         </Button>
                         <Button
-                            variant="ghost"
-                            size="sm"
+                            variant="unstyled" size="none"
                             onClick={onExportWeekly}
                             disabled={!hasStaff}
-                            className="rounded-none border-l border-slate-100 dark:border-slate-700 font-semibold"
+                            className="px-3 py-2 text-xs font-semibold border-l border-slate-100 dark:border-slate-700 text-slate-600 hover:text-sky-600 dark:text-slate-300 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors disabled:opacity-40"
+                            title="Xuất lịch theo tuần"
                         >
                             Tuần
                         </Button>
                         <Button
-                            variant="secondary"
-                            size="sm"
+                            variant="unstyled" size="none"
                             onClick={onExportIndividual}
                             disabled={!hasStaff}
-                            className="rounded-none border-l border-slate-700 bg-slate-800 hover:bg-slate-900 text-white font-bold"
+                            className="px-3 py-2 text-xs font-bold border-l border-slate-100 dark:border-slate-700 text-slate-700 hover:text-sky-600 dark:text-slate-200 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors disabled:opacity-40"
+                            title="Xuất lịch từng nhân viên"
                         >
                             Từng NV
                         </Button>
                         <Button
-                            variant="success"
-                            size="sm"
+                            variant="unstyled" size="none"
                             onClick={onExportExcel}
                             disabled={!hasStaff}
-                            className="rounded-none border-l border-emerald-700 font-bold"
+                            className="px-3 py-2 text-xs font-bold border-l border-slate-100 dark:border-slate-700 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors disabled:opacity-40"
+                            title="Xuất file Excel"
                         >
                             Excel
                         </Button>
                         <Button
-                            variant="tinted"
-                            size="sm"
+                            variant="unstyled" size="none"
                             onClick={onExportGoogleSheet}
                             disabled={!hasStaff}
                             title="Xuất ra Google Sheet"
-                            className="rounded-none border-l border-sky-200 font-bold"
+                            className="px-3 py-2 text-xs font-bold border-l border-slate-100 dark:border-slate-700 text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors disabled:opacity-40"
                         >
                             Sheet
                         </Button>
                     </div>
+
+                    {/* Cụm công cụ hệ thống chuẩn (Font chữ + Chuông thông báo) */}
+                    <HeaderSystemGroup />
                 </div>,
                 document.getElementById('global-header-actions')!
             )}

@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
+import HeaderSystemGroup from '../../../components/layout/HeaderSystemGroup';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 
 interface StickerModeToolbarProps {
@@ -97,81 +98,61 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
     const portalTarget = document.getElementById('global-header-actions');
     if (!portalTarget) return null;
 
+    const stickerTabs = [
+        { id: 'gia_soc', label: 'Giá Sốc', icon: 'quick' as const, color: 'sky', onClick: onSelectGiaSoc, isActive: stickerMode === 'sticker' && stickerType === 'gia_soc' },
+        { id: 'gio_vang', label: 'Giờ Vàng', icon: 'clock' as const, color: 'amber', onClick: onSelectGioVang, isActive: stickerMode === 'sticker' && stickerType === 'gio_vang' },
+        { id: 'draw', label: 'Phiếu', icon: 'coupon' as const, color: 'rose', onClick: onSelectDraw, isActive: stickerMode === 'sticker' && stickerType === 'draw' },
+        { id: 'event', label: 'Sticker', icon: 'product' as const, color: 'emerald', onClick: onSelectEvent, isActive: stickerMode === 'event' },
+    ];
+
+    const getModeColorClasses = (color: string, isActive: boolean) => {
+        if (!isActive) return 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50';
+        switch (color) {
+            case 'emerald': return 'bg-emerald-50/80 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-semibold';
+            case 'amber': return 'bg-amber-50/80 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 font-semibold';
+            case 'rose': return 'bg-rose-50/80 hover:bg-rose-100 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 font-semibold';
+            case 'sky': return 'bg-sky-50/80 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 font-semibold';
+            default: return 'bg-sky-50/80 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 font-semibold';
+        }
+    };
+
     return createPortal(
-        <div className="max-w-[calc(100vw-110px)] min-[540px]:max-w-[calc(100vw-180px)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:max-w-none lg:overflow-visible py-0.5">
-        <div className="flex items-center gap-0.5 lg:gap-1 bg-white/70 dark:bg-slate-900/70 p-0.5 lg:p-1 rounded-full w-max lg:w-auto border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl shadow-xs animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">
-            <div className="flex bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-full border border-slate-200/40 dark:border-slate-700/40 items-center">
-                <Button
-                    variant="unstyled"
-                    size="none"
-                    onClick={onSelectGiaSoc}
-                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
-                        stickerMode === 'sticker' && stickerType === 'gia_soc'
-                            ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 font-bold shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
-                    }`}
-                >
-                    <span className="lg:hidden">Giá Sốc</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <AppIcon name="success" size="sm" className="text-sky-600" />}Giá Sốc</span>
-                </Button>
-                <Button
-                    variant="unstyled"
-                    size="none"
-                    onClick={onSelectGioVang}
-                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
-                        stickerMode === 'sticker' && stickerType === 'gio_vang'
-                            ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
-                    }`}
-                >
-                    <span className="lg:hidden">Giờ Vàng</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <AppIcon name="success" size="sm" className="text-amber-600" />}Giờ Vàng</span>
-                </Button>
-                <Button
-                    variant="unstyled"
-                    size="none"
-                    onClick={onSelectDraw}
-                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
-                        stickerMode === 'sticker' && stickerType === 'draw'
-                            ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 font-bold shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
-                    }`}
-                >
-                    <span className="lg:hidden">Phiếu</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'draw' && <AppIcon name="success" size="sm" className="text-rose-600" />}Phiếu</span>
-                </Button>
-                <Button
-                    variant="unstyled"
-                    size="none"
-                    onClick={onSelectEvent}
-                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
-                        stickerMode === 'event'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold shadow-xs'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
-                    }`}
-                >
-                    <span className="lg:hidden">Sticker</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'event' && <AppIcon name="success" size="sm" className="text-emerald-600" />}<AppIcon name="product" size="sm" />Sticker</span>
-                </Button>
+        <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+            {/* Nhóm chọn chế độ in — Chuẩn 100% theo Hình 1 / Report BI */}
+            <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
+                {stickerTabs.map((tab, idx) => (
+                    <Button
+                        variant="unstyled"
+                        size="none"
+                        key={tab.id}
+                        onClick={tab.onClick}
+                        className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getModeColorClasses(tab.color, tab.isActive)}`}
+                        title={tab.label}
+                    >
+                        <AppIcon name={tab.icon} size="md" />
+                        <span>{tab.label}</span>
+                    </Button>
+                ))}
             </div>
 
+            {/* Nhóm điều chỉnh cỡ chữ (khi ở chế độ tem/phiếu) — Nền trắng đồng bộ */}
             {stickerMode === 'sticker' && (
-                <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
-                    <span className="text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400 whitespace-nowrap">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {stickerType === 'draw' ? `${getDrawActiveFieldLabel()}:` : `${getActiveFieldLabel()}:`}
                     </span>
-                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-xs h-[22px] lg:h-[24px]">
+                    <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full h-7">
                         <Button
                             variant="unstyled"
                             size="none"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onDecreaseFontSize}
-                            className="h-full w-5 lg:w-5.5 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black rounded-l-full transition-colors text-xs"
+                            className="h-full w-7 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-black rounded-l-full transition-colors text-sm"
                             title="Giảm size"
                         >
                             -
                         </Button>
-                        <span className="px-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 min-w-5 lg:min-w-6 text-center">
+                        <span className="px-1.5 text-sm font-bold text-slate-700 dark:text-slate-300 min-w-7 text-center tabular-nums">
                             {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
                         </span>
                         <Button
@@ -179,7 +160,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                             size="none"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onIncreaseFontSize}
-                            className="h-full w-5 lg:w-5.5 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black rounded-r-full transition-colors text-xs"
+                            className="h-full w-7 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 font-black rounded-r-full transition-colors text-sm"
                             title="Tăng size"
                         >
                             +
@@ -187,7 +168,9 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* Cụm công cụ hệ thống chuẩn (Font chữ + Chuông thông báo) */}
+            <HeaderSystemGroup />
         </div>,
         portalTarget
     );

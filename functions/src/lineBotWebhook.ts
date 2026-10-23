@@ -343,7 +343,7 @@ async function cleanupExpiredCoupons(uid: string): Promise<{ deleted: number; pr
     try {
         const todayVN = getVietnamTodayString();
         const colRef = db.collection('line_bots').doc(uid).collection('coupons');
-        const snap = await colRef.where('status', '==', 'UNUSED').get();
+        const snap = await colRef.get();
         if (snap.empty) return { deleted: 0, products: [] };
 
         const expiredDocs: FirebaseFirestore.QueryDocumentSnapshot[] = [];

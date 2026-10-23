@@ -7,7 +7,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import { Textarea } from '../../../components/shared/ui/Textarea';
 import { Input } from '../../../components/shared/ui/Input';
 import { Coupon, ParsedImportItem } from '../types/lineBot.types';
-import { parsePastedCouponList, extractProductSyntax, extractLatestDateFromText, getVietnamTodayString } from '../services/couponParser';
+import { parsePastedCouponList, extractProductSyntax, extractLatestDateFromText, getVietnamTodayString, isDateExpired } from '../services/couponParser';
 import { downloadCouponSampleTemplate, readCouponExcelFile } from '../services/couponTemplateService';
 import { CouponBatchEditModal, ImportBatchData } from './CouponBatchEditModal';
 
@@ -127,9 +127,10 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         return Array.from(map.values());
     }, [parsedItems]);
 
-    // Bóc tách và nhóm các đợt nạp từ kho coupons hiện tại
+    // Bóc tách và nhóm các đợt nạp từ kho coupons hiện tại (PMH HẾT HẠN SẼ TỰ ĐỘNG XOÁ KHỎI KHO)
     const importBatches = useMemo(() => {
         if (!coupons || coupons.length === 0) return [];
+        const todayVN = getVietnamTodayString();
 
         const map = new Map<string, {
             batchKey: string;
@@ -138,6 +139,11 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         }>();
 
         for (const c of coupons) {
+            // Tự động bỏ qua mã đã hết hạn sử dụng khỏi các đợt nạp trong kho
+            if (c.expiryDate && isDateExpired(c.expiryDate, todayVN)) {
+                continue;
+            }
+
             // Nhóm theo importBatchId nếu có, hoặc theo createdAt cắt đến phút
             let key = c.importBatchId;
             if (!key) {
@@ -156,6 +162,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         const batches: ImportBatch[] = [];
         for (const [key, val] of map.entries()) {
             const batchCoupons = val.coupons;
+            if (batchCoupons.length === 0) continue;
             const total = batchCoupons.length;
             let unused = 0;
             let sent = 0;
@@ -180,6 +187,11 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                 if (!expDate && c.expiryDate) {
                     expDate = c.expiryDate;
                 }
+            }
+
+            // Nếu đợt nạp này đã hết hạn sử dụng -> Tự động không hiển thị trong kho
+            if (expDate && isDateExpired(expDate, todayVN)) {
+                continue;
             }
 
             const productSummary = Array.from(productCounts.entries())
