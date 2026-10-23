@@ -21,6 +21,7 @@ export interface ProductConfig {
     childToParentMap: { [key: string]: string };
     childToSubgroupMap: { [key: string]: string };
     quantityMultiplierMap: { [productCode: string]: number };
+    revenueMultiplierMap?: { [productCode: string]: number };
     vasMultiplierMap?: { [productCode: string]: number };
     vasNameMultiplierMap?: { [productName: string]: number };
     revenueEligibleHTX?: Set<string>;
@@ -36,6 +37,9 @@ export interface ProductCodeConfigItem {
     maSanPham: string;
     tenSanPham: string;
     heSo: number;
+    heSoSoLuong?: number;
+    heSoDoanhThu?: number;
+    loaiHeSo?: 'so_luong' | 'doanh_thu' | 'ca_hai';
     loai?: string;
     nhom?: string;
     sheetSource?: string;

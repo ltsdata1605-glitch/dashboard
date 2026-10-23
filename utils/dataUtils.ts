@@ -258,6 +258,12 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
 }
 
 function computeHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productConfig: ProductConfig | null, productName?: string, productCode?: string): number {
+    // 0. Nếu mã sản phẩm có cấu hình hệ số doanh thu riêng
+    const trimmedCode = String(productCode || '').trim();
+    if (trimmedCode && productConfig?.revenueMultiplierMap?.[trimmedCode] !== undefined) {
+        return productConfig.revenueMultiplierMap[trimmedCode];
+    }
+
     const trimmedNhomHang = String(maNhomHang || '').trim();
 
     // 1. Kiểm tra cấu hình hệ số theo nhóm hàng từ bảng Khai báo ngành hàng (originalCategoryItems)
@@ -1068,8 +1074,8 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     const productName = getRowValue(row, COL.PRODUCT);
     const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
     
-    // 1. Hệ số Doanh Thu Quy Đổi (DTQĐ): lấy theo ngành hàng / nhóm hàng (KHÔNG dùng hệ số mã sản phẩm)
-    const hesoDT = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+    // 1. Hệ số Doanh Thu Quy Đổi (DTQĐ): ưu tiên mã sản phẩm (nếu có cấu hình hệ số DT), hoặc ngành hàng / nhóm hàng
+    const hesoDT = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
     
     // Gọi thẳng getHinhThucThanhToan() thay vì tự viết lại logic phân loại
     const isTraCham = getHinhThucThanhToan(row, productConfig) === 'tra_gop';

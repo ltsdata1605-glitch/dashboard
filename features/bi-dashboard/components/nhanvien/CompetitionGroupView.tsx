@@ -61,7 +61,14 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
         });
     };
 
-    const getSortIcon = (_key: SortKey) => null;
+    const getSortIcon = (key: SortKey) => {
+        if (sortConfig.key !== key) return null;
+        return (
+            <span className="ml-1 text-[10px] text-sky-600 dark:text-sky-400 font-bold">
+                {sortConfig.direction === 'asc' ? '▲' : '▼'}
+            </span>
+        );
+    };
     
     const { showExportOptions } = useExportOptionsContext();
 
@@ -78,35 +85,95 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
             const blob = await exportElementAsImage(originalCard, filename, {
                 mode: 'blob-only',
                 elementsToHide: ['.export-button-component'],
+                isCompactTable: true,
                 onCloneReady: (clone: HTMLElement) => {
-                    clone.classList.remove('h-full', 'overflow-hidden');
-                    clone.style.width = 'max-content';
-                    clone.style.minWidth = '100%';
-                    clone.style.maxWidth = 'none';
-                    clone.style.overflow = 'visible';
-                    clone.style.display = 'inline-flex';
-                    clone.style.flexDirection = 'column';
+                    clone.classList.remove('h-full');
+                    clone.style.setProperty('width', 'max-content', 'important');
+                    clone.style.setProperty('min-width', '100%', 'important');
+                    clone.style.setProperty('max-width', 'none', 'important');
+                    clone.style.setProperty('border-radius', '16px', 'important');
+                    clone.style.setProperty('overflow', 'hidden', 'important');
+                    clone.style.setProperty('display', 'flex', 'important');
+                    clone.style.setProperty('flex-direction', 'column', 'important');
+                    clone.style.setProperty('align-items', 'stretch', 'important');
 
-                    // Đảm bảo title bar luôn phủ kín 100% chiều rộng card
+                    // Đảm bảo title bar luôn phủ kín 100% chiều rộng card và tiêu đề canh giữa tuyệt đối
                     const titleBar = clone.firstElementChild as HTMLElement;
                     if (titleBar) {
-                        titleBar.style.width = '100%';
-                        titleBar.style.minWidth = '100%';
-                        titleBar.style.boxSizing = 'border-box';
+                        titleBar.style.setProperty('width', '100%', 'important');
+                        titleBar.style.setProperty('min-width', '100%', 'important');
+                        titleBar.style.setProperty('max-width', 'none', 'important');
+                        titleBar.style.setProperty('box-sizing', 'border-box', 'important');
+                        titleBar.style.setProperty('text-align', 'center', 'important');
+                        titleBar.style.setProperty('padding-top', '10px', 'important');
+                        titleBar.style.setProperty('padding-bottom', '10px', 'important');
+                        titleBar.style.setProperty('padding-left', '16px', 'important');
+                        titleBar.style.setProperty('padding-right', '16px', 'important');
+                        titleBar.style.setProperty('border-top-left-radius', '15px', 'important');
+                        titleBar.style.setProperty('border-top-right-radius', '15px', 'important');
+                        titleBar.querySelectorAll('.export-button-component').forEach(b => b.remove());
+                        const innerDiv = titleBar.firstElementChild as HTMLElement;
+                        if (innerDiv) {
+                            innerDiv.style.setProperty('width', '100%', 'important');
+                            innerDiv.style.setProperty('min-width', '100%', 'important');
+                            innerDiv.style.setProperty('justify-content', 'center', 'important');
+                        }
+                        const h4 = titleBar.querySelector('h4');
+                        if (h4) {
+                            h4.style.setProperty('width', '100%', 'important');
+                            h4.style.setProperty('text-align', 'center', 'important');
+                            h4.style.setProperty('margin', '0 auto', 'important');
+                            h4.style.setProperty('padding', '0', 'important');
+                            h4.style.setProperty('display', 'block', 'important');
+                        }
                     }
 
                     // Xoá colgroup nếu còn và đặt table tự căn theo nội dung
                     clone.querySelectorAll('colgroup').forEach(cg => cg.remove());
                     const table = clone.querySelector('table');
                     if (table) {
-                        table.style.width = '100%';
-                        table.style.minWidth = '100%';
-                        table.style.tableLayout = 'auto';
+                        table.style.setProperty('width', '100%', 'important');
+                        table.style.setProperty('min-width', '100%', 'important');
+                        table.style.setProperty('table-layout', 'auto', 'important');
                     }
                     clone.querySelectorAll('tr').forEach(tr => {
                         tr.style.borderLeft = 'none';
                         tr.classList.remove('border-l-[3px]');
                     });
+
+                    // Đồng bộ độ rộng dòng nhỏ gọn như bảng doanh thu nhân viên (py-[3px])
+                    clone.querySelectorAll('td').forEach(td => {
+                        (td as HTMLElement).style.setProperty('padding-top', '3px', 'important');
+                        (td as HTMLElement).style.setProperty('padding-bottom', '3px', 'important');
+                        (td as HTMLElement).style.setProperty('line-height', '1.25', 'important');
+                    });
+                    // Thêm padding cho header như người dùng yêu cầu
+                    clone.querySelectorAll('th').forEach(th => {
+                        (th as HTMLElement).style.setProperty('padding-top', '7px', 'important');
+                        (th as HTMLElement).style.setProperty('padding-bottom', '7px', 'important');
+                        (th as HTMLElement).style.setProperty('line-height', '1.3', 'important');
+                    });
+
+                    // Giữ nguyên các đường kẻ dọc xám mờ phân tách giữa các cột khi xuất ảnh
+                    clone.querySelectorAll('td:not(:last-child)').forEach(td => {
+                        (td as HTMLElement).style.setProperty('border-right', '1px solid rgba(226, 232, 240, 0.8)', 'important');
+                    });
+                    clone.querySelectorAll('th:not(:last-child)').forEach(th => {
+                        (th as HTMLElement).style.setProperty('border-right', '1px solid rgba(226, 232, 240, 0.9)', 'important');
+                    });
+                },
+                onBeforeCapture: (clone: HTMLElement) => {
+                    // Ngay trước khi capture, đảm bảo titleBar phủ kín 100% bề rộng clone
+                    const titleBar = clone.firstElementChild as HTMLElement;
+                    if (titleBar) {
+                        titleBar.style.setProperty('width', '100%', 'important');
+                        titleBar.style.setProperty('min-width', '100%', 'important');
+                        titleBar.style.setProperty('box-sizing', 'border-box', 'important');
+                        titleBar.style.setProperty('border-top-left-radius', '15px', 'important');
+                        titleBar.style.setProperty('border-top-right-radius', '15px', 'important');
+                    }
+                    clone.style.setProperty('border-radius', '16px', 'important');
+                    clone.style.setProperty('overflow', 'hidden', 'important');
                 }
             });
             if (blob) showExportOptions(blob, filename);
@@ -155,14 +222,19 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
         [sortedEmployeesForCard, employeeDataMap, employeeCompetitionTargets, header]
     );
 
-    // Top 3 color: green for T.HIỆN
-    const getTopActualStyle = (rank: number) => {
-        if (rank >= 1 && rank <= 3) return { color: 'var(--color-emerald-700)' } as React.CSSProperties;
-        return null;
+    const renderEmployeeName = (name: string) => {
+        const match = name.match(/^(\d+)\s*[-–]\s*(.+)$/);
+        if (match) {
+            return (
+                <div className="flex items-center gap-1 min-w-0 leading-none">
+                    <span className="text-slate-600 dark:text-slate-300 font-mono text-[11px] shrink-0 font-medium leading-none">{match[1]}</span>
+                    <span className="text-slate-300 dark:text-slate-600 text-[10px] leading-none">·</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-semibold text-[12px] truncate leading-none">{match[2]}</span>
+                </div>
+            );
+        }
+        return <span className="truncate font-semibold text-[12px] text-slate-900 dark:text-slate-100 leading-none">{name}</span>;
     };
-
-    // Global row counter for zebra striping
-    let globalRowIndex = 0;
 
     const renderEmployeeRow = (employee: Employee, _index: number) => {
         const rawTarget = resolveEmployeeTarget(employeeCompetitionTargets, header.originalTitle, employee.originalName);
@@ -170,36 +242,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
         const actual = employeeDataMap.get(employee.name)?.values[header.title] ?? 0;
         const completion = target > 0 ? (actual / target) * 100 : 0;
         const remaining = actual - target;
-        const remainingColor = remaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
 
         const completionVal = roundUp(completion);
-
-        // %HT coloring: TOP 1-3 green, between budget and top3 yellow, below budget red
-        const completionRank = rankedByCompletion.get(employee.originalName) ?? -1;
-        let percentClass = 'font-bold';
-        let percentInlineStyle: React.CSSProperties = {};
-        if (completionRank >= 1 && completionRank <= 3) {
-            percentInlineStyle = { color: 'var(--color-emerald-700)' };
-        } else if (completionVal > 0 && completionVal < timeProgress.percentage) {
-            percentInlineStyle = { color: 'var(--color-rose-700)' };
-        } else if (completionVal >= timeProgress.percentage) {
-            percentInlineStyle = { color: 'var(--color-amber-700)' };
-        } else {
-            percentClass = 'text-slate-700 dark:text-slate-300 font-bold';
-        }
-
-        // T.HIỆN coloring: TOP 1-3 green, below average red
-        const actualRank = rankedByActual.get(employee.originalName) ?? -1;
-        const topActualStyle = getTopActualStyle(actualRank);
-        let actualClass = 'font-bold';
-        let actualInlineStyle: React.CSSProperties = {};
-        if (topActualStyle) {
-            actualInlineStyle = topActualStyle;
-        } else if (actual > 0 && actual < averageActual) {
-            actualClass = 'text-rose-700 font-bold';
-        } else {
-            actualClass = 'text-slate-700 dark:text-slate-300 font-bold';
-        }
 
         const getHighlightClass = (): string => {
             if (!highlightColorMap) return '';
@@ -217,42 +261,88 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
         const highlightClass = getHighlightClass();
         const isHighlighted = !!highlightClass;
 
-        // When highlighted, clear conditional colors so highlight style shines through
-        if (isHighlighted) {
-            percentClass = 'font-black text-slate-900 dark:text-white';
-            percentInlineStyle = {};
-            actualClass = 'font-black text-slate-900 dark:text-white';
-            actualInlineStyle = {};
+        const rank = globalRankMap.get(employee.originalName) || (_index + 1);
+
+        // Actual (T.HIỆN) styling
+        const actualRank = rankedByActual.get(employee.originalName) ?? -1;
+        let actualElement: React.ReactNode = null;
+        if (!actual || actual === 0) {
+            actualElement = <span className="text-slate-400 dark:text-slate-500 font-medium">-</span>;
+        } else if (actualRank >= 1 && actualRank <= 3) {
+            actualElement = <span className="font-bold text-[12px] text-emerald-600 dark:text-emerald-400 tabular-nums">{formatter.format(roundUp(actual))}</span>;
+        } else if (actual < averageActual) {
+            actualElement = <span className="font-bold text-[12px] text-rose-600 dark:text-rose-400 tabular-nums">{formatter.format(roundUp(actual))}</span>;
+        } else {
+            actualElement = <span className="font-bold text-[12px] text-slate-800 dark:text-slate-200 tabular-nums">{formatter.format(roundUp(actual))}</span>;
         }
 
-        // Zebra striping
-        const isEven = globalRowIndex % 2 === 0;
-        globalRowIndex++;
+        // %HT styling — chữ số thanh thoát không khung viền
+        const completionRank = rankedByCompletion.get(employee.originalName) ?? -1;
+        let percentElement: React.ReactNode = null;
+        if (!actual || actual === 0) {
+            percentElement = <span className="text-slate-400 dark:text-slate-500 font-medium text-[11px]">-</span>;
+        } else if (completionRank >= 1 && completionRank <= 3) {
+            percentElement = (
+                <span className="font-bold text-[11px] text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    {completionVal.toFixed(0)}%
+                </span>
+            );
+        } else if (completionVal >= timeProgress.percentage) {
+            percentElement = (
+                <span className="font-bold text-[11px] text-amber-600 dark:text-amber-400 tabular-nums">
+                    {completionVal.toFixed(0)}%
+                </span>
+            );
+        } else {
+            percentElement = (
+                <span className="font-bold text-[11px] text-rose-600 dark:text-rose-400 tabular-nums">
+                    {completionVal.toFixed(0)}%
+                </span>
+            );
+        }
 
-        const rank = globalRankMap.get(employee.originalName) || (_index + 1);
+        // Remaining (C.LẠI) styling
+        let remainingElement: React.ReactNode = null;
+        if (remaining >= 0) {
+            remainingElement = (
+                <span className="font-bold text-[11px] text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    {remaining > 0 ? `+${formatter.format(roundUp(remaining))}` : '0'}
+                </span>
+            );
+        } else {
+            remainingElement = (
+                <span className="font-semibold text-[11px] text-rose-600 dark:text-rose-400 tabular-nums">
+                    {formatter.format(roundUp(remaining))}
+                </span>
+            );
+        }
 
         return (
             <tr key={employee.originalName}
                 className={`${isHighlighted
-                    ? `${highlightClass} font-bold ring-1 ring-inset ring-sky-300/80 dark:ring-sky-600/60 shadow-2xs`
-                    : `hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`
+                    ? `${highlightClass} font-bold ring-1 ring-inset ring-sky-400/80 dark:ring-sky-500/80 bg-sky-50/70 dark:bg-sky-950/40 shadow-xs`
+                    : `hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors`
                 }
-                border-b border-slate-100 dark:border-slate-700`}>
-                <td className={`px-2 py-0.5 sm:py-1 whitespace-nowrap text-[11px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50 min-w-[170px]`} style={isHighlighted ? { color: '#0369a1', fontWeight: 800 } : { color: 'var(--color-sky-600)' }}>
+                text-[12px] leading-tight border-b border-slate-100 dark:border-slate-800/80 group`}>
+                <td className="px-2.5 py-[3px] whitespace-nowrap text-left leading-tight min-w-[170px] border-r border-slate-100 dark:border-slate-800/60">
                     <div className="flex items-center gap-1.5 min-w-0">
-                        <MedalBadge rank={rank} className="w-6 text-center text-[11px] font-normal tabular-nums" />
+                        <MedalBadge rank={rank} />
                         <AvatarDisplay employeeName={employee.originalName} supermarketName={supermarketName} />
-                        <span className="truncate font-bold">{employee.name}</span>
+                        {renderEmployeeName(employee.name)}
                     </div>
                 </td>
-                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>{formatTargetDisplay(target, header.metric)}</td>
-                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
-                    {(!actual || actual === 0) ? '-' : formatter.format(roundUp(actual))}
+                <td className="w-[1%] px-2 py-[3px] text-center whitespace-nowrap tabular-nums text-slate-500 dark:text-slate-400 font-medium text-[11px] border-r border-slate-100 dark:border-slate-800/60">
+                    {formatTargetDisplay(target, header.metric)}
                 </td>
-                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${percentClass}`} style={percentInlineStyle}>
-                    {(!actual || actual === 0) ? '-' : `${roundUp(completion).toFixed(0)}%`}
+                <td className="w-[1%] px-2 py-[3px] text-center whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-800/60">
+                    {actualElement}
                 </td>
-                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? 'text-slate-900 dark:text-white' : remainingColor}`}>{formatter.format(roundUp(remaining))}</td>
+                <td className="w-[1%] px-2 py-[3px] text-center whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-800/60">
+                    {percentElement}
+                </td>
+                <td className="w-[1%] px-2 py-[3px] text-center whitespace-nowrap tabular-nums">
+                    {remainingElement}
+                </td>
             </tr>
         );
     };
@@ -260,20 +350,21 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
     return (
         <div 
             ref={cardRef} 
-            className="competition-group-card cv-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
+            className="competition-group-card cv-auto bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)] hover:shadow-md transition-all flex flex-col h-full overflow-hidden"
         >
-            {/* Title bar — solid blue background with generous padding for clear separation */}
-            <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-2.5 sm:py-3 border-b-2 border-sky-500/50 dark:border-sky-600/60 overflow-hidden">
-                <div className="flex justify-center items-center relative min-w-0 w-full">
-                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center truncate whitespace-nowrap px-8 leading-snug tracking-wider drop-shadow-xs min-w-0 w-full" title={header.originalTitle}>
+            {/* Title bar — Apple Modern Header */}
+            <div className="bg-gradient-to-r from-sky-600 via-sky-600 to-indigo-600 text-white px-4 py-2.5 sm:py-3 border-b border-sky-500/30 relative overflow-hidden shadow-xs before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/20">
+                <div className="relative min-w-0 w-full flex items-center justify-center">
+                    <h4 className="text-[13px] sm:text-[14px] font-bold uppercase text-white text-center truncate whitespace-nowrap px-10 leading-snug tracking-wider drop-shadow-2xs" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2">
+
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center justify-end">
                         <Button
                             type="button"
                             variant="unstyled" size="none"
                             onClick={handleExportPNG}
-                            className="export-button-component p-1.5 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                            className="export-button-component w-8 h-8 lg:w-9 lg:h-9 flex items-center justify-center text-white/80 hover:text-white active:scale-90 transition-all ycx-hit"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <AppIcon name="exportImage" size="md" />
@@ -281,30 +372,39 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                     </div>
                 </div>
             </div>
-            {/* Table — Thưởng design */}
+            {/* Table — Apple Style Design */}
             <div className="flex-1">
                 <table className="table-pin-first w-full border-collapse">
                     <thead>
-                        <tr className="text-[11px] font-black uppercase tracking-wider bg-sky-600 dark:bg-sky-700 text-white">
-                            <th className="text-left px-3 py-2 sm:py-2.5 border-b border-r border-sky-500/40 text-white min-w-[170px]">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-start w-full group text-white hover:text-sky-100 py-0.5">NHÂN VIÊN{getSortIcon('name')}</Button>
+                        <tr className="text-[11px] font-black uppercase tracking-wider bg-gradient-to-b from-slate-100 to-slate-200/90 dark:from-slate-800 dark:to-slate-850 text-slate-700 dark:text-slate-200 border-b-2 border-slate-300 dark:border-slate-700 shadow-2xs">
+                            <th className={`text-left px-3 py-2 sm:py-2.5 min-w-[170px] border-r border-slate-300/80 dark:border-slate-700 ${sortConfig.key === 'name' ? 'bg-sky-100/70 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300' : ''}`}>
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className={`font-black uppercase tracking-wider flex items-center justify-start w-full group transition-colors ${sortConfig.key === 'name' ? 'text-sky-700 dark:text-sky-300' : 'text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400'}`}>
+                                    NHÂN VIÊN{getSortIcon('name')}
+                                </Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">M.TIÊU{getSortIcon('target')}</Button>
+                            <th className={`w-[1%] text-center px-2.5 py-2 sm:py-2.5 whitespace-nowrap border-r border-slate-300/80 dark:border-slate-700 ${sortConfig.key === 'target' ? 'bg-sky-100/70 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300' : ''}`}>
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className={`font-black uppercase tracking-wider flex items-center justify-center w-full group transition-colors ${sortConfig.key === 'target' ? 'text-sky-700 dark:text-sky-300' : 'text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400'}`}>
+                                    M.TIÊU{getSortIcon('target')}
+                                </Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">T.HIỆN{getSortIcon('actual')}</Button>
+                            <th className={`w-[1%] text-center px-2.5 py-2 sm:py-2.5 whitespace-nowrap border-r border-slate-300/80 dark:border-slate-700 ${sortConfig.key === 'actual' ? 'bg-sky-100/70 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300' : ''}`}>
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className={`font-black uppercase tracking-wider flex items-center justify-center w-full group transition-colors ${sortConfig.key === 'actual' ? 'text-sky-700 dark:text-sky-300' : 'text-slate-800 dark:text-slate-100 hover:text-sky-600 dark:hover:text-sky-400'}`}>
+                                    T.HIỆN{getSortIcon('actual')}
+                                </Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">%HT{getSortIcon('completion')}</Button>
+                            <th className={`w-[1%] text-center px-2.5 py-2 sm:py-2.5 whitespace-nowrap border-r border-slate-300/80 dark:border-slate-700 ${sortConfig.key === 'completion' ? 'bg-sky-100/70 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300' : ''}`}>
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className={`font-black uppercase tracking-wider flex items-center justify-center w-full group transition-colors ${sortConfig.key === 'completion' ? 'text-sky-700 dark:text-sky-300' : 'text-slate-800 dark:text-slate-100 hover:text-sky-600 dark:hover:text-sky-400'}`}>
+                                    %HT{getSortIcon('completion')}
+                                </Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">C.LẠI{getSortIcon('remaining')}</Button>
+                            <th className={`w-[1%] text-center px-2.5 py-2 sm:py-2.5 whitespace-nowrap ${sortConfig.key === 'remaining' ? 'bg-sky-100/70 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300' : ''}`}>
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className={`font-black uppercase tracking-wider flex items-center justify-center w-full group transition-colors ${sortConfig.key === 'remaining' ? 'text-sky-700 dark:text-sky-300' : 'text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400'}`}>
+                                    C.LẠI{getSortIcon('remaining')}
+                                </Button>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {(() => { globalRowIndex = 0; return null; })()}
                         {departmentNames.map(deptName => {
                             const employeesInDept = employeesByDept[deptName];
 
@@ -318,23 +418,26 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                                 const totalRemaining = totalActual - totalTarget;
                                 const totalCompletion = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
 
-                                
                                 return (
                                     <React.Fragment key={deptName}>
-                                        <tr className="bg-slate-50/80 dark:bg-slate-800/40">
-                                            <td colSpan={5} className="px-2 py-1.5 font-black text-slate-500 dark:text-slate-400 text-left uppercase text-[11px] tracking-wider border-b border-slate-100 dark:border-slate-800">
+                                        <tr className="bg-slate-100/70 dark:bg-slate-800/60">
+                                            <td colSpan={5} className="px-2.5 py-1 font-bold text-slate-600 dark:text-slate-300 text-left uppercase text-[11px] tracking-wider border-b border-slate-200/60 dark:border-slate-700/60">
                                                 {deptName}
                                             </td>
                                         </tr>
                                         {employeesInDept.map((employee, index) => renderEmployeeRow(employee, index))}
                                         {/* Dept total — emerald style */}
                                         {departmentNames.length > 1 && (
-                                            <tr className="bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-400 border-t-2 border-emerald-200 dark:border-emerald-800">
-                                                <td className="px-2 py-0.5 sm:py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
-                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
-                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
-                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
-                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalRemaining))}</td>
+                                            <tr className="bg-emerald-50/70 dark:bg-emerald-950/30 font-bold text-emerald-800 dark:text-emerald-300 border-t border-emerald-200 dark:border-emerald-800/60">
+                                                <td className="px-2.5 py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200/70 dark:border-emerald-800/60">Tổng {deptName}</td>
+                                                <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap tabular-nums text-slate-600 dark:text-slate-300 font-semibold border-r border-emerald-200/70 dark:border-emerald-800/60">{formatter.format(roundUp(totalTarget))}</td>
+                                                <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap tabular-nums text-slate-900 dark:text-white font-bold border-r border-emerald-200/70 dark:border-emerald-800/60">{formatter.format(roundUp(totalActual))}</td>
+                                                <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap tabular-nums font-bold text-emerald-700 dark:text-emerald-300 border-r border-emerald-200/70 dark:border-emerald-800/60">
+                                                    {roundUp(totalCompletion).toFixed(0)}%
+                                                </td>
+                                                <td className={`w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap tabular-nums font-bold ${totalRemaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                                                    {totalRemaining > 0 ? `+${formatter.format(roundUp(totalRemaining))}` : formatter.format(roundUp(totalRemaining))}
+                                                </td>
                                             </tr>
                                         )}
                                     </React.Fragment>
@@ -347,13 +450,27 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                                 );
                             }
                         })}
-                        {/* Grand Total — solid blue matching Image 3 */}
-                        <tr className="bg-sky-600 dark:bg-sky-700 font-black text-white border-t-2 border-sky-700">
-                             <td className="px-2 py-1 text-center uppercase text-[11px] tracking-wider border-r border-sky-500/40 text-white">TỔNG</td>
-                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalTarget))}</td>
-                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalActual))}</td>
-                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
-                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap tabular-nums text-white border-r border-sky-500/40">{formatter.format(roundUp(grandTotalRemaining))}</td>
+                        {/* Grand Total — Apple Executive Bar */}
+                        <tr className="bg-gradient-to-r from-sky-50 via-slate-50 to-sky-50 dark:from-sky-950/60 dark:via-slate-850 dark:to-sky-950/60 border-t-2 border-sky-400 dark:border-sky-500 shadow-2xs">
+                             <td className="px-2.5 py-1.5 text-center border-r border-sky-200/80 dark:border-sky-800/60">
+                                 <span className="font-black uppercase tracking-wider text-[12px] text-slate-900 dark:text-white">
+                                     TỔNG
+                                 </span>
+                             </td>
+                             <td className="w-[1%] px-2 py-1.5 text-center text-[12px] whitespace-nowrap tabular-nums font-black text-slate-800 dark:text-slate-100 border-r border-sky-200/80 dark:border-sky-800/60">
+                                 {formatter.format(roundUp(grandTotalTarget))}
+                             </td>
+                             <td className="w-[1%] px-2 py-1.5 text-center text-[13px] whitespace-nowrap tabular-nums font-black text-slate-950 dark:text-white border-r border-sky-200/80 dark:border-sky-800/60">
+                                 {formatter.format(roundUp(grandTotalActual))}
+                             </td>
+                             <td className="w-[1%] px-2 py-1.5 text-center text-[13px] whitespace-nowrap tabular-nums font-black border-r border-sky-200/80 dark:border-sky-800/60">
+                                 <span className="inline-block px-1.5 py-0.5 rounded bg-sky-100/90 dark:bg-sky-900/60 text-sky-800 dark:text-sky-200 font-black">
+                                     {roundUp(grandTotalCompletion).toFixed(0)}%
+                                 </span>
+                             </td>
+                             <td className={`w-[1%] px-2 py-1.5 text-center text-[12.5px] whitespace-nowrap tabular-nums font-black ${grandTotalRemaining >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                                 {grandTotalRemaining > 0 ? `+${formatter.format(roundUp(grandTotalRemaining))}` : formatter.format(roundUp(grandTotalRemaining))}
+                             </td>
                         </tr>
                     </tbody>
                 </table>

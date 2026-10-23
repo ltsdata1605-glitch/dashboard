@@ -13,10 +13,12 @@ import {
     parseExcelProductCodeConfigFile,
     exportProductConfigToExcel,
     exportProductCodeConfigToExcel,
+    exportCategoryConfigTemplateToExcel,
     computeConfigSummary,
 } from '../services/firebaseProductConfigService';
 import { ConfigTable } from './ConfigTable';
 import { ProductCodeConfigTable } from './ProductCodeConfigTable';
+import { ProductConfigTemplateHub } from './ProductConfigTemplateHub';
 import type { CategoryTableItem, ProductCodeTableItem, ProductConfigSummary } from '../types';
 import * as dbService from '../../../services/dbService';
 
@@ -26,7 +28,7 @@ export const ProductConfigManagerTab: React.FC = () => {
     const laDienThoai = useIsSheetWidth();
     const [config, setConfig] = useState<ProductConfig | null>(null);
     const [summary, setSummary] = useState<ProductConfigSummary | null>(null);
-    const [configType, setConfigType] = useState<'category' | 'productCode'>('category');
+    const [configType, setConfigType] = useState<'category' | 'productCode' | 'template'>('category');
     const [updatedAt, setUpdatedAt] = useState<string | undefined>(undefined);
     const [updatedBy, setUpdatedBy] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(true);
@@ -126,6 +128,9 @@ export const ProductConfigManagerTab: React.FC = () => {
             maSanPham: item.maSanPham,
             tenSanPham: item.tenSanPham,
             heSo: item.heSo,
+            heSoSoLuong: item.heSoSoLuong,
+            heSoDoanhThu: item.heSoDoanhThu,
+            loaiHeSo: item.loaiHeSo,
             loai: item.loai,
             nhom: item.nhom,
             sheetSource: item.sheetSource,
@@ -147,12 +152,27 @@ export const ProductConfigManagerTab: React.FC = () => {
                     const existingMap = new Map((cfg.productCodeItems || []).map(item => [item.maSanPham, item]));
                     importedItems.forEach(item => {
                         existingMap.set(item.maSanPham, item);
-                        cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSo };
-                        if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
-                        cfg.vasMultiplierMap[item.maSanPham] = item.heSo;
-                        if (item.tenSanPham) {
-                            if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
-                            cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSo;
+                        if (item.heSoSoLuong !== undefined) {
+                            cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSoSoLuong };
+                            if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+                            cfg.vasMultiplierMap[item.maSanPham] = item.heSoSoLuong;
+                            if (item.tenSanPham) {
+                                if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
+                                cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSoSoLuong;
+                            }
+                        } else if (item.loaiHeSo !== 'doanh_thu') {
+                            cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSo };
+                            if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+                            cfg.vasMultiplierMap[item.maSanPham] = item.heSo;
+                            if (item.tenSanPham) {
+                                if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
+                                cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSo;
+                            }
+                        }
+                        if (item.heSoDoanhThu !== undefined) {
+                            cfg.revenueMultiplierMap = { ...(cfg.revenueMultiplierMap || {}), [item.maSanPham]: item.heSoDoanhThu };
+                        } else if (item.loaiHeSo === 'doanh_thu') {
+                            cfg.revenueMultiplierMap = { ...(cfg.revenueMultiplierMap || {}), [item.maSanPham]: item.heSo };
                         }
                     });
                     cfg.productCodeItems = Array.from(existingMap.values());
@@ -205,8 +225,18 @@ export const ProductConfigManagerTab: React.FC = () => {
         const toastId = toast.loading('Đang tạo file Excel...');
         try {
             if (configType === 'productCode') {
+                const isTemplate = !config.productCodeItems || config.productCodeItems.length === 0;
                 await exportProductCodeConfigToExcel(config.productCodeItems || []);
-                toast.success('Đã tải xuống file Excel cấu hình mã sản phẩm thành công!', { id: toastId });
+                toast.success(
+                    isTemplate
+                        ? 'Đã tải xuống file Excel mẫu (gồm 3 dòng mẫu: SL, DT, Cả hai)!'
+                        : 'Đã tải xuống file Excel cấu hình mã sản phẩm thành công!',
+                    { id: toastId }
+                );
+            } else if (configType === 'template') {
+                await exportCategoryConfigTemplateToExcel();
+                await exportProductCodeConfigToExcel([], { asTemplate: true });
+                toast.success('Đã tải xuống cả 2 file Excel mẫu (Ngành hàng & Mã sản phẩm)!', { id: toastId });
             } else {
                 await exportProductConfigToExcel(config);
                 toast.success('Đã tải xuống file Excel cấu hình ngành hàng thành công!', { id: toastId });
@@ -293,17 +323,37 @@ export const ProductConfigManagerTab: React.FC = () => {
                 maSanPham: item.maSanPham,
                 tenSanPham: item.tenSanPham,
                 heSo: item.heSo,
+                heSoSoLuong: item.heSoSoLuong,
+                heSoDoanhThu: item.heSoDoanhThu,
+                loaiHeSo: item.loaiHeSo,
                 loai: item.loai,
                 nhom: item.nhom,
                 sheetSource: item.sheetSource || 'Thủ công',
             });
             cfg.productCodeItems = list;
-            cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSo };
-            if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
-            cfg.vasMultiplierMap[item.maSanPham] = item.heSo;
-            if (item.tenSanPham) {
-                if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
-                cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSo;
+            
+            if (item.heSoSoLuong !== undefined) {
+                cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSoSoLuong };
+                if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+                cfg.vasMultiplierMap[item.maSanPham] = item.heSoSoLuong;
+                if (item.tenSanPham) {
+                    if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
+                    cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSoSoLuong;
+                }
+            } else if (item.loaiHeSo !== 'doanh_thu') {
+                cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSo };
+                if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+                cfg.vasMultiplierMap[item.maSanPham] = item.heSo;
+                if (item.tenSanPham) {
+                    if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
+                    cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSo;
+                }
+            }
+
+            if (item.heSoDoanhThu !== undefined) {
+                cfg.revenueMultiplierMap = { ...(cfg.revenueMultiplierMap || {}), [item.maSanPham]: item.heSoDoanhThu };
+            } else if (item.loaiHeSo === 'doanh_thu') {
+                cfg.revenueMultiplierMap = { ...(cfg.revenueMultiplierMap || {}), [item.maSanPham]: item.heSo };
             }
         });
         toast.success(`Đã thêm mã sản phẩm ${item.maSanPham}`);
@@ -315,13 +365,26 @@ export const ProductConfigManagerTab: React.FC = () => {
             cfg.productCodeItems = cfg.productCodeItems.map(item => {
                 if (item.maSanPham === maSanPham) {
                     const next = { ...item, ...updates };
-                    if (updates.heSo !== undefined) {
+                    
+                    if (updates.heSoSoLuong !== undefined) {
+                        cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [maSanPham]: updates.heSoSoLuong };
+                        if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+                        cfg.vasMultiplierMap[maSanPham] = updates.heSoSoLuong;
+                    } else if (updates.heSo !== undefined && next.loaiHeSo !== 'doanh_thu') {
                         cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [maSanPham]: updates.heSo };
                         if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
                         cfg.vasMultiplierMap[maSanPham] = updates.heSo;
                     }
-                    if (updates.tenSanPham !== undefined && cfg.vasNameMultiplierMap && updates.heSo !== undefined) {
-                        cfg.vasNameMultiplierMap[updates.tenSanPham] = updates.heSo;
+
+                    if (updates.heSoDoanhThu !== undefined) {
+                        cfg.revenueMultiplierMap = { ...(cfg.revenueMultiplierMap || {}), [maSanPham]: updates.heSoDoanhThu };
+                    } else if (updates.heSo !== undefined && next.loaiHeSo === 'doanh_thu') {
+                        cfg.revenueMultiplierMap = { ...(cfg.revenueMultiplierMap || {}), [maSanPham]: updates.heSo };
+                    }
+
+                    if (updates.tenSanPham !== undefined && cfg.vasNameMultiplierMap) {
+                        const targetHeSo = next.heSoSoLuong ?? next.heSo;
+                        cfg.vasNameMultiplierMap[updates.tenSanPham] = targetHeSo;
                     }
                     return next;
                 }
@@ -339,6 +402,10 @@ export const ProductConfigManagerTab: React.FC = () => {
             if (cfg.quantityMultiplierMap) {
                 const { [maSanPham]: _, ...rest } = cfg.quantityMultiplierMap;
                 cfg.quantityMultiplierMap = rest;
+            }
+            if (cfg.revenueMultiplierMap) {
+                const { [maSanPham]: _, ...rest } = cfg.revenueMultiplierMap;
+                cfg.revenueMultiplierMap = rest;
             }
             if (cfg.vasMultiplierMap) {
                 const { [maSanPham]: _, ...rest } = cfg.vasMultiplierMap;
@@ -428,6 +495,7 @@ export const ProductConfigManagerTab: React.FC = () => {
                     items={[
                         { id: 'category', label: laDienThoai ? 'Ngành hàng' : 'Khai báo ngành hàng', icon: 'table', badge: tableItems.length },
                         { id: 'productCode', label: laDienThoai ? 'Mã sản phẩm' : 'Cấu hình theo Mã sản phẩm', icon: 'template', badge: productCodeTableItems.length },
+                        { id: 'template', label: laDienThoai ? 'File mẫu' : 'Tải file mẫu', icon: 'download' },
                     ]}
                 />
 
@@ -441,7 +509,7 @@ export const ProductConfigManagerTab: React.FC = () => {
                         className="hidden"
                     />
 
-                    {isCanManage && (
+                    {isCanManage && configType !== 'template' && (
                         <Button
                             variant="tinted"
                             size="icon"
@@ -461,8 +529,24 @@ export const ProductConfigManagerTab: React.FC = () => {
                         type="button"
                         disabled={!config}
                         onClick={handleExportExcel}
-                        title={configType === 'category' ? 'Xuất Excel - Khai báo ngành hàng' : 'Xuất Excel - Cấu hình theo mã sản phẩm'}
-                        aria-label={configType === 'category' ? 'Xuất Excel - Khai báo ngành hàng' : 'Xuất Excel - Cấu hình theo mã sản phẩm'}
+                        title={
+                            configType === 'template'
+                                ? 'Tải cả 2 file mẫu Excel (Ngành hàng & Mã sản phẩm)'
+                                : configType === 'category'
+                                ? 'Xuất Excel - Khai báo ngành hàng'
+                                : (!config?.productCodeItems || config.productCodeItems.length === 0)
+                                    ? 'Tải file mẫu Excel (3 dòng mẫu: SL, DT, Cả hai)'
+                                    : 'Xuất Excel - Cấu hình theo mã sản phẩm'
+                        }
+                        aria-label={
+                            configType === 'template'
+                                ? 'Tải cả 2 file mẫu Excel (Ngành hàng & Mã sản phẩm)'
+                                : configType === 'category'
+                                ? 'Xuất Excel - Khai báo ngành hàng'
+                                : (!config?.productCodeItems || config.productCodeItems.length === 0)
+                                    ? 'Tải file mẫu Excel (3 dòng mẫu: SL, DT, Cả hai)'
+                                    : 'Xuất Excel - Cấu hình theo mã sản phẩm'
+                        }
                         className="w-8.5 h-8.5 shadow-2xs"
                     >
                         <AppIcon name="download" size="sm" />
@@ -495,13 +579,18 @@ export const ProductConfigManagerTab: React.FC = () => {
                     onUpdateItem={handleUpdateItem}
                     onDeleteItem={handleDeleteItem}
                 />
-            ) : (
+            ) : configType === 'productCode' ? (
                 <ProductCodeConfigTable
                     items={productCodeTableItems}
                     isEditable={isCanManage}
                     onAddItem={handleAddProductCodeItem}
                     onUpdateItem={handleUpdateProductCodeItem}
                     onDeleteItem={handleDeleteProductCodeItem}
+                />
+            ) : (
+                <ProductConfigTemplateHub
+                    onDownloadCategoryTemplate={exportCategoryConfigTemplateToExcel}
+                    onDownloadProductCodeTemplate={() => exportProductCodeConfigToExcel([], { asTemplate: true })}
                 />
             )}
         </div>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
-import HeaderSystemGroup from '../../../components/layout/HeaderSystemGroup';
+import { TopBarActions } from '../../../components/shared/ui/TopBarActions';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 
 interface StickerModeToolbarProps {
@@ -95,9 +94,6 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
         );
     }
 
-    const portalTarget = document.getElementById('global-header-actions');
-    if (!portalTarget) return null;
-
     const stickerTabs = [
         { id: 'gia_soc', label: 'Giá Sốc', icon: 'quick' as const, color: 'sky', onClick: onSelectGiaSoc, isActive: stickerMode === 'sticker' && stickerType === 'gia_soc' },
         { id: 'gio_vang', label: 'Giờ Vàng', icon: 'clock' as const, color: 'amber', onClick: onSelectGioVang, isActive: stickerMode === 'sticker' && stickerType === 'gio_vang' },
@@ -116,10 +112,10 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
         }
     };
 
-    return createPortal(
-        <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+    return (
+        <TopBarActions enabled={activeTab === 'tools-print-sticker'}>
             {/* Nhóm chọn chế độ in — Chuẩn 100% theo Hình 1 / Report BI */}
-            <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
+            <TopBarActions.Group>
                 {stickerTabs.map((tab, idx) => (
                     <Button
                         variant="unstyled"
@@ -133,7 +129,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                         <span>{tab.label}</span>
                     </Button>
                 ))}
-            </div>
+            </TopBarActions.Group>
 
             {/* Nhóm điều chỉnh cỡ chữ (khi ở chế độ tem/phiếu) — Nền trắng đồng bộ */}
             {stickerMode === 'sticker' && (
@@ -168,10 +164,6 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     </div>
                 </div>
             )}
-
-            {/* Cụm công cụ hệ thống chuẩn (Font chữ + Chuông thông báo) */}
-            <HeaderSystemGroup />
-        </div>,
-        portalTarget
+        </TopBarActions>
     );
 };

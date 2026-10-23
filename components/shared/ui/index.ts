@@ -33,6 +33,8 @@ export { ActionMenu } from './ActionMenu';
 export type { ActionMenuItem, ActionMenuProps } from './ActionMenu';
 export { CapsuleBar } from './CapsuleBar';
 export type { CapsuleBarProps, CapsuleItem } from './CapsuleBar';
+export { TopBarActions, TopBarGroup, TopBarButton, TopBarLink, TopBarDivider } from './TopBarActions';
+export type { TopBarActionsProps, TopBarGroupProps, TopBarButtonProps, TopBarLinkProps } from './TopBarActions';
 export { PageActionsProvider, usePageActions, useCurrentPageActions } from './PageActions';
 export type { PageActionsConfig, PagePrimaryAction } from './PageActions';
 export { usePresence } from './usePresence';

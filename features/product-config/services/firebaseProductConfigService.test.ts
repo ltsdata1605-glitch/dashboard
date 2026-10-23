@@ -173,6 +173,9 @@ describe('firebaseProductConfigService & serialization', () => {
             maSanPham: '1997139000289',
             tenSanPham: 'BHMR 1 năm Apple Watch',
             heSo: 3,
+            heSoSoLuong: 3,
+            heSoDoanhThu: undefined,
+            loaiHeSo: 'so_luong',
             loai: 'Apple Watch',
             nhom: 'ICT',
             sheetSource: 'Bảo Hiểm ĐMX',
@@ -181,6 +184,9 @@ describe('firebaseProductConfigService & serialization', () => {
             maSanPham: '1997160000128',
             tenSanPham: 'BHRV 12 tháng Apple Watch',
             heSo: 2,
+            heSoSoLuong: 2,
+            heSoDoanhThu: undefined,
+            loaiHeSo: 'so_luong',
             loai: 'Apple Watch',
             nhom: 'ICT',
             sheetSource: 'Bảo Hiểm ĐMX',
@@ -195,14 +201,15 @@ describe('firebaseProductConfigService & serialization', () => {
         expect(summary.productCodeCount).toBe(2);
     });
 
-    it('parseExcelProductCodeConfigFile parses file buffer accurately', async () => {
+    it('parseExcelProductCodeConfigFile parses file buffer accurately with dual SL and DT columns', async () => {
         const { parseExcelProductCodeConfigFile } = await import('./firebaseProductConfigService');
         const XLSX = await import('xlsx');
 
         const mockProductRows = [
-            ['Mã sản phẩm', 'Tên sản phẩm', 'Hệ số', 'Loại', 'Nhóm'],
-            ['1997139000289', 'BHMR 1 năm Apple Watch', 3, 'Apple Watch', 'ICT'],
-            ['1997160000128', 'BHRV 12 tháng Apple Watch', 2, 'Apple Watch', 'ICT'],
+            ['Mã sản phẩm', 'Tên sản phẩm', 'Hệ số SL', 'Hệ số DT', 'Loại', 'Nhóm'],
+            ['1997139000289', 'BHMR 1 năm Apple Watch', 3, '', 'Apple Watch', 'ICT'],
+            ['1997160000128', 'Dịch vụ VIP ĐMX', '', 1.5, 'VIP', 'Dịch vụ'],
+            ['1997170000999', 'Gói combo Đa năng', 2, 2.5, 'Combo', 'ICT'],
         ];
 
         const wb = XLSX.utils.book_new();
@@ -212,12 +219,82 @@ describe('firebaseProductConfigService & serialization', () => {
         const mockFile = new File([u8], 'test-product-code.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
         const parsed = await parseExcelProductCodeConfigFile(mockFile);
-        expect(parsed.length).toBe(2);
+        expect(parsed.length).toBe(3);
+        
         expect(parsed[0].maSanPham).toBe('1997139000289');
-        expect(parsed[0].heSo).toBe(3);
+        expect(parsed[0].heSoSoLuong).toBe(3);
+        expect(parsed[0].heSoDoanhThu).toBeUndefined();
+        expect(parsed[0].loaiHeSo).toBe('so_luong');
+
         expect(parsed[1].maSanPham).toBe('1997160000128');
-        expect(parsed[1].heSo).toBe(2);
+        expect(parsed[1].heSoSoLuong).toBeUndefined();
+        expect(parsed[1].heSoDoanhThu).toBe(1.5);
+        expect(parsed[1].loaiHeSo).toBe('doanh_thu');
+
+        expect(parsed[2].maSanPham).toBe('1997170000999');
+        expect(parsed[2].heSoSoLuong).toBe(2);
+        expect(parsed[2].heSoDoanhThu).toBe(2.5);
+        expect(parsed[2].loaiHeSo).toBe('ca_hai');
+    });
+
+    it('DEFAULT_PRODUCT_CODE_SAMPLE_ROWS contains 3 distinct sample rows and parses correctly into SL, DT, and Ca Hai', async () => {
+        const { DEFAULT_PRODUCT_CODE_SAMPLE_ROWS, parseExcelProductCodeConfigFile } = await import('./firebaseProductConfigService');
+        const XLSX = await import('xlsx');
+
+        expect(DEFAULT_PRODUCT_CODE_SAMPLE_ROWS).toHaveLength(3);
+
+        const headers = ['MÃ SẢN PHẨM', 'TÊN SẢN PHẨM', 'HỆ SỐ SL', 'HỆ SỐ DT', 'LOẠI', 'NHÓM'];
+        const rows = [headers, ...DEFAULT_PRODUCT_CODE_SAMPLE_ROWS];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, 'Bảo Hiểm ĐMX');
+        const u8 = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        const sampleFile = new File([u8], 'Mau_Cau_Hinh_Ma_San_Pham.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const parsed = await parseExcelProductCodeConfigFile(sampleFile);
+        expect(parsed).toHaveLength(3);
+
+        // Row 1: Số lượng (SL)
+        expect(parsed[0].maSanPham).toBe('SP_MAU_SL');
+        expect(parsed[0].heSoSoLuong).toBe(1.5);
+        expect(parsed[0].heSoDoanhThu).toBeUndefined();
+        expect(parsed[0].loaiHeSo).toBe('so_luong');
+
+        // Row 2: Doanh thu (DT)
+        expect(parsed[1].maSanPham).toBe('SP_MAU_DT');
+        expect(parsed[1].heSoSoLuong).toBeUndefined();
+        expect(parsed[1].heSoDoanhThu).toBe(1.2);
+        expect(parsed[1].loaiHeSo).toBe('doanh_thu');
+
+        // Row 3: Cả hai (SL & DT)
+        expect(parsed[2].maSanPham).toBe('SP_MAU_SL_DT');
+        expect(parsed[2].heSoSoLuong).toBe(2);
+        expect(parsed[2].heSoDoanhThu).toBe(1.1);
+        expect(parsed[2].loaiHeSo).toBe('ca_hai');
+    });
+
+    it('DEFAULT_CATEGORY_SAMPLE_ROWS contains valid sample rows and parses correctly', async () => {
+        const { DEFAULT_CATEGORY_SAMPLE_ROWS } = await import('./firebaseProductConfigService');
+        const { parseProductConfigFromWorkbook } = await import('../../../services/dataService');
+        const XLSX = await import('xlsx');
+
+        expect(DEFAULT_CATEGORY_SAMPLE_ROWS.length).toBeGreaterThan(0);
+
+        const headers = ['NganhHang', 'NhomHang', 'NhomCha', 'NhomCon', 'HeSoQuyDoi'];
+        const rows = [headers, ...DEFAULT_CATEGORY_SAMPLE_ROWS];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, 'Ngành hàng');
+
+        const parsedConfig = parseProductConfigFromWorkbook(wb, XLSX);
+        expect(parsedConfig.childToParentMap['13 - Tivi Sony']).toBe('Tivi');
+        expect(parsedConfig.childToParentMap['10 - Chuột máy tính']).toBe('Phụ kiện');
+        expect(parsedConfig.quantityMultiplierMap['4479 - Dịch Vụ Bảo Hiểm']).toBe(4.18);
     });
 });
+
+
 
 

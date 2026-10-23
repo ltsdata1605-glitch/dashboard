@@ -4,6 +4,7 @@ import { Input } from '../../../components/shared/ui/Input';
 import { Select } from '../../../components/shared/ui/Select';
 import { Button } from '../../../components/shared/ui/Button';
 import type { CategoryTableItem } from '../types';
+import { exportCategoryConfigTemplateToExcel } from '../services/firebaseProductConfigService';
 
 interface ConfigTableProps {
     items: CategoryTableItem[];
@@ -173,6 +174,18 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
+                    <Button
+                        variant="secondary"
+                        size="none"
+                        type="button"
+                        onClick={exportCategoryConfigTemplateToExcel}
+                        className="ycx-hit h-8 px-2.5 gap-1.5 text-xs font-semibold rounded-control text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center shrink-0 cursor-pointer"
+                        title="Tải file mẫu Excel khai báo ngành hàng (NganhHang, NhomHang, NhomCha, NhomCon, HeSoQuyDoi)"
+                    >
+                        <AppIcon name="download" size="xs" />
+                        <span className="hidden sm:inline">Tải file mẫu</span>
+                    </Button>
+
                     {isEditable && (
                         <Button
                             variant="secondary"

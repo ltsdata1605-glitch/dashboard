@@ -162,41 +162,79 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                 const sheetHeaders = rows[0].map((h: any) => String(h || '').trim().toLowerCase().normalize('NFC'));
                 const codeIdx = sheetHeaders.findIndex((h: string) => h.includes('mã sản phẩm') || h === 'mã' || h.includes('mã sp') || h.includes('code') || h.includes('khai'));
                 const nameIdx = sheetHeaders.findIndex((h: string) => h.includes('tên sản phẩm') || h === 'tên' || h.includes('name'));
-                const multiplierIdx = sheetHeaders.findIndex((h: string) => h.includes('hệ số') || h.includes('sl quy đổi') || h.includes('hệ số quy đổi') || h.includes('multiplier'));
-                const loaiIdx = sheetHeaders.findIndex((h: string) => h.includes('loại') || h.includes('thi đua') || h.includes('type'));
+                const heSoSLIdx = sheetHeaders.findIndex((h: string) => 
+                    (h.includes('hệ số') || h.includes('he so') || h.includes('multiplier')) && 
+                    (h.includes('sl') || h.includes('số lượng') || h.includes('so luong') || h.includes('quy đổi sl'))
+                );
+                const heSoDTIdx = sheetHeaders.findIndex((h: string) => 
+                    (h.includes('hệ số') || h.includes('he so') || h.includes('multiplier')) && 
+                    (h.includes('dt') || h.includes('doanh thu') || h.includes('doanh so') || h.includes('quy đổi dt'))
+                );
+                const multiplierIdx = sheetHeaders.findIndex((h: string) => h === 'hệ số' || h === 'he so' || h.includes('sl quy đổi') || h.includes('hệ số quy đổi') || h.includes('multiplier'));
+                const loaiIdx = sheetHeaders.findIndex((h: string) => h === 'loại' || (h.includes('loại') && !h.includes('hệ số')) || h.includes('thi đua') || h.includes('type'));
                 const nhomIdx = sheetHeaders.findIndex((h: string) => h.includes('nhóm') || h.includes('group'));
                 
-                if (codeIdx !== -1 && multiplierIdx !== -1) {
-                    if (!config.vasNameMultiplierMap) {
-                        config.vasNameMultiplierMap = {};
-                    }
+                const hasMultiplier = heSoSLIdx !== -1 || heSoDTIdx !== -1 || multiplierIdx !== -1;
+                if (codeIdx !== -1 && hasMultiplier) {
+                    if (!config.vasNameMultiplierMap) config.vasNameMultiplierMap = {};
+                    if (!config.revenueMultiplierMap) config.revenueMultiplierMap = {};
                     let count = 0;
                     for (let i = 1; i < rows.length; i++) {
                         const row = rows[i];
-                        if (row.length > Math.max(codeIdx, multiplierIdx)) {
+                        const maxCol = Math.max(codeIdx, heSoSLIdx, heSoDTIdx, multiplierIdx);
+                        if (row.length > maxCol || maxCol >= 0) {
                             const code = String(row[codeIdx] || '').trim();
                             if (!code) continue;
                             const nameVal = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
                             const loaiVal = loaiIdx !== -1 ? String(row[loaiIdx] || '').trim() : '';
                             const nhomVal = nhomIdx !== -1 ? String(row[nhomIdx] || '').trim() : '';
                             
-                            const rawVal = String(row[multiplierIdx] || '').replace(',', '.');
-                            const multiplier = parseFloat(rawVal);
+                            let multSL: number | undefined;
+                            let multDT: number | undefined;
+
+                            if (heSoSLIdx !== -1 && row[heSoSLIdx] !== undefined && String(row[heSoSLIdx]).trim() !== '') {
+                                const parsed = parseFloat(String(row[heSoSLIdx]).replace(',', '.'));
+                                if (!isNaN(parsed)) multSL = parsed;
+                            }
+                            if (heSoDTIdx !== -1 && row[heSoDTIdx] !== undefined && String(row[heSoDTIdx]).trim() !== '') {
+                                const parsed = parseFloat(String(row[heSoDTIdx]).replace(',', '.'));
+                                if (!isNaN(parsed)) multDT = parsed;
+                            }
+                            if (multSL === undefined && multDT === undefined && multiplierIdx !== -1) {
+                                const rawVal = String(row[multiplierIdx] || '').replace(',', '.');
+                                const parsed = parseFloat(rawVal);
+                                if (!isNaN(parsed)) multSL = parsed;
+                            }
                             
-                            if (!isNaN(multiplier)) {
-                                if (sheetName.toLowerCase().includes('vas')) {
-                                    if (!config.vasMultiplierMap) config.vasMultiplierMap = {};
-                                    config.vasMultiplierMap[code] = multiplier;
-                                } else {
-                                    config.quantityMultiplierMap[code] = multiplier;
+                            if (multSL !== undefined || multDT !== undefined) {
+                                const primaryHeSo = multSL ?? multDT ?? 1;
+                                const loaiHeSo: 'so_luong' | 'doanh_thu' | 'ca_hai' = 
+                                    multSL !== undefined && multDT !== undefined ? 'ca_hai' :
+                                    multDT !== undefined ? 'doanh_thu' : 'so_luong';
+
+                                if (multSL !== undefined) {
+                                    if (sheetName.toLowerCase().includes('vas')) {
+                                        if (!config.vasMultiplierMap) config.vasMultiplierMap = {};
+                                        config.vasMultiplierMap[code] = multSL;
+                                    } else {
+                                        config.quantityMultiplierMap[code] = multSL;
+                                    }
+                                    if (nameVal) {
+                                        config.vasNameMultiplierMap[nameVal] = multSL;
+                                    }
                                 }
-                                if (nameVal) {
-                                    config.vasNameMultiplierMap[nameVal] = multiplier;
+
+                                if (multDT !== undefined) {
+                                    config.revenueMultiplierMap[code] = multDT;
                                 }
+
                                 productCodeItems.push({
                                     maSanPham: code,
                                     tenSanPham: nameVal,
-                                    heSo: multiplier,
+                                    heSo: primaryHeSo,
+                                    heSoSoLuong: multSL,
+                                    heSoDoanhThu: multDT,
+                                    loaiHeSo,
                                     loai: loaiVal || undefined,
                                     nhom: nhomVal || undefined,
                                     sheetSource: sheetName,

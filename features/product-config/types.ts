@@ -32,6 +32,9 @@ export interface ProductCodeTableItem {
     maSanPham: string;
     tenSanPham: string;
     heSo: number;
+    heSoSoLuong?: number;
+    heSoDoanhThu?: number;
+    loaiHeSo?: 'so_luong' | 'doanh_thu' | 'ca_hai';
     loai?: string;
     nhom?: string;
     sheetSource?: string;

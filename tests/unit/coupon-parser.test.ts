@@ -436,6 +436,27 @@ Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội 
             expect(gvgsList[0].productName).toBe('Bình đun Rapido');
         });
 
+        it('đảm bảo thứ tự danh sách ổn định và bất biến khi các sản phẩm có cùng số lượng tồn', async () => {
+            const { getProductInventoryList } = await import('../../features/line-bot/services/couponParser');
+
+            const coupons = [
+                { productName: 'Quạt đứng Sunhouse', type: 'Event', status: 'UNUSED' },
+                { productName: 'Bếp gas đôi Sakura', type: 'Event', status: 'UNUSED' },
+                { productName: 'Bình đun Rapido', type: 'Event', status: 'UNUSED' },
+            ];
+
+            const list1 = getProductInventoryList(coupons, 'EVENT');
+            expect(list1[0].productName).toBe('Bếp gas đôi Sakura');
+            expect(list1[1].productName).toBe('Bình đun Rapido');
+            expect(list1[2].productName).toBe('Quạt đứng Sunhouse');
+
+            // Đảo ngược thứ tự đầu vào vẫn phải cho kết quả sắp xếp giống hệt 100%
+            const list2 = getProductInventoryList([...coupons].reverse(), 'EVENT');
+            expect(list2[0].productName).toBe('Bếp gas đôi Sakura');
+            expect(list2[1].productName).toBe('Bình đun Rapido');
+            expect(list2[2].productName).toBe('Quạt đứng Sunhouse');
+        });
+
         it('nhận diện chính xác cú pháp h + STT để lấy PMH Honor và v + STT để lấy PMH Vivo', async () => {
             const { parseCouponClaimCommand, getCategoryMeta, formatInventoryReportMessage } = await import('../../features/line-bot/services/couponParser');
 
@@ -959,12 +980,13 @@ MĐH Áp Dụng: 00910SO26090335446`;
             expect(bubble.type).toBe('bubble');
             expect(bubble.header.contents[0].contents[0].text).toContain('📊 TỒN KHO PMH EVENT');
             
-            // Dòng thứ 2 (Máy xay Bear) phải có action gửi lệnh e2 khi chạm vào
+            // Dòng thứ 2 (Máy xay Bear) phải có action postback nhận mã trực tiếp khi chạm vào
             const row2 = bubble.body.contents[1].contents[1];
             expect(row2.action).toEqual({
-                type: 'message',
+                type: 'postback',
                 label: 'e2',
-                text: 'e2'
+                data: `action=claim_pmh&cat=EVENT&prod=${encodeURIComponent('Máy xay thịt Bear')}`,
+                displayText: '[Nhận PMH] Máy xay thịt Bear'
             });
 
             // Không được chứa quoteToken

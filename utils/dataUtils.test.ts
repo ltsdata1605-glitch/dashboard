@@ -357,6 +357,25 @@ describe('calculateRowMetrics — nguồn chân lý duy nhất cho DTQĐ và Wei
         expect(weightedQuantity).toBe(2 * 8); // 2 gói * hệ số 8 = 16
     });
 
+    it('Hệ số doanh thu theo Mã sản phẩm được áp dụng vào revenueQD khi có cấu hình trong revenueMultiplierMap', () => {
+        const config = emptyConfig();
+        config.childToParentMap = { pk1: 'Phụ kiện' }; // Hệ số nhóm cha mặc định là 3.37
+        config.revenueMultiplierMap = {
+            'SP_VIP_001': 2.5, // Mã sản phẩm này được gán riêng hệ số DT = 2.5
+        };
+
+        const row = baseRow({
+            'Nhóm Hàng': 'pk1',
+            'Mã sản phẩm': 'SP_VIP_001',
+            'Giá bán_1': 100000,
+            'Số Lượng': 1,
+        });
+
+        const metrics = calculateRowMetrics(row, config);
+        // Ưu tiên hệ số doanh thu theo mã sản phẩm (2.5 thay vì 3.37)
+        expect(metrics.revenueQD).toBe(100000 * 2.5);
+    });
+
     it('không có productConfig vẫn tính được (fallback về logic cũ, không throw)', () => {
         expect(() => calculateRowMetrics(baseRow(), null)).not.toThrow();
     });

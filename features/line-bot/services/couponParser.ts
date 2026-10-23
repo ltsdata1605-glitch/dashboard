@@ -1523,12 +1523,13 @@ export function getProductInventoryList(
         }
     }
 
-    // Sắp xếp: Ưu tiên hết mã (unused === 0), rồi đến sắp hết (unused < 3), rồi đến còn nhiều
+    // Sắp xếp: Ưu tiên hết mã (unused === 0), rồi đến sắp hết (unused < 3), rồi đến còn nhiều, ổn định theo tên
     const items = Array.from(productMap.values()).sort((a, b) => {
         const aLow = a.unused < 3 ? 1 : 0;
         const bLow = b.unused < 3 ? 1 : 0;
         if (aLow !== bLow) return bLow - aLow;
-        return a.unused - b.unused;
+        if (a.unused !== b.unused) return a.unused - b.unused;
+        return a.productName.localeCompare(b.productName, 'vi');
     });
 
     return items.map((item, idx) => ({
@@ -1855,9 +1856,10 @@ export function createInventoryReportFlexMessage(params: {
                 paddingTop: '3px',
                 paddingBottom: '3px',
                 action: {
-                    type: 'message',
+                    type: 'postback',
                     label: cmdCode,
-                    text: cmdCode
+                    data: `action=claim_pmh&cat=${encodeURIComponent(category)}&prod=${encodeURIComponent(item.productName)}`,
+                    displayText: `[Nhận PMH] ${item.productName}`
                 },
                 contents: [
                     {
@@ -1956,7 +1958,7 @@ export function createInventoryReportFlexMessage(params: {
                         contents: [
                             {
                                 type: 'text',
-                                text: `💡 Chạm vào sản phẩm để tự động gửi lệnh nhận mã!`,
+                                text: `💡 Chạm trực tiếp vào sản phẩm để nhận mã PMH!`,
                                 size: 'xxs',
                                 color: '#475569',
                                 align: 'center'

@@ -8,6 +8,7 @@ import { Banner } from '../shared/ui/Banner';
 import FontSelector from './FontSelector';
 import NotificationBell from './NotificationBell';
 import HeaderSystemGroup from './HeaderSystemGroup';
+import { TopBarActions } from '../shared/ui/TopBarActions';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useSync } from '../../contexts/SyncContext';
@@ -201,77 +202,64 @@ const Header: React.FC<HeaderProps> = ({
             )}
             {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}
 
-        {/* Desktop: Full inline toolbar ported to Global Header */}
-        {mounted && document.getElementById('global-header-actions') && createPortal(
-            <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
-                {/* Data Import Group */}
-                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    {(userRole === 'admin' || userRole === 'manager') && (
-                        <>
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={onNewFile}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold text-sm transition-colors"
-                                title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
-                            >
-                                <AppIcon name="upload" size="md" />
-                                <span>YCX</span>
-                            </Button>
-                            <a 
-                                href="https://report.mwgroup.vn/home/dashboard/77"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                                title="Tải dữ liệu báo cáo"
-                            >
-                                <AppIcon name="link" size="md" />
-                            </a>
-                            {onOpenHistory && (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={onOpenHistory}
-                                    id="btn-desktop-history"
-                                    title="Quản lý tệp đã lưu (Lũy kế)"
-                                    className="flex items-center justify-center p-2 text-rose-700 dark:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 border-l border-slate-100 dark:border-slate-700 transition-colors"
-                                >
-                                    <AppIcon name="database" size="md" />
-                                </Button>
-                            )}
-                        </>
-                    )}
-
-                    {hasSalesData && (
+        {/* Desktop: Full inline toolbar ported to Global Header via TopBarActions */}
+        <TopBarActions
+            systemChildren={
+                onToggleFilters ? (
+                    <div className="border-l border-slate-100 dark:border-slate-700">
                         <Button
                             variant="unstyled" size="none"
-                            onClick={handleSalesClear}
-                            disabled={isClearingSalesData}
-                            className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 animate-in fade-in duration-200 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer`}
-                            title={salesClearTitle || "Xóa dữ liệu YCX"}
+                            onClick={onToggleFilters}
+                            title="Bộ lọc nâng cao / Tuỳ chỉnh"
+                            className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                         >
-                            <AppIcon name={isClearingSalesData ? 'loading' : 'delete'} size="md" spin={isClearingSalesData} />
+                            <AppIcon name="viewOptions" size="md" />
                         </Button>
-                    )}
+                    </div>
+                ) : undefined
+            }
+        >
+            {/* Data Import Group */}
+            <TopBarActions.Group>
+                {(userRole === 'admin' || userRole === 'manager') && (
+                    <>
+                        <TopBarActions.Button
+                            onClick={onNewFile}
+                            variant="emerald"
+                            icon="upload"
+                            label="YCX"
+                            title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
+                        />
+                        <TopBarActions.Link
+                            href="https://report.mwgroup.vn/home/dashboard/77"
+                            icon="link"
+                            title="Tải dữ liệu báo cáo"
+                        />
+                        {onOpenHistory && (
+                            <TopBarActions.Button
+                                onClick={onOpenHistory}
+                                id="btn-desktop-history"
+                                icon="database"
+                                variant="rose"
+                                borderLeft
+                                title="Quản lý tệp đã lưu (Lũy kế)"
+                            />
+                        )}
+                    </>
+                )}
 
-                </div>
-                
-                {/* View, Font & Notification Group (3 chức năng cùng 1 nhóm) */}
-                <HeaderSystemGroup>
-                    {onToggleFilters && (
-                        <div className="border-l border-slate-100 dark:border-slate-700">
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={onToggleFilters}
-                                title="Bộ lọc nâng cao / Tuỳ chỉnh"
-                                className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                            >
-                                <AppIcon name="viewOptions" size="md" />
-                            </Button>
-                        </div>
-                    )}
-                </HeaderSystemGroup>
-            </div>,
-            document.getElementById('global-header-actions')!
-        )}
+                {hasSalesData && (
+                    <TopBarActions.Button
+                        onClick={handleSalesClear}
+                        disabled={isClearingSalesData}
+                        icon={isClearingSalesData ? 'loading' : 'delete'}
+                        spin={isClearingSalesData}
+                        borderLeft
+                        title={salesClearTitle || "Xóa dữ liệu YCX"}
+                    />
+                )}
+            </TopBarActions.Group>
+        </TopBarActions>
 
         </>
     );

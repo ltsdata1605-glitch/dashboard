@@ -260,6 +260,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only',
                 elementsToHide: ['.export-button-component', '.no-print'],
+                isCompactTable: true,
                 onCloneReady: (clone: HTMLElement) => {
                     // Remove overflow constraints
                     const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
@@ -284,6 +285,26 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         (gridContainer as HTMLElement).style.width = '100%';
                         (gridContainer as HTMLElement).style.alignItems = 'start';
                     }
+
+                    // Đồng bộ độ rộng dòng nhỏ gọn như bảng doanh thu nhân viên (py-[3px])
+                    clone.querySelectorAll('.competition-group-card td').forEach(td => {
+                        (td as HTMLElement).style.setProperty('padding-top', '3px', 'important');
+                        (td as HTMLElement).style.setProperty('padding-bottom', '3px', 'important');
+                        (td as HTMLElement).style.setProperty('line-height', '1.25', 'important');
+                    });
+                    clone.querySelectorAll('.competition-group-card th').forEach(th => {
+                        (th as HTMLElement).style.setProperty('padding-top', '4px', 'important');
+                        (th as HTMLElement).style.setProperty('padding-bottom', '4px', 'important');
+                        (th as HTMLElement).style.setProperty('line-height', '1.25', 'important');
+                    });
+
+                    // Giữ nguyên các đường kẻ dọc xám mờ phân tách giữa các cột khi xuất ảnh
+                    clone.querySelectorAll('.competition-group-card td:not(:last-child)').forEach(td => {
+                        (td as HTMLElement).style.setProperty('border-right', '1px solid rgba(226, 232, 240, 0.8)', 'important');
+                    });
+                    clone.querySelectorAll('.competition-group-card th:not(:last-child)').forEach(th => {
+                        (th as HTMLElement).style.setProperty('border-right', '1px solid rgba(226, 232, 240, 0.9)', 'important');
+                    });
                 }
             });
             if (blob) {
@@ -376,6 +397,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 const blob = await exportElementAsImage(card, safeName, {
                     mode: 'blob-only', 
                     elementsToHide: ['.export-button-component'],
+                    isCompactTable: true,
                     onCloneReady: (clone: HTMLElement) => {
                         clone.classList.remove('h-full', 'overflow-hidden');
                         clone.style.width = 'max-content';
@@ -390,6 +412,16 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             titleBar.style.width = '100%';
                             titleBar.style.minWidth = '100%';
                             titleBar.style.boxSizing = 'border-box';
+                            titleBar.style.textAlign = 'center';
+                            titleBar.querySelectorAll('.export-button-component').forEach(b => b.remove());
+                            const h4 = titleBar.querySelector('h4');
+                            if (h4) {
+                                h4.style.width = '100%';
+                                h4.style.textAlign = 'center';
+                                h4.style.margin = '0 auto';
+                                h4.style.padding = '0';
+                                h4.style.display = 'block';
+                            }
                         }
 
                         clone.querySelectorAll('colgroup').forEach(cg => cg.remove());
@@ -402,6 +434,26 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         clone.querySelectorAll('tr').forEach(tr => {
                             tr.style.borderLeft = 'none';
                             tr.classList.remove('border-l-[3px]');
+                        });
+
+                        // Đồng bộ độ rộng dòng nhỏ gọn như bảng doanh thu nhân viên (py-[3px])
+                        clone.querySelectorAll('td').forEach(td => {
+                            (td as HTMLElement).style.setProperty('padding-top', '3px', 'important');
+                            (td as HTMLElement).style.setProperty('padding-bottom', '3px', 'important');
+                            (td as HTMLElement).style.setProperty('line-height', '1.25', 'important');
+                        });
+                        clone.querySelectorAll('th').forEach(th => {
+                            (th as HTMLElement).style.setProperty('padding-top', '4px', 'important');
+                            (th as HTMLElement).style.setProperty('padding-bottom', '4px', 'important');
+                            (th as HTMLElement).style.setProperty('line-height', '1.25', 'important');
+                        });
+
+                        // Giữ nguyên các đường kẻ dọc xám mờ phân tách giữa các cột khi xuất ảnh
+                        clone.querySelectorAll('td:not(:last-child)').forEach(td => {
+                            (td as HTMLElement).style.setProperty('border-right', '1px solid rgba(226, 232, 240, 0.8)', 'important');
+                        });
+                        clone.querySelectorAll('th:not(:last-child)').forEach(th => {
+                            (th as HTMLElement).style.setProperty('border-right', '1px solid rgba(226, 232, 240, 0.9)', 'important');
                         });
                     }
                 });

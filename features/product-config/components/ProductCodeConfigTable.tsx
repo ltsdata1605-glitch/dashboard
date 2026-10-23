@@ -5,6 +5,7 @@ import { Select } from '../../../components/shared/ui/Select';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import type { ProductCodeTableItem } from '../types';
+import { exportProductCodeConfigToExcel } from '../services/firebaseProductConfigService';
 
 interface ProductCodeConfigTableProps {
     items: ProductCodeTableItem[];
@@ -16,7 +17,7 @@ interface ProductCodeConfigTableProps {
 
 interface EditingState {
     maSanPham: string;
-    field: 'tenSanPham' | 'heSo' | 'loai' | 'nhom';
+    field: 'tenSanPham' | 'heSo' | 'heSoSoLuong' | 'heSoDoanhThu' | 'loai' | 'nhom';
     value: string;
 }
 
@@ -75,7 +76,9 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
     // Form thêm mới
     const [newMaSP, setNewMaSP] = useState('');
     const [newTenSP, setNewTenSP] = useState('');
-    const [newHeSo, setNewHeSo] = useState('1');
+    const [newLoaiHeSo, setNewLoaiHeSo] = useState<'so_luong' | 'doanh_thu' | 'ca_hai'>('so_luong');
+    const [newHeSoSL, setNewHeSoSL] = useState('1');
+    const [newHeSoDT, setNewHeSoDT] = useState('1');
     const [newLoai, setNewLoai] = useState('');
     const [newNhom, setNewNhom] = useState('');
 
@@ -137,18 +140,36 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
     const handleSaveAdd = () => {
         const ma = newMaSP.trim();
         const ten = newTenSP.trim();
-        const hs = parseFloat(newHeSo.replace(',', '.')) || 1;
         if (!ma) return;
+
+        let hsSL: number | undefined = undefined;
+        let hsDT: number | undefined = undefined;
+
+        if (newLoaiHeSo === 'so_luong' || newLoaiHeSo === 'ca_hai') {
+            hsSL = parseFloat(newHeSoSL.replace(',', '.')) || 1;
+        }
+        if (newLoaiHeSo === 'doanh_thu' || newLoaiHeSo === 'ca_hai') {
+            hsDT = parseFloat(newHeSoDT.replace(',', '.')) || 1;
+        }
+
+        const primaryHeSo = (newLoaiHeSo === 'doanh_thu' ? hsDT : hsSL) || 1;
+
         onAddItem?.({
             maSanPham: ma,
             tenSanPham: ten,
-            heSo: hs,
+            heSo: primaryHeSo,
+            heSoSoLuong: hsSL,
+            heSoDoanhThu: hsDT,
+            loaiHeSo: newLoaiHeSo,
             loai: newLoai.trim() || undefined,
             nhom: newNhom.trim() || undefined,
         });
+
         setNewMaSP('');
         setNewTenSP('');
-        setNewHeSo('1');
+        setNewLoaiHeSo('so_luong');
+        setNewHeSoSL('1');
+        setNewHeSoDT('1');
         setNewLoai('');
         setNewNhom('');
         setIsAdding(false);
@@ -160,7 +181,13 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
             const { maSanPham, field } = editing;
             if (field === 'heSo') {
                 const num = parseFloat(val.replace(',', '.')) || 1;
-                onUpdateItem?.(maSanPham, { heSo: num });
+                onUpdateItem?.(maSanPham, { heSo: num, heSoSoLuong: num });
+            } else if (field === 'heSoSoLuong') {
+                const num = parseFloat(val.replace(',', '.')) || 1;
+                onUpdateItem?.(maSanPham, { heSoSoLuong: num, heSo: num });
+            } else if (field === 'heSoDoanhThu') {
+                const num = parseFloat(val.replace(',', '.')) || 1;
+                onUpdateItem?.(maSanPham, { heSoDoanhThu: num });
             } else {
                 onUpdateItem?.(maSanPham, { [field]: val.trim() || undefined });
             }
@@ -225,6 +252,18 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                         {filteredItems.length} sản phẩm
                     </span>
 
+                    <Button
+                        variant="secondary"
+                        size="none"
+                        type="button"
+                        onClick={() => exportProductCodeConfigToExcel([], { asTemplate: true })}
+                        className="ycx-hit h-8 px-2.5 gap-1.5 text-xs font-semibold rounded-control text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        title="Tải file mẫu Excel (gồm 3 dòng mẫu minh họa cho 3 loại hệ số: SL, DT, Cả hai)"
+                    >
+                        <AppIcon name="download" size="xs" />
+                        <span className="hidden sm:inline">Tải file mẫu</span>
+                    </Button>
+
                     {isEditable && (
                         <Button
                             variant="primary"
@@ -239,17 +278,22 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                 </div>
             </div>
 
-            {/* Banner hướng dẫn nghiệp vụ: Hệ số này là hệ số của SỐ LƯỢNG, KHÔNG PHẢI doanh thu */}
-            <div className="flex items-center gap-2 p-2.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-control text-xs text-sky-800 dark:text-sky-200">
-                <AppIcon name="info" size="xs" className="shrink-0 text-sky-600 dark:text-sky-400" />
-                <span>
-                    <strong>Hệ số quy đổi số lượng:</strong> Được áp dụng khi tính <strong>số lượng bán ra</strong> (Weighted Quantity) cho từng mã sản phẩm/dịch vụ (VD: VieON, Bản quyền phần mềm, Bảo hiểm...). <strong>Không nhân vào doanh thu</strong>. (Ví dụ: VieON 1T hệ số 1 bán 1 tính 1; VieON 3T hệ số 2 bán 1 tính 2).
-                </span>
+            {/* Banner hướng dẫn nghiệp vụ: Hệ số SL và Hệ số DT */}
+            <div className="flex items-start gap-2.5 p-2.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-control text-xs text-sky-900 dark:text-sky-200">
+                <AppIcon name="info" size="xs" className="shrink-0 mt-0.5 text-sky-600 dark:text-sky-400" />
+                <div className="space-y-1">
+                    <div>
+                        <strong>Hệ số quy đổi số lượng (SL):</strong> Áp dụng khi tính <strong>số lượng bán ra</strong> (Weighted Quantity) cho từng mã SP/dịch vụ (VD: VieON, Bản quyền, Bảo hiểm...). <em>Không nhân vào doanh thu</em>.
+                    </div>
+                    <div>
+                        <strong>Hệ số quy đổi doanh thu (DT):</strong> Nhân trực tiếp vào <strong>doanh thu thực tế</strong> để tính Doanh Thu Quy Đổi (DTQĐ) riêng cho mã sản phẩm.
+                    </div>
+                </div>
             </div>
 
             {/* Modal/Form thêm mới */}
             {isAdding && (
-                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-control space-y-2.5">
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-control space-y-3">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
                             <AppIcon name="add" size="xs" /> Thêm mới Mã Sản Phẩm
@@ -258,7 +302,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             variant="unstyled" size="none"
                             onClick={() => setIsAdding(false)}
                             aria-label="Đóng"
-                            className="text-slate-400 hover:text-slate-600 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center"
+                            className="text-slate-400 hover:text-slate-600 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center cursor-pointer"
                         >
                             <AppIcon name="close" size="sm" />
                         </Button>
@@ -301,21 +345,87 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             />
                         </div>
                     </div>
-                    <div className="flex items-center justify-between pt-1">
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="cfg-ma-sp-he-so" className="text-[11px] font-semibold text-slate-500">Hệ số QĐ số lượng:</label>
-                            <Input
-                                id="cfg-ma-sp-he-so"
-                                type="number"
-                                step="0.01"
-                                fullWidth={false}
-                                value={newHeSo}
-                                onChange={e => setNewHeSo(e.target.value)}
-                                className="w-20 h-7 text-xs px-2 font-semibold text-slate-700"
-                            />
-                            <span className="text-[11px] text-slate-400 italic">(bán 1 tính SL là {newHeSo || 1}, không nhân doanh thu)</span>
+
+                    {/* Chọn Loại hệ số & Ô nhập tương ứng */}
+                    <div className="pt-2 border-t border-emerald-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-slate-600">Loại hệ số:</span>
+                                <div className="inline-flex items-center p-0.5 bg-slate-200/80 rounded-lg text-[11px] font-semibold">
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewLoaiHeSo('so_luong')}
+                                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                                            newLoaiHeSo === 'so_luong'
+                                                ? 'bg-white text-sky-700 shadow-2xs font-bold'
+                                                : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Số lượng (SL)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewLoaiHeSo('doanh_thu')}
+                                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                                            newLoaiHeSo === 'doanh_thu'
+                                                ? 'bg-white text-emerald-700 shadow-2xs font-bold'
+                                                : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Doanh thu (DT)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewLoaiHeSo('ca_hai')}
+                                        className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                                            newLoaiHeSo === 'ca_hai'
+                                                ? 'bg-white text-purple-700 shadow-2xs font-bold'
+                                                : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Cả hai (SL & DT)
+                                    </button>
+                                </div>
+                            </div>
+
+                            {(newLoaiHeSo === 'so_luong' || newLoaiHeSo === 'ca_hai') && (
+                                <div className="flex items-center gap-1.5">
+                                    <label htmlFor="cfg-ma-sp-he-so-sl" className="text-[11px] font-semibold text-slate-600">Hệ số SL:</label>
+                                    <Input
+                                        id="cfg-ma-sp-he-so-sl"
+                                        type="number"
+                                        step="0.01"
+                                        fullWidth={false}
+                                        value={newHeSoSL}
+                                        onChange={e => setNewHeSoSL(e.target.value)}
+                                        className="w-16 h-7 text-xs px-2 font-semibold text-slate-700"
+                                    />
+                                    {newLoaiHeSo === 'so_luong' && (
+                                        <span className="text-[11px] text-slate-400 italic">(bán 1 tính SL là {newHeSoSL || 1}, không nhân DT)</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {(newLoaiHeSo === 'doanh_thu' || newLoaiHeSo === 'ca_hai') && (
+                                <div className="flex items-center gap-1.5">
+                                    <label htmlFor="cfg-ma-sp-he-so-dt" className="text-[11px] font-semibold text-slate-600">Hệ số DT:</label>
+                                    <Input
+                                        id="cfg-ma-sp-he-so-dt"
+                                        type="number"
+                                        step="0.01"
+                                        fullWidth={false}
+                                        value={newHeSoDT}
+                                        onChange={e => setNewHeSoDT(e.target.value)}
+                                        className="w-16 h-7 text-xs px-2 font-semibold text-slate-700"
+                                    />
+                                    {newLoaiHeSo === 'doanh_thu' && (
+                                        <span className="text-[11px] text-slate-400 italic">(nhân {newHeSoDT || 1} vào DT tính DTQĐ)</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        <div className="flex items-center gap-2">
+
+                        <div className="flex items-center gap-2 self-end sm:self-center">
                             <Button
                                 variant="secondary"
                                 size="sm"
@@ -337,24 +447,33 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                 </div>
             )}
 
-            {/* Bảng dữ liệu chuẩn 5 cột khớp 100% Hình 1 */}
+            {/* Bảng dữ liệu chuẩn có đầy đủ cột Hệ số SL và Hệ số DT */}
             <div className="overflow-x-auto border border-slate-200 rounded-control">
                 <table className="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr className="bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider">
                             <th className="px-3 py-2.5 w-12 text-center border-r border-slate-700">STT</th>
-                            <th className="px-3 py-2.5 min-w-[150px] border-r border-slate-700">MÃ SẢN PHẨM</th>
-                            <th className="px-3 py-2.5 min-w-[280px] border-r border-slate-700">TÊN SẢN PHẨM</th>
+                            <th className="px-3 py-2.5 min-w-[140px] border-r border-slate-700">MÃ SẢN PHẨM</th>
+                            <th className="px-3 py-2.5 min-w-[240px] border-r border-slate-700">TÊN SẢN PHẨM</th>
                             <th 
-                                className="px-3 py-2.5 w-28 text-center border-r border-slate-700 select-none"
-                                title="Hệ số quy đổi số lượng (Weighted Quantity). Ví dụ: bán 1 gói 3 tháng có hệ số 2 sẽ tính số lượng là 2. Tuyệt đối không nhân vào doanh thu."
+                                className="px-3 py-2.5 w-24 text-center border-r border-slate-700 select-none"
+                                title="Hệ số quy đổi số lượng (Weighted Quantity). Ví dụ: bán 1 gói có hệ số 2 sẽ tính số lượng là 2. Tuyệt đối không nhân vào doanh thu."
                             >
                                 <div className="flex flex-col items-center justify-center leading-tight">
                                     <span>HỆ SỐ SL</span>
-                                    <span className="text-[11px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
+                                    <span className="text-[10px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
                                 </div>
                             </th>
-                            <th className="px-3 py-2.5 min-w-[130px] border-r border-slate-700">LOẠI</th>
+                            <th 
+                                className="px-3 py-2.5 w-24 text-center border-r border-slate-700 select-none"
+                                title="Hệ số quy đổi doanh thu (DTQĐ). Nhân trực tiếp vào doanh thu thực tế của mã sản phẩm khi tính DTQĐ."
+                            >
+                                <div className="flex flex-col items-center justify-center leading-tight">
+                                    <span>HỆ SỐ DT</span>
+                                    <span className="text-[10px] font-normal text-slate-400 lowercase tracking-normal">(nhân DT)</span>
+                                </div>
+                            </th>
+                            <th className="px-3 py-2.5 min-w-[120px] border-r border-slate-700">LOẠI</th>
                             <th className="px-3 py-2.5 min-w-[100px] border-r border-slate-700">NHÓM</th>
                             {isEditable && <th className="px-3 py-2.5 w-20 text-center">Thao tác</th>}
                         </tr>
@@ -363,23 +482,49 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                         {pagedItems.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={isEditable ? 7 : 6}
-                                    className="px-4 py-8 text-center text-slate-400 italic"
+                                    colSpan={isEditable ? 8 : 7}
+                                    className="px-4 py-10 text-center"
                                 >
-                                    Không có dữ liệu mã sản phẩm phù hợp.
+                                    {items.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center gap-2 max-w-md mx-auto py-2">
+                                            <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                                                <AppIcon name="template" size="md" />
+                                            </div>
+                                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                                Chưa có cấu hình mã sản phẩm nào
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                                Bạn có thể tải file Excel mẫu để tham khảo 3 dòng ví dụ cho 3 loại hệ số: <strong>Số lượng (SL)</strong>, <strong>Doanh thu (DT)</strong> và <strong>Cả hai (SL & DT)</strong>.
+                                            </p>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                type="button"
+                                                onClick={() => exportProductCodeConfigToExcel([], { asTemplate: true })}
+                                                className="ycx-hit mt-2 gap-1.5 shadow-2xs font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/40"
+                                            >
+                                                <AppIcon name="download" size="xs" />
+                                                <span>Tải file Excel mẫu (3 loại hệ số)</span>
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-400 italic py-4">
+                                            Không có dữ liệu mã sản phẩm phù hợp với bộ lọc tìm kiếm.
+                                        </div>
+                                    )}
                                 </td>
                             </tr>
                         ) : (
                             pagedItems.map((item, idx) => {
                                 const stt = (page - 1) * pageSize + idx + 1;
-                                const isEditingHeSo =
-                                    editing?.maSanPham === item.maSanPham && editing.field === 'heSo';
-                                const isEditingTen =
-                                    editing?.maSanPham === item.maSanPham && editing.field === 'tenSanPham';
-                                const isEditingLoai =
-                                    editing?.maSanPham === item.maSanPham && editing.field === 'loai';
-                                const isEditingNhom =
-                                    editing?.maSanPham === item.maSanPham && editing.field === 'nhom';
+                                const valSL = item.heSoSoLuong !== undefined ? item.heSoSoLuong : (item.loaiHeSo === 'doanh_thu' ? undefined : item.heSo);
+                                const valDT = item.heSoDoanhThu !== undefined ? item.heSoDoanhThu : (item.loaiHeSo === 'doanh_thu' ? item.heSo : undefined);
+
+                                const isEditingHeSoSL = editing?.maSanPham === item.maSanPham && (editing.field === 'heSoSoLuong' || editing.field === 'heSo');
+                                const isEditingHeSoDT = editing?.maSanPham === item.maSanPham && editing.field === 'heSoDoanhThu';
+                                const isEditingTen = editing?.maSanPham === item.maSanPham && editing.field === 'tenSanPham';
+                                const isEditingLoai = editing?.maSanPham === item.maSanPham && editing.field === 'loai';
+                                const isEditingNhom = editing?.maSanPham === item.maSanPham && editing.field === 'nhom';
 
                                 return (
                                     <tr
@@ -415,18 +560,19 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                                 </span>
                                             )}
                                         </td>
+                                        {/* Cột Hệ số SL */}
                                         <td
                                             className="px-3 py-2 text-center font-bold font-mono text-slate-700 cursor-pointer"
                                             onDoubleClick={() =>
                                                 isEditable &&
                                                 setEditing({
                                                     maSanPham: item.maSanPham,
-                                                    field: 'heSo',
-                                                    value: String(item.heSo),
+                                                    field: 'heSoSoLuong',
+                                                    value: String(valSL !== undefined ? valSL : '1'),
                                                 })
                                             }
                                         >
-                                            {isEditingHeSo ? (
+                                            {isEditingHeSoSL ? (
                                                 <InlineInput
                                                     type="number"
                                                     value={editing.value}
@@ -434,17 +580,54 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                                     onCancel={() => setEditing(null)}
                                                     className="w-16 mx-auto text-center"
                                                 />
-                                            ) : (
+                                            ) : valSL !== undefined ? (
                                                 <span
                                                     className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
-                                                        item.heSo > 1
+                                                        valSL > 1
                                                             ? 'bg-amber-100 text-amber-800 border border-amber-200'
                                                             : 'bg-slate-100 text-slate-600'
                                                     }`}
-                                                    title={isEditable ? 'Nhấp đúp để sửa hệ số quy đổi số lượng (VD: bán 1 gói tính SL là...)' : 'Hệ số quy đổi số lượng bán (không nhân doanh thu)'}
+                                                    title={isEditable ? 'Nhấp đúp để sửa hệ số quy đổi số lượng (bán 1 tính SL là...)' : 'Hệ số quy đổi số lượng bán (không nhân doanh thu)'}
                                                 >
-                                                    {item.heSo.toLocaleString('vi-VN')}
+                                                    {valSL.toLocaleString('vi-VN')}
                                                 </span>
+                                            ) : (
+                                                <span className="text-slate-300" title={isEditable ? 'Nhấp đúp để thêm hệ số SL' : undefined}>—</span>
+                                            )}
+                                        </td>
+                                        {/* Cột Hệ số DT */}
+                                        <td
+                                            className="px-3 py-2 text-center font-bold font-mono text-slate-700 cursor-pointer"
+                                            onDoubleClick={() =>
+                                                isEditable &&
+                                                setEditing({
+                                                    maSanPham: item.maSanPham,
+                                                    field: 'heSoDoanhThu',
+                                                    value: String(valDT !== undefined ? valDT : '1'),
+                                                })
+                                            }
+                                        >
+                                            {isEditingHeSoDT ? (
+                                                <InlineInput
+                                                    type="number"
+                                                    value={editing.value}
+                                                    onSave={handleInlineSave}
+                                                    onCancel={() => setEditing(null)}
+                                                    className="w-16 mx-auto text-center"
+                                                />
+                                            ) : valDT !== undefined ? (
+                                                <span
+                                                    className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                                                        valDT > 1
+                                                            ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                                                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                    }`}
+                                                    title={isEditable ? 'Nhấp đúp để sửa hệ số doanh thu (nhân vào doanh thu tính DTQĐ)' : 'Hệ số quy đổi doanh thu (DTQĐ)'}
+                                                >
+                                                    {valDT.toLocaleString('vi-VN')}
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-300" title={isEditable ? 'Nhấp đúp để thêm hệ số DT' : undefined}>—</span>
                                             )}
                                         </td>
                                         <td
