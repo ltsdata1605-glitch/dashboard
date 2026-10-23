@@ -20,6 +20,7 @@ import { laIdDocHopLe } from './firestoreDocId';
 import { moTaLoiLine, laHetHanMuc } from './lineErrors';
 import { layHanMuc, uocTinhNotifyCuaBot } from './lineQuota';
 import { vnNow } from './lineBotScheduleDue';
+import { autoRevokeStaleCouponsForBot } from './couponAutoRevoke';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -2144,6 +2145,7 @@ export const lineBotWebhook = onRequest(
                 ]));
 
                 let wasAlreadyUsed = false;
+                let wasRevoked = false;
                 let previousUser = '';
                 const toUpdate: FirebaseFirestore.DocumentReference[] = [];
                 // Thẻ lọc đầu tiên vừa chuyển USED có đủ quoteToken + chatId → bot gửi xác nhận trích dẫn thẻ đó
@@ -2156,6 +2158,14 @@ export const lineBotWebhook = onRequest(
                             if (d.usedBy && !previousUser) previousUser = d.usedBy;
                             continue;
                         }
+                        if (scan.kind === 'stock') {
+                            // Đối với coupon kho tồn: chỉ cho phép chuyển USED khi mã đang ở trạng thái SENT.
+                            // Nếu đã hoàn về UNUSED (do hết 30 phút chờ sao chép), không cho phép nhận nữa.
+                            if (d.status !== 'SENT') {
+                                wasRevoked = true;
+                                continue;
+                            }
+                        }
                         toUpdate.push(docItem.ref);
                         if (scan.kind === 'filtered' && !quoteTarget && d.quoteToken && d.chatId) {
                             quoteTarget = { bUid: scan.bUid, chatId: d.chatId, quoteToken: d.quoteToken, cardIndex: Number(d.cardIndex) || Number(req.body?.index || req.query.index) || 1, categoryLabel: d.categoryLabel || d.type || '' };
@@ -2164,6 +2174,7 @@ export const lineBotWebhook = onRequest(
                 }
                 const updatedCount = toUpdate.length;
                 const isDuplicate = wasAlreadyUsed && updatedCount === 0;
+                const isRevoked = !wasAlreadyUsed && wasRevoked && updatedCount === 0;
 
                 // Bot gửi tin xác nhận TRÍCH DẪN thẻ coupon (LIFF sendMessages không hỗ trợ quoteToken —
                 // developers.line.biz/en/reference/liff/#send-messages). Thất bại (hết hạn mức push…) →
@@ -2208,6 +2219,7 @@ export const lineBotWebhook = onRequest(
                     success: true,
                     updatedCount,
                     alreadyUsed: isDuplicate,
+                    revoked: isRevoked,
                     previousUser: previousUser || undefined,
                     quotedSent,
                     quoteError
@@ -2985,6 +2997,8 @@ export const lineBotWebhook = onRequest(
                 if (isTkMatch) {
                     // Dọn dẹp các coupon UNUSED đã quá hạn trước khi thống kê tồn kho
                     await cleanupExpiredCoupons(uid);
+                    // Tự động hoàn kho các mã SENT quá 30 phút chưa copy sử dụng
+                    await autoRevokeStaleCouponsForBot(uid, token).catch(() => {});
 
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
 
@@ -3149,6 +3163,8 @@ export const lineBotWebhook = onRequest(
 
                 if (claimCmd.isClaim && claimCmd.category && claimCmd.productIndex) {
                     await cleanupExpiredCoupons(uid);
+                    // Tự động hoàn kho các mã SENT quá 30 phút chưa copy sử dụng
+                    await autoRevokeStaleCouponsForBot(uid, token).catch(() => {});
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
 
                     // Tự động khôi phục mã bị kẹt do REVOKED hoặc lỗi quoteToken cũ
@@ -3215,6 +3231,7 @@ export const lineBotWebhook = onRequest(
                     const userProfile = await getLineUserProfile(token, senderUserId, groupId);
                     const displayName = userProfile?.displayName || 'Bạn';
                     const tagString = `@${displayName}`;
+                    const eventChatId = groupId || event.source?.roomId || senderUserId;
 
                     // Kiểm tra trùng MĐH nếu có nhập kèm
                     if (claimCmd.orderId) {
@@ -3282,6 +3299,8 @@ export const lineBotWebhook = onRequest(
 
                         if (!(await reserveCoupon(chosenDoc.ref, {
                             status: 'SENT',
+                            sentAt: now,
+                            chatId: eventChatId,
                             orderId: claimCmd.orderId || '',
                             recipient: displayName,
                             recipientId: senderUserId,
@@ -3328,6 +3347,8 @@ export const lineBotWebhook = onRequest(
                             category: claimCmd.category,
                             managerName: displayName,
                             senderUserId,
+                            groupId: groupId || null,
+                            chatId: eventChatId || null,
                             orderId: claimCmd.orderId || '',
                             status: 'PENDING',
                             quoteToken: event.message?.quoteToken,
@@ -3421,8 +3442,11 @@ export const lineBotWebhook = onRequest(
                             availableDocs.splice(chosenIdx, 1);
                             const cData = chosenDoc.data();
 
+                            const targetChatId = pData.chatId || pData.groupId || pData.senderUserId || groupId || '';
                             if (!(await reserveCoupon(chosenDoc.ref, {
                                 status: 'SENT',
+                                sentAt: now,
+                                chatId: targetChatId,
                                 warehouse: pData.warehouse || '',
                                 orderId: pData.orderId,
                                 recipient: pData.managerName || 'Nhân viên',
@@ -3531,8 +3555,11 @@ export const lineBotWebhook = onRequest(
                     // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
                     const seqApprove = await allocatePmhSequence(uid, 1, new Date(), couponKind(pData.category === 'EVENT' ? 'Event' : 'Giờ Vàng'));
 
+                    const targetChatId = pData.chatId || pData.groupId || pData.senderUserId || groupId || '';
                     if (!(await reserveCoupon(chosenDoc.ref, {
                         status: 'SENT',
+                        sentAt: now,
+                        chatId: targetChatId,
                         warehouse: pData.warehouse || '',
                         orderId: targetOrderId,
                         recipient: pData.managerName || 'Nhân viên',
@@ -3880,11 +3907,14 @@ export const lineBotWebhook = onRequest(
                         const couponDoc = chosenDoc;
                         const cData = couponDoc.data();
                         const now = new Date().toISOString();
+                        const eventChatId = groupId || event.source?.roomId || senderUserId;
                         // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
                         const seqForm = await allocatePmhSequence(uid, 1, new Date(), couponKind(String(cData.type || parsed.couponType || '')));
 
                         if (!(await reserveCoupon(couponDoc.ref, {
                             status: 'SENT',
+                            sentAt: now,
+                            chatId: eventChatId,
                             warehouse: parsed.warehouse || '',
                             orderId: parsed.orderId,
                             recipient: displayName,
@@ -3934,6 +3964,7 @@ export const lineBotWebhook = onRequest(
                     } else {
                         // CHẾ ĐỘ CHỜ ADMIN DUYỆT
                         const now = new Date().toISOString();
+                        const eventChatId = groupId || event.source?.roomId || senderUserId;
                         await db.collection('line_bots').doc(uid).collection('pending_requests').doc(parsed.orderId).set({
                             orderId: parsed.orderId,
                             warehouse: parsed.warehouse || '',
@@ -3942,6 +3973,7 @@ export const lineBotWebhook = onRequest(
                             managerName: displayName,
                             senderUserId,
                             groupId: groupId || null,
+                            chatId: eventChatId || null,
                             quoteToken: event.message?.quoteToken || null,
                             status: 'PENDING',
                             createdAt: now,

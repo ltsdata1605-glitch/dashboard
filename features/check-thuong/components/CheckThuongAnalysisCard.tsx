@@ -7,6 +7,7 @@ import { toast } from '../../../components/shared/ui/toast';
 interface CheckThuongAnalysisCardProps {
     analysis: CheckThuongAnalysisResult;
     totalBonus: number;
+    selectedCategoryName?: string | null;
     onSelectCategory?: (categoryName: string, channel: string) => void;
     onExportAnalysis?: () => void;
     cardRef?: React.RefObject<HTMLDivElement | null>;
@@ -25,6 +26,7 @@ const formatBonusShort = (bonus: number): string => {
 export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = ({
     analysis,
     totalBonus,
+    selectedCategoryName,
     onSelectCategory,
     onExportAnalysis,
     cardRef
@@ -130,29 +132,41 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                             </span>
                             <span>đang có thưởng nhưng ở vị trí mấp mé. Cần chú ý duy trì để không rớt hạng:</span>
                         </div>
-                        <ul className="mt-1.5 space-y-1 text-slate-700 dark:text-slate-300">
-                            {warningList.map((item, idx) => (
-                                <li key={idx} className="flex items-start gap-1.5">
-                                    <span className="text-slate-400 select-none">•</span>
-                                    <Button
-                                        variant="unstyled"
-                                        size="none"
-                                        type="button"
-                                        onClick={() => onSelectCategory?.(item.nganhHang, item.kenh)}
-                                        className="hover:text-amber-600 dark:hover:text-amber-400 hover:underline cursor-pointer text-left"
-                                    >
-                                        <span className="font-medium text-slate-800 dark:text-slate-200">{item.nganhHang}:</span>{' '}
-                                        <span className="text-slate-600 dark:text-slate-400">đang </span>
-                                        <span className="font-bold text-amber-700 dark:text-amber-400">
-                                            hạng {item.currentRank ?? '-'}
-                                        </span>
-                                        {item.cutoffRank !== undefined && (
-                                            <span className="text-slate-500 dark:text-slate-400"> (mốc Top {item.cutoffRank})</span>
-                                        )}
-                                        .
-                                    </Button>
-                                </li>
-                            ))}
+                        <ul className="mt-1.5 space-y-1.5 text-slate-700 dark:text-slate-300">
+                            {warningList.map((item, idx) => {
+                                const isSelected = Boolean(
+                                    selectedCategoryName &&
+                                    item.nganhHang?.trim().toUpperCase() === selectedCategoryName.trim().toUpperCase()
+                                );
+
+                                return (
+                                    <li key={idx} className="flex items-start gap-1.5">
+                                        <span className="text-slate-400 select-none mt-0.5">•</span>
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
+                                            type="button"
+                                            onClick={() => onSelectCategory?.(item.nganhHang, item.kenh)}
+                                            title={isSelected ? 'Đang lọc môn này • Bấm để đưa về trạng thái mặc định' : 'Bấm để lọc môn này trong bảng • Bấm lại để huỷ lọc'}
+                                            className={`cursor-pointer text-left transition-all ${
+                                                isSelected
+                                                    ? 'bg-amber-100/90 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 px-2 py-0.5 rounded-control ring-1.5 ring-amber-500 font-semibold shadow-2xs'
+                                                    : 'hover:text-amber-600 dark:hover:text-amber-400 hover:underline'
+                                            }`}
+                                        >
+                                            <span className="font-medium text-slate-800 dark:text-slate-200">{item.nganhHang}:</span>{' '}
+                                            <span className="text-slate-600 dark:text-slate-400">đang </span>
+                                            <span className="font-bold text-amber-700 dark:text-amber-400">
+                                                hạng {item.currentRank ?? '-'}
+                                            </span>
+                                            {item.cutoffRank !== undefined && (
+                                                <span className="text-slate-500 dark:text-slate-400"> (mốc Top {item.cutoffRank})</span>
+                                            )}
+                                            .
+                                        </Button>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 </div>
@@ -172,25 +186,37 @@ export const CheckThuongAnalysisCard: React.FC<CheckThuongAnalysisCardProps> = (
                             </span>
                             <span>sau để tối đa hóa giải thưởng:</span>
                         </div>
-                        <ul className="mt-1.5 space-y-1 text-slate-700 dark:text-slate-300">
-                            {opportunityList.map((item, idx) => (
-                                <li key={idx} className="flex items-start gap-1.5">
-                                    <span className="text-slate-400 select-none">•</span>
-                                    <Button
-                                        variant="unstyled"
-                                        size="none"
-                                        type="button"
-                                        onClick={() => onSelectCategory?.(item.name, item.kenh)}
-                                        className="hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline cursor-pointer text-left"
-                                    >
-                                        <span className="font-medium text-slate-800 dark:text-slate-200">{item.name}:</span>{' '}
-                                        <span className="text-slate-600 dark:text-slate-400">cần cải thiện </span>
-                                        <span className="font-bold text-emerald-800 dark:text-emerald-400">
-                                            {item.ranksNeeded} hạng.
-                                        </span>
-                                    </Button>
-                                </li>
-                            ))}
+                        <ul className="mt-1.5 space-y-1.5 text-slate-700 dark:text-slate-300">
+                            {opportunityList.map((item, idx) => {
+                                const isSelected = Boolean(
+                                    selectedCategoryName &&
+                                    item.name?.trim().toUpperCase() === selectedCategoryName.trim().toUpperCase()
+                                );
+
+                                return (
+                                    <li key={idx} className="flex items-start gap-1.5">
+                                        <span className="text-slate-400 select-none mt-0.5">•</span>
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
+                                            type="button"
+                                            onClick={() => onSelectCategory?.(item.name, item.kenh)}
+                                            title={isSelected ? 'Đang lọc môn này • Bấm để đưa về trạng thái mặc định' : 'Bấm để lọc môn này trong bảng • Bấm lại để huỷ lọc'}
+                                            className={`cursor-pointer text-left transition-all ${
+                                                isSelected
+                                                    ? 'bg-emerald-100/90 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 px-2 py-0.5 rounded-control ring-1.5 ring-emerald-500 font-semibold shadow-2xs'
+                                                    : 'hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline'
+                                            }`}
+                                        >
+                                            <span className="font-medium text-slate-800 dark:text-slate-200">{item.name}:</span>{' '}
+                                            <span className="text-slate-600 dark:text-slate-400">cần cải thiện </span>
+                                            <span className="font-bold text-emerald-800 dark:text-emerald-400">
+                                                {item.ranksNeeded} hạng.
+                                            </span>
+                                        </Button>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 </div>

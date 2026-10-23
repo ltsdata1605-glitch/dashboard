@@ -106,6 +106,7 @@ export const CheckThuongCategoryCards: React.FC<CheckThuongCategoryCardsProps> =
 
                                 return (
                                     <div
+                                        id={`category-item-${categoryName.trim().replace(/[^a-zA-Z0-9]/g, '-')}`}
                                         key={`${categoryName}-${index}`}
                                         onClick={() => onSelectCategory(categoryName, channel)}
                                         className="rounded-popup border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 overflow-hidden shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group/card"

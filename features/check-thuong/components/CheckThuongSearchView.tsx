@@ -20,6 +20,8 @@ import {
 } from '../services/checkThuongCalc';
 import { CheckThuongViewMode } from '../types';
 import { exportElementAsImage } from '../../../components/shared/export';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface CheckThuongSearchViewProps {
     competitionData: any[][];
@@ -47,6 +49,7 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
 }) => {
     const [viewMode, setViewMode] = useState<CheckThuongViewMode>('list');
     const [activeFilter, setActiveFilter] = useState<string>('all');
+    const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<{ name: string; channel: string } | null>(null);
 
     const bannerRef = useRef<HTMLDivElement>(null);
@@ -143,9 +146,45 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
     const groupDefs = getGroupDefinitions(store1Data, preprocessed);
     const analysis = analyzeStoreData(store1Data, preprocessed);
 
-    const filteredGroups = activeFilter === 'all'
+    let baseGroups = activeFilter === 'all'
         ? groupDefs
         : groupDefs.filter(g => g.key === activeFilter);
+
+    if (selectedCategoryName) {
+        const cleanTarget = selectedCategoryName.trim().toUpperCase();
+        baseGroups = baseGroups
+            .map(g => ({
+                ...g,
+                data: g.data.filter(row => {
+                    const cat = String(row[CHECK_THUONG_COLS.NGANH_HANG] || '').trim().toUpperCase();
+                    return cat === cleanTarget;
+                })
+            }))
+            .filter(g => g.data.length > 0);
+    }
+    const filteredGroups = baseGroups;
+
+    const handleSelectCategoryFromAnalysis = (categoryName: string, channel: string) => {
+        // 1. Đưa bộ lọc thẻ KPI về trạng thái mặc định ('all') ngay lập tức (không còn kẹt ở < 100%)
+        setActiveFilter('all');
+
+        // 2. Nếu đang lọc chính môn này rồi -> Bấm lại để huỷ lọc, đưa về trạng thái mặc định
+        if (selectedCategoryName && selectedCategoryName.trim().toUpperCase() === categoryName.trim().toUpperCase()) {
+            setSelectedCategoryName(null);
+            return;
+        }
+
+        // 3. Đặt môn thi cần lọc
+        setSelectedCategoryName(categoryName);
+
+        // 4. Tự động cuộn mượt xuống bảng danh sách ngành hàng để người dùng nhìn thấy ngay
+        setTimeout(() => {
+            const container = document.getElementById('check-thuong-categories-view');
+            if (container) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 50);
+    };
 
     const handleExportOverview = () => {
         const el = overviewExportRef.current || bannerRef.current;
@@ -191,7 +230,10 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
                     groups={groupDefs}
                     totalCount={totalCategories}
                     activeFilter={activeFilter}
-                    onSelectFilter={setActiveFilter}
+                    onSelectFilter={(filterKey) => {
+                        setSelectedCategoryName(null); // Bỏ lọc theo môn lẻ khi bấm thẻ trạng thái
+                        setActiveFilter(filterKey);
+                    }}
                     viewMode={viewMode}
                     onToggleViewMode={() => setViewMode(prev => prev === 'list' ? 'card' : 'list')}
                     onExportFiltered={() => {
@@ -207,42 +249,71 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
                         analysis={analysis}
                         totalBonus={totalBonus}
                         cardRef={analysisRef}
-                        onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
+                        selectedCategoryName={selectedCategoryName}
+                        onSelectCategory={handleSelectCategoryFromAnalysis}
                         onExportAnalysis={handleExportOverview}
                     />
                 </CheckThuongStatusSummary>
             </div>
 
-            {/* Category Groups View (List or Cards) */}
-            {viewMode === 'list' ? (
-                <CheckThuongCategoryTable
-                    groups={filteredGroups}
-                    preprocessed={preprocessed}
-                    onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
-                    onExportGroup={(groupKey) => {
-                        const el = document.getElementById(`group-section-${groupKey}`);
-                        if (el) {
-                            exportElementAsImage(el, `Nhom_${groupKey}_${code1}.png`, {
-                                progressTitle: `Xuất ảnh nhóm ${groupKey}`
-                            });
-                        }
-                    }}
-                />
-            ) : (
-                <CheckThuongCategoryCards
-                    groups={filteredGroups}
-                    preprocessed={preprocessed}
-                    onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
-                    onExportGroup={(groupKey) => {
-                        const el = document.getElementById(`group-section-${groupKey}`);
-                        if (el) {
-                            exportElementAsImage(el, `Nhom_${groupKey}_${code1}.png`, {
-                                progressTitle: `Xuất ảnh nhóm ${groupKey}`
-                            });
-                        }
-                    }}
-                />
+            {/* Banner hiển thị khi đang lọc theo môn thi từ Phân Tích & Đề Xuất */}
+            {selectedCategoryName && (
+                <div className="flex items-center justify-between p-2.5 px-3.5 rounded-control bg-sky-50/90 dark:bg-sky-950/50 border border-sky-200/80 dark:border-sky-800 text-xs shadow-2xs">
+                    <div className="flex items-center gap-2 text-sky-800 dark:text-sky-200 font-medium">
+                        <AppIcon name="filter" size="xs" className="text-sky-600 dark:text-sky-400" />
+                        <span>
+                            Đang lọc theo môn thi:{' '}
+                            <strong className="font-bold text-sky-900 dark:text-sky-100">{selectedCategoryName}</strong>
+                        </span>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        onClick={() => {
+                            setSelectedCategoryName(null);
+                            setActiveFilter('all');
+                        }}
+                        className="text-xs text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 font-semibold gap-1 h-7 px-2.5 rounded-control"
+                    >
+                        <AppIcon name="close" size="xs" />
+                        <span>Đưa về mặc định</span>
+                    </Button>
+                </div>
             )}
+
+            {/* Category Groups View (List or Cards) */}
+            <div id="check-thuong-categories-view">
+                {viewMode === 'list' ? (
+                    <CheckThuongCategoryTable
+                        groups={filteredGroups}
+                        preprocessed={preprocessed}
+                        onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
+                        onExportGroup={(groupKey) => {
+                            const el = document.getElementById(`group-section-${groupKey}`);
+                            if (el) {
+                                exportElementAsImage(el, `Nhom_${groupKey}_${code1}.png`, {
+                                    progressTitle: `Xuất ảnh nhóm ${groupKey}`
+                                });
+                            }
+                        }}
+                    />
+                ) : (
+                    <CheckThuongCategoryCards
+                        groups={filteredGroups}
+                        preprocessed={preprocessed}
+                        onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
+                        onExportGroup={(groupKey) => {
+                            const el = document.getElementById(`group-section-${groupKey}`);
+                            if (el) {
+                                exportElementAsImage(el, `Nhom_${groupKey}_${code1}.png`, {
+                                    progressTitle: `Xuất ảnh nhóm ${groupKey}`
+                                });
+                            }
+                        }}
+                    />
+                )}
+            </div>
 
             {/* Ranking Modal */}
             {selectedCategory && (
@@ -251,7 +322,12 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
                     channel={selectedCategory.channel}
                     currentStoreFullName={storeFullName}
                     competitionData={competitionData}
-                    onClose={() => setSelectedCategory(null)}
+                    onClose={() => {
+                        setSelectedCategory(null);
+                        // Đóng modal đưa về trạng thái mặc định
+                        setSelectedCategoryName(null);
+                        setActiveFilter('all');
+                    }}
                 />
             )}
         </div>

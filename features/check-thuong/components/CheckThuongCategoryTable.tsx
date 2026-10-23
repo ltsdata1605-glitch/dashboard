@@ -243,6 +243,7 @@ export const CheckThuongCategoryTable: React.FC<CheckThuongCategoryTableProps> =
 
                                         return (
                                             <tr
+                                                id={`category-item-${categoryName.trim().replace(/[^a-zA-Z0-9]/g, '-')}`}
                                                 key={`${categoryName}-${index}`}
                                                 onClick={() => onSelectCategory(categoryName, channel)}
                                                 className="hover:bg-sky-50/60 dark:hover:bg-sky-950/20 cursor-pointer transition-colors group/row"

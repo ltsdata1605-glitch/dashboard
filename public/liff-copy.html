@@ -240,6 +240,12 @@
                 closeNow(1400);
                 return;
             }
+            if (markRes && markRes.revoked) {
+                statusTitle.textContent = '⚠️ Mã đã tự động hoàn kho!';
+                statusDesc.textContent = 'Mã đã tự động hoàn kho do chưa được sao chép sử dụng.';
+                closeNow(1800);
+                return;
+            }
             // Máy chủ chậm (cold start): request keepalive vẫn tới nơi và ghi nhận — đóng luôn.
             statusTitle.textContent = '✅ Đã copy mã!';
             statusDesc.textContent = 'Đã ghi nhận sử dụng.';

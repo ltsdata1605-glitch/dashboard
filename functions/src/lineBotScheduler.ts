@@ -12,6 +12,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db } from './firebaseAdmin';
 import { dueSlot, renderTemplate, vnNow, type ScheduleLike } from './lineBotScheduleDue';
 import { moTaLoiLine } from './lineErrors';
+import { autoRevokeAllBotsStaleCoupons } from './couponAutoRevoke';
 
 const SCHEDULER_REGION = 'asia-southeast1';
 
@@ -72,6 +73,11 @@ export const lineBotUserSchedules = onSchedule(
     async () => {
         const now = vnNow();
         try {
+            // Tự động quét và hoàn kho các mã SENT quá 30 phút chưa copy sử dụng
+            await autoRevokeAllBotsStaleCoupons().catch(err => {
+                console.error('[lineBotUserSchedules] Lỗi tự động hoàn kho:', err);
+            });
+
             const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
             for (const { doc: botDoc, config } of await botsWithSecrets(botsSnap.docs)) {
                 const uid = botDoc.id;
