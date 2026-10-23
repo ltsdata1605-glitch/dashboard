@@ -1,12 +1,80 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import type { ProductConfig } from '../../../types';
-import { toCloudProductConfig, fromCloudProductConfig, isProductConfigComplete } from '../../../services/productConfigSerialization';
-import type { GlobalProductConfigDoc, ProductConfigSummary } from '../types';
+import { toCloudProductConfig, fromCloudProductConfig, isProductConfigComplete, DEFAULT_REVENUE_ELIGIBLE_HTX } from '../../../services/productConfigSerialization';
+import type { GlobalProductConfigDoc, ProductConfigSummary, HtxTableItem, HtxClassificationType } from '../types';
 import { DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../../../constants';
 
 export const GLOBAL_PRODUCT_CONFIG_DOC_ID = 'global_product_config';
 export const SHARED_CONFIGS_COLLECTION = 'shared_configs';
+
+export function extractHtxTableItems(config: ProductConfig | null): HtxTableItem[] {
+    if (!config) return [];
+
+    const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+
+    // Nếu đã có htxItems lưu sẵn
+    if (config.htxItems && config.htxItems.length > 0) {
+        return config.htxItems.map(item => ({
+            id: item.name,
+            name: item.name,
+            isRevenueEligible: Boolean(item.isRevenueEligible),
+            classification: item.classification || 'khac',
+            description: item.description,
+        })).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+    }
+
+    const itemsMap = new Map<string, HtxTableItem>();
+    const revSet = config.revenueEligibleHTX || new Set<string>();
+    const nonRevSet = config.nonRevenueEligibleHTX || new Set<string>();
+    const classMap = config.htxClassification || {};
+
+    const allNames: string[] = [];
+    revSet.forEach(n => allNames.push(n));
+    nonRevSet.forEach(n => allNames.push(n));
+    Object.keys(classMap).forEach(n => allNames.push(n));
+
+    // Nếu hoàn toàn rỗng, nạp từ DEFAULT_REVENUE_ELIGIBLE_HTX
+    if (allNames.length === 0) {
+        DEFAULT_REVENUE_ELIGIBLE_HTX.forEach(h => allNames.push(h));
+    }
+
+    allNames.forEach(rawName => {
+        const trimmed = (rawName || '').trim();
+        if (!trimmed) return;
+        const norm = clean(trimmed);
+
+        const isRev = revSet.has(trimmed) || revSet.has(norm) || (revSet.size === 0 && DEFAULT_REVENUE_ELIGIBLE_HTX.some(d => clean(d) === norm));
+        let classification: HtxClassificationType = classMap[trimmed] || classMap[norm] || 'khac';
+        if (classification === 'khac') {
+            if (norm.includes('trả góp') || norm.includes('tra gop')) classification = 'tra_gop';
+            else if (norm.includes('thu hộ') || norm.includes('thu ho')) classification = 'thu_ho';
+            else if (isRev || norm.includes('bán') || norm.includes('ban') || norm.includes('tiền mặt')) classification = 'tien_mat';
+        }
+
+        const existing = itemsMap.get(norm);
+        if (!existing) {
+            itemsMap.set(norm, {
+                id: trimmed,
+                name: trimmed,
+                isRevenueEligible: isRev,
+                classification,
+            });
+        } else {
+            // Ưu tiên tên viết hoa / đẹp hơn
+            if (trimmed !== norm && existing.name === norm) {
+                existing.name = trimmed;
+                existing.id = trimmed;
+            }
+            if (isRev) existing.isRevenueEligible = true;
+            if (classification !== 'khac' && existing.classification === 'khac') {
+                existing.classification = classification;
+            }
+        }
+    });
+
+    return Array.from(itemsMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+}
 
 export const computeConfigSummary = (config: ProductConfig): ProductConfigSummary => {
     const parentGroups = Object.keys(config.groups || {});
@@ -21,6 +89,7 @@ export const computeConfigSummary = (config: ProductConfig): ProductConfigSummar
     const revenueHtxCount = config.revenueEligibleHTX instanceof Set ? config.revenueEligibleHTX.size : 0;
     const nonRevenueHtxCount = config.nonRevenueEligibleHTX instanceof Set ? config.nonRevenueEligibleHTX.size : 0;
     const productCodeCount = config.productCodeItems?.length || 0;
+    const htxCount = config.htxItems?.length || extractHtxTableItems(config).length;
 
     return {
         parentGroupCount: parentGroups.length,
@@ -31,6 +100,7 @@ export const computeConfigSummary = (config: ProductConfig): ProductConfigSummar
         revenueHtxCount,
         nonRevenueHtxCount,
         productCodeCount,
+        htxCount,
     };
 };
 
@@ -104,7 +174,7 @@ export async function parseExcelProductConfigFile(file: File): Promise<ProductCo
     return config;
 }
 
-export async function exportProductConfigToExcel(config: ProductConfig): Promise<void> {
+export async function exportProductConfigToExcel(config: ProductConfig, customFileName?: string): Promise<void> {
     const XLSX = await import('xlsx');
     const workbook = XLSX.utils.book_new();
 
@@ -166,14 +236,33 @@ export async function exportProductConfigToExcel(config: ProductConfig): Promise
         XLSX.utils.book_append_sheet(workbook, productSheet, 'Bảo Hiểm ĐMX');
     }
 
-    // Sheet 3: Hình thức xuất
-    const htxRows: Array<[string, string]> = [['Tên Hình Thức Xuất', 'Loại']];
-    (config.revenueEligibleHTX || new Set()).forEach(h => htxRows.push([h, 'Doanh thu']));
-    (config.nonRevenueEligibleHTX || new Set()).forEach(h => htxRows.push([h, 'Không tính DT']));
+    // Sheet 3: Hình thức xuất (Cột chuẩn: Tên, Phân loại, Tính DT)
+    const htxItems = extractHtxTableItems(config);
+    const classificationLabels: Record<string, string> = {
+        tien_mat: 'Tiền mặt',
+        tra_gop: 'Trả góp',
+        thu_ho: 'Thu hộ',
+        khac: 'Khác',
+    };
+    const htxRows: Array<[string, string, string]> = [['Tên Hình Thức Xuất', 'Phân Loại', 'Tính Doanh Thu']];
+    htxItems.forEach(h => {
+        htxRows.push([
+            h.name,
+            classificationLabels[h.classification] || h.classification,
+            h.isRevenueEligible ? 'Có' : 'Không'
+        ]);
+    });
     const htxSheet = XLSX.utils.aoa_to_sheet(htxRows);
+    htxSheet['!cols'] = [
+        { wch: 38 }, // Tên Hình Thức Xuất
+        { wch: 18 }, // Phân Loại
+        { wch: 18 }, // Tính Doanh Thu
+    ];
     XLSX.utils.book_append_sheet(workbook, htxSheet, 'Hình thức xuất');
 
-    XLSX.writeFile(workbook, `Cau_Hinh_Dashboard_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const dateStr = new Date().toISOString().split('T')[0];
+    const fileName = customFileName || `Khai_Bao_Nganh_Hang_${dateStr}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
 }
 
 export const DEFAULT_CATEGORY_SAMPLE_ROWS: Array<[string, string, string, string, number]> = [
@@ -284,9 +373,10 @@ export async function exportProductCodeConfigToExcel(
 
     XLSX.utils.book_append_sheet(workbook, productSheet, 'Bảo Hiểm ĐMX');
 
+    const dateStr = new Date().toISOString().split('T')[0];
     const fileName = isTemplate
-        ? `Mau_Cau_Hinh_Ma_San_Pham_${new Date().toISOString().split('T')[0]}.xlsx`
-        : `Cau_Hinh_Ma_San_Pham_${new Date().toISOString().split('T')[0]}.xlsx`;
+        ? `Mau_Cau_Hinh_Theo_Ma_San_Pham_${dateStr}.xlsx`
+        : `Cau_Hinh_Theo_Ma_San_Pham_${dateStr}.xlsx`;
 
     XLSX.writeFile(workbook, fileName);
 }
@@ -386,5 +476,167 @@ export async function parseExcelProductCodeConfigFile(file: File): Promise<impor
     }
 
     return items;
+}
+
+export const DEFAULT_HTX_SAMPLE_ROWS: Array<[string, string, string, string]> = [
+    ['Xuất bán lẻ tại siêu thị', 'Tiền mặt', 'Có', 'Bán lẻ tiền mặt trực tiếp tại siêu thị'],
+    ['Xuất bán hàng trả góp tại siêu thị', 'Trả góp', 'Có', 'Bán hàng trả góp qua công ty tài chính'],
+    ['Xuất bán online tại siêu thị', 'Tiền mặt', 'Có', 'Đơn hàng online nhận tại siêu thị'],
+    ['Xuất bán hàng trả góp online', 'Trả góp', 'Có', 'Đơn hàng online thanh toán trả góp'],
+    ['Xuất dịch vụ thu hộ tiền điện', 'Thu hộ', 'Không', 'Dịch vụ thu hộ, không tính vào doanh thu bán hàng'],
+    ['Xuất hàng khuyến mãi tặng kèm', 'Khác', 'Không', 'Hàng khuyến mãi tặng khách, không tính doanh số'],
+    ['Xuất tiêu dùng nội bộ', 'Khác', 'Không', 'Vật tư tiêu hao nội bộ'],
+];
+
+export async function exportHtxConfigToExcel(items: HtxTableItem[]): Promise<void> {
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.utils.book_new();
+
+    const classificationLabels: Record<HtxClassificationType, string> = {
+        tien_mat: 'Tiền mặt',
+        tra_gop: 'Trả góp',
+        thu_ho: 'Thu hộ',
+        khac: 'Khác',
+    };
+
+    const rows: Array<[string, string, string, string]> = [
+        ['Tên Hình Thức Xuất', 'Phân Loại', 'Tính Doanh Thu', 'Ghi Chú']
+    ];
+
+    items.forEach(item => {
+        rows.push([
+            item.name,
+            classificationLabels[item.classification] || item.classification,
+            item.isRevenueEligible ? 'Có' : 'Không',
+            item.description || ''
+        ]);
+    });
+
+    const sheet = XLSX.utils.aoa_to_sheet(rows);
+    sheet['!cols'] = [
+        { wch: 38 }, // Tên Hình Thức Xuất
+        { wch: 18 }, // Phân Loại
+        { wch: 18 }, // Tính Doanh Thu
+        { wch: 40 }, // Ghi Chú
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Hình thức xuất');
+    const dateStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `Hinh_Thuc_Xuat_${dateStr}.xlsx`);
+}
+
+export async function exportHtxConfigTemplateToExcel(): Promise<void> {
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.utils.book_new();
+
+    const rows: Array<[string, string, string, string]> = [
+        ['Tên Hình Thức Xuất', 'Phân Loại', 'Tính Doanh Thu', 'Ghi Chú'],
+        ...DEFAULT_HTX_SAMPLE_ROWS
+    ];
+
+    const sheet = XLSX.utils.aoa_to_sheet(rows);
+    sheet['!cols'] = [
+        { wch: 38 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 40 },
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Hình thức xuất');
+    const dateStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `Mau_Hinh_Thuc_Xuat_${dateStr}.xlsx`);
+}
+
+export async function parseExcelHtxConfigFile(file: File): Promise<HtxTableItem[]> {
+    const arrayBuffer = await file.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.read(data, { type: 'array' });
+
+    let targetSheetName = workbook.SheetNames.find((name: string) => {
+        const ln = name.toLowerCase().normalize('NFC');
+        return ln.includes('hình thức') || ln.includes('hinh thuc') || ln.includes('htx') || ln.includes('xuất');
+    }) || workbook.SheetNames[0];
+
+    const sheet = workbook.Sheets[targetSheetName];
+    if (!sheet) {
+        throw new Error('File Excel không có sheet nào hợp lệ.');
+    }
+
+    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (rows.length < 2) {
+        throw new Error(`Sheet '${targetSheetName}' không có đủ dữ liệu.`);
+    }
+
+    const headers = rows[0].map((h: any) => String(h || '').trim().toLowerCase().normalize('NFC'));
+    const nameIdx = headers.findIndex((h: string) =>
+        h.includes('hình thức xuất') || h.includes('hinh thuc xuat') || h === 'tên hình thức xuất' || h === 'tên' || h === 'htx' || h === 'name'
+    );
+    const classIdx = headers.findIndex((h: string) =>
+        h.includes('phân loại') || h.includes('phan loai') || h === 'loại' || h === 'hình thức' || h === 'hinh thuc' || h.includes('classification') || h.includes('type')
+    );
+    const revenueIdx = headers.findIndex((h: string) =>
+        h.includes('tính doanh thu') || h.includes('tính dt') || h.includes('tinh dt') || h.includes('doanh thu') || h.includes('tinhdoanhthu')
+    );
+    const descIdx = headers.findIndex((h: string) =>
+        h.includes('ghi chú') || h.includes('ghi chu') || h.includes('note') || h.includes('description')
+    );
+
+    if (nameIdx === -1) {
+        throw new Error(`Sheet '${targetSheetName}' thiếu cột bắt buộc: 'Tên Hình Thức Xuất'. Vui lòng kiểm tra tiêu đề các cột.`);
+    }
+
+    const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+    const itemsMap = new Map<string, HtxTableItem>();
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const rawName = String(row[nameIdx] || '').trim();
+        if (!rawName) continue;
+        const norm = clean(rawName);
+
+        const rawClass = classIdx !== -1 ? clean(String(row[classIdx] || '')) : '';
+        const rawRevenue = revenueIdx !== -1 ? clean(String(row[revenueIdx] || '')) : '';
+        const desc = descIdx !== -1 ? String(row[descIdx] || '').trim() : undefined;
+
+        let classification: HtxClassificationType = 'khac';
+        if (rawClass.includes('trả góp') || rawClass.includes('tra gop')) {
+            classification = 'tra_gop';
+        } else if (rawClass.includes('tiền mặt') || rawClass.includes('tien mat')) {
+            classification = 'tien_mat';
+        } else if (rawClass.includes('thu hộ') || rawClass.includes('thu ho')) {
+            classification = 'thu_ho';
+        } else {
+            if (norm.includes('trả góp') || norm.includes('tra gop')) classification = 'tra_gop';
+            else if (norm.includes('thu hộ') || norm.includes('thu ho')) classification = 'thu_ho';
+            else if (norm.includes('bán') || norm.includes('ban') || norm.includes('tiền mặt')) classification = 'tien_mat';
+        }
+
+        let isRevenueEligible = false;
+        if (rawRevenue) {
+            isRevenueEligible = (
+                rawRevenue === 'có' || rawRevenue === 'co' || rawRevenue === 'yes' ||
+                rawRevenue === '1' || rawRevenue === 'true' || rawRevenue.includes('doanh thu') ||
+                rawRevenue.includes('tính')
+            );
+        } else {
+            // Mặc định: tiền mặt và trả góp tính DT; thu hộ và khác không tính DT
+            isRevenueEligible = (classification === 'tien_mat' || classification === 'tra_gop');
+        }
+
+        itemsMap.set(norm, {
+            id: rawName,
+            name: rawName,
+            isRevenueEligible,
+            classification,
+            description: desc,
+        });
+    }
+
+    if (itemsMap.size === 0) {
+        throw new Error(`Không tìm thấy dòng hình thức xuất hợp lệ nào trong sheet '${targetSheetName}'.`);
+    }
+
+    return Array.from(itemsMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
 }
 

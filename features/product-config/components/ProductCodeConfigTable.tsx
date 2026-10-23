@@ -197,103 +197,74 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
     );
 
     return (
-        <div className="bg-white border border-slate-200 rounded-card p-3.5 shadow-sm space-y-3">
-            {/* Header toolbar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-                <div className="flex flex-wrap items-center gap-2 flex-1">
-                    <div className="relative flex-1 min-w-[200px] max-w-sm">
-                        <Input
-                            dense
-                            placeholder="Tìm mã sản phẩm, tên sản phẩm, loại, nhóm..."
-                            value={search}
-                            onChange={e => handleSearchChange(e.target.value)}
-                            className="h-8 text-xs pl-8 pr-2"
-                        />
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                            <AppIcon name="search" size="xs" />
-                        </span>
-                    </div>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-card overflow-hidden shadow-sm">
+            {/* Filter Bar */}
+            <div className="p-3 bg-slate-50/70 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch sm:items-center justify-between">
+                <div className="flex items-center gap-2 w-full sm:w-auto flex-1 max-w-md">
+                    <Input
+                        dense
+                        leftIcon="search"
+                        placeholder="Tìm mã sản phẩm, tên sản phẩm, loại, nhóm..."
+                        value={search}
+                        onChange={e => handleSearchChange(e.target.value)}
+                        className="h-8 text-xs rounded-control w-full"
+                    />
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
+                    {isEditable && (
+                        <Button
+                            variant="secondary"
+                            size="none"
+                            onClick={() => setIsAdding(!isAdding)}
+                            className="ycx-hit h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-semibold rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                        >
+                            <AppIcon name={isAdding ? 'close' : 'add'} size="sm" />
+                            <span>{isAdding ? 'Đóng' : 'Thêm mới'}</span>
+                        </Button>
+                    )}
 
                     {uniqueNhoms.length > 0 && (
-                        <Select
-                            dense
-                            value={selectedNhom}
-                            onChange={e => handleNhomChange(e.target.value)}
-                            className="h-8 text-xs w-36"
-                        >
-                            <option value="all">Tất cả nhóm ({uniqueNhoms.length})</option>
-                            {uniqueNhoms.map(n => (
-                                <option key={n} value={n}>
-                                    {n}
-                                </option>
-                            ))}
-                        </Select>
+                        <div className="flex-1 sm:w-44 min-w-0">
+                            <Select
+                                dense
+                                value={selectedNhom}
+                                onChange={e => handleNhomChange(e.target.value)}
+                                className="h-8 text-xs rounded-control pl-2 pr-7 truncate"
+                            >
+                                <option value="all">Tất cả nhóm ({uniqueNhoms.length})</option>
+                                {uniqueNhoms.map(n => (
+                                    <option key={n} value={n}>
+                                        {n}
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
                     )}
 
                     {uniqueSheets.length > 1 && (
-                        <Select
-                            dense
-                            value={selectedSheet}
-                            onChange={e => handleSheetChange(e.target.value)}
-                            className="h-8 text-xs w-36"
-                        >
-                            <option value="all">Tất cả nguồn sheet</option>
-                            {uniqueSheets.map(s => (
-                                <option key={s} value={s}>
-                                    {s}
-                                </option>
-                            ))}
-                        </Select>
+                        <div className="flex-1 sm:w-36 min-w-0">
+                            <Select
+                                dense
+                                value={selectedSheet}
+                                onChange={e => handleSheetChange(e.target.value)}
+                                className="h-8 text-xs rounded-control pl-2 pr-7 truncate"
+                            >
+                                <option value="all">Tất cả nguồn sheet</option>
+                                {uniqueSheets.map(s => (
+                                    <option key={s} value={s}>
+                                        {s}
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
                     )}
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                    <span className="h-8 text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 rounded-control inline-flex items-center justify-center">
-                        {filteredItems.length} sản phẩm
-                    </span>
-
-                    <Button
-                        variant="secondary"
-                        size="none"
-                        type="button"
-                        onClick={() => exportProductCodeConfigToExcel([], { asTemplate: true })}
-                        className="ycx-hit h-8 px-2.5 gap-1.5 text-xs font-semibold rounded-control text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        title="Tải file mẫu Excel (gồm 3 dòng mẫu minh họa cho 3 loại hệ số: SL, DT, Cả hai)"
-                    >
-                        <AppIcon name="download" size="xs" />
-                        <span className="hidden sm:inline">Tải file mẫu</span>
-                    </Button>
-
-                    {isEditable && (
-                        <Button
-                            variant="primary"
-                            size="none"
-                            onClick={() => setIsAdding(true)}
-                            className="ycx-hit h-8 px-3 gap-1 text-xs font-semibold rounded-control bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center cursor-pointer"
-                        >
-                            <AppIcon name="add" size="xs" />
-                            <span>Thêm mới</span>
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            {/* Banner hướng dẫn nghiệp vụ: Hệ số SL và Hệ số DT */}
-            <div className="flex items-start gap-2.5 p-2.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-control text-xs text-sky-900 dark:text-sky-200">
-                <AppIcon name="info" size="xs" className="shrink-0 mt-0.5 text-sky-600 dark:text-sky-400" />
-                <div className="space-y-1">
-                    <div>
-                        <strong>Hệ số quy đổi số lượng (SL):</strong> Áp dụng khi tính <strong>số lượng bán ra</strong> (Weighted Quantity) cho từng mã SP/dịch vụ (VD: VieON, Bản quyền, Bảo hiểm...). <em>Không nhân vào doanh thu</em>.
-                    </div>
-                    <div>
-                        <strong>Hệ số quy đổi doanh thu (DT):</strong> Nhân trực tiếp vào <strong>doanh thu thực tế</strong> để tính Doanh Thu Quy Đổi (DTQĐ) riêng cho mã sản phẩm.
-                    </div>
                 </div>
             </div>
 
             {/* Modal/Form thêm mới */}
-            {isAdding && (
-                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-control space-y-3">
+            {isAdding && isEditable && (
+                <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/20 border-b border-emerald-200 dark:border-emerald-800/60 space-y-3">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
                             <AppIcon name="add" size="xs" /> Thêm mới Mã Sản Phẩm
@@ -448,15 +419,15 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
             )}
 
             {/* Bảng dữ liệu chuẩn có đầy đủ cột Hệ số SL và Hệ số DT */}
-            <div className="overflow-x-auto border border-slate-200 rounded-control">
+            <div className="overflow-x-auto max-h-[500px]">
                 <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                        <tr className="bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider">
-                            <th className="px-3 py-2.5 w-12 text-center border-r border-slate-700">STT</th>
-                            <th className="px-3 py-2.5 min-w-[140px] border-r border-slate-700">MÃ SẢN PHẨM</th>
-                            <th className="px-3 py-2.5 min-w-[240px] border-r border-slate-700">TÊN SẢN PHẨM</th>
+                    <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700/80">
+                        <tr>
+                            <th className="py-2.5 px-3 w-12 text-center">STT</th>
+                            <th className="py-2.5 px-3 min-w-[140px]">MÃ SẢN PHẨM</th>
+                            <th className="py-2.5 px-3 min-w-[220px]">TÊN SẢN PHẨM</th>
                             <th 
-                                className="px-3 py-2.5 w-24 text-center border-r border-slate-700 select-none"
+                                className="py-2.5 px-3 w-28 text-center select-none"
                                 title="Hệ số quy đổi số lượng (Weighted Quantity). Ví dụ: bán 1 gói có hệ số 2 sẽ tính số lượng là 2. Tuyệt đối không nhân vào doanh thu."
                             >
                                 <div className="flex flex-col items-center justify-center leading-tight">
@@ -465,7 +436,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                 </div>
                             </th>
                             <th 
-                                className="px-3 py-2.5 w-24 text-center border-r border-slate-700 select-none"
+                                className="py-2.5 px-3 w-28 text-center select-none"
                                 title="Hệ số quy đổi doanh thu (DTQĐ). Nhân trực tiếp vào doanh thu thực tế của mã sản phẩm khi tính DTQĐ."
                             >
                                 <div className="flex flex-col items-center justify-center leading-tight">
@@ -473,12 +444,12 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                     <span className="text-[10px] font-normal text-slate-400 lowercase tracking-normal">(nhân DT)</span>
                                 </div>
                             </th>
-                            <th className="px-3 py-2.5 min-w-[120px] border-r border-slate-700">LOẠI</th>
-                            <th className="px-3 py-2.5 min-w-[100px] border-r border-slate-700">NHÓM</th>
-                            {isEditable && <th className="px-3 py-2.5 w-20 text-center">Thao tác</th>}
+                            <th className="py-2.5 px-3 min-w-[120px]">LOẠI</th>
+                            <th className="py-2.5 px-3 min-w-[100px]">NHÓM</th>
+                            {isEditable && <th className="py-2.5 px-3 w-16 text-center"></th>}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-sans">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
                         {pagedItems.length === 0 ? (
                             <tr>
                                 <td
@@ -529,7 +500,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                 return (
                                     <tr
                                         key={`${item.maSanPham}-${idx}`}
-                                        className="hover:bg-sky-50/50 transition-colors"
+                                        className="hover:bg-sky-50/50 dark:hover:bg-slate-700/40 transition-colors group"
                                     >
                                         <td className="px-3 py-2 text-center text-slate-400 font-mono text-[11px]">
                                             {stt}
@@ -681,13 +652,13 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                             )}
                                         </td>
                                         {isEditable && (
-                                            <td className="px-3 py-2 text-center">
+                                            <td className="py-2 px-1 text-center align-middle">
                                                 <Button
                                                     variant="unstyled"
                                                     size="none"
                                                     type="button"
                                                     onClick={() => setHoiXoaMa({ mo: true, ma: item.maSanPham })}
-                                                    className="ycx-hit p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-rose-50 transition-colors"
+                                                    className="ycx-hit opacity-60 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-500 cursor-pointer"
                                                     title="Xoá mã sản phẩm"
                                                     aria-label={`Xoá mã sản phẩm ${item.maSanPham}`}
                                                 >
@@ -704,10 +675,11 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
             </div>
 
             {/* Phân trang */}
-            {filteredItems.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 text-xs text-slate-500">
-                    <div className="flex items-center gap-2">
-                        <span>Hiển thị mỗi trang:</span>
+            {totalPages > 1 && (
+                <div className="p-3 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                        <span>Trang {page} / {totalPages}</span>
+                        <span className="text-slate-300 dark:text-slate-600">|</span>
                         <Select
                             dense
                             fullWidth={false}
@@ -717,39 +689,34 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                 setPageSize(Number(e.target.value));
                                 setPage(1);
                             }}
-                            className="border-slate-200 text-slate-700"
+                            className="h-7 text-xs border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
                         >
-                            <option value={25}>25 mục</option>
-                            <option value={50}>50 mục</option>
-                            <option value={100}>100 mục</option>
+                            <option value={25}>25 mục/trang</option>
+                            <option value={50}>50 mục/trang</option>
+                            <option value={100}>100 mục/trang</option>
                         </Select>
-                        <span className="text-slate-400">|</span>
-                        <span>
-                            Trang <strong>{page}</strong> / <strong>{totalPages}</strong> (
-                            {filteredItems.length} mục)
-                        </span>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         <Button
                             variant="secondary"
                             size="sm"
                             disabled={page <= 1}
                             onClick={() => setPage(p => Math.max(1, p - 1))}
-                            className="h-7 text-xs px-2"
+                            className="h-7.5 px-2.5 text-xs gap-1"
                         >
-                            <AppIcon name="chevronLeft" size="xs" />
-                            <span>Trước</span>
+                            <AppIcon name="chevronLeft" size="sm" />
+                            Trước
                         </Button>
                         <Button
                             variant="secondary"
                             size="sm"
                             disabled={page >= totalPages}
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                            className="h-7 text-xs px-2"
+                            className="h-7.5 px-2.5 text-xs gap-1"
                         >
-                            <span>Sau</span>
-                            <AppIcon name="chevronRight" size="xs" />
+                            Sau
+                            <AppIcon name="chevronRight" size="sm" />
                         </Button>
                     </div>
                 </div>

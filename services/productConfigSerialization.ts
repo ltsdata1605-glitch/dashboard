@@ -55,10 +55,24 @@ export function autoNormalizeAndClassifyHTX(config: ProductConfig): void {
 
     // 2. Tự động khắc phục lỗi phân loại nhầm:
     // Nếu trong nonRevenueEligibleHTX có các hình thức xuất bán hàng thực tế của MWG (xuất bán hàng tại siêu thị, xuất bán trả góp...)
-    // thì chuyển ngay sang revenueEligibleHTX
+    // thì chuyển ngay sang revenueEligibleHTX, trừ khi người dùng đã chủ động tắt tính doanh thu trong htxItems.
+    const explicitNonRevenueSet = new Set<string>();
+    if (config.htxItems && config.htxItems.length > 0) {
+        config.htxItems.forEach(item => {
+            if (!item.isRevenueEligible) {
+                explicitNonRevenueSet.add(clean(item.name));
+            }
+        });
+    }
+
     const toMoveToRevenue: string[] = [];
     config.nonRevenueEligibleHTX.forEach(rawHtx => {
         const norm = clean(rawHtx);
+        if (explicitNonRevenueSet.has(norm)) {
+            // Người dùng đã chủ động tắt tính doanh thu cho hình thức xuất này trên Web, không đảo lại
+            return;
+        }
+
         const isThuHo = norm.includes('thu hộ') || norm.includes('thu ho');
         const isKmHoacKhac = norm.includes('khuyến mãi') || norm.includes('miễn phí') || norm.includes('tiêu dùng nội bộ') || norm.includes('cho mượn') || norm.includes('trả hàng') || norm.includes('điều chỉnh') || norm.includes('đổi code') || norm.includes('tiêu hao');
         const isBanHang = norm.includes('xuất bán') || norm.includes('bán hàng') || norm.includes('bán online') || norm.includes('bán lẻ') || norm.includes('bán trả góp') || norm.includes('trả góp online') || norm.includes('pre-order');

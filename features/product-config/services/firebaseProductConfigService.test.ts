@@ -293,6 +293,78 @@ describe('firebaseProductConfigService & serialization', () => {
         expect(parsedConfig.childToParentMap['10 - Chuột máy tính']).toBe('Phụ kiện');
         expect(parsedConfig.quantityMultiplierMap['4479 - Dịch Vụ Bảo Hiểm']).toBe(4.18);
     });
+
+    it('extractHtxTableItems accurately extracts and deduplicates HTX items', async () => {
+        const { extractHtxTableItems } = await import('./firebaseProductConfigService');
+
+        const testConfig: ProductConfig = {
+            ...mockConfig,
+            revenueEligibleHTX: new Set(['Xuất bán lẻ', 'xuất bán lẻ', 'Bán trả góp']),
+            nonRevenueEligibleHTX: new Set(['Xuất hủy', 'xuất hủy', 'Thu hộ cước']),
+            htxClassification: {
+                'xuất bán lẻ': 'tien_mat',
+                'Bán trả góp': 'tra_gop',
+                'Thu hộ cước': 'thu_ho',
+            },
+        };
+
+        const items = extractHtxTableItems(testConfig);
+        expect(items.length).toBe(4); // 4 unique normalized names
+
+        const banLe = items.find(it => it.name.toLowerCase().includes('bán lẻ'));
+        expect(banLe).toBeDefined();
+        expect(banLe?.isRevenueEligible).toBe(true);
+        expect(banLe?.classification).toBe('tien_mat');
+
+        const traGop = items.find(it => it.name.toLowerCase().includes('trả góp'));
+        expect(traGop).toBeDefined();
+        expect(traGop?.isRevenueEligible).toBe(true);
+        expect(traGop?.classification).toBe('tra_gop');
+
+        const thuHo = items.find(it => it.name.toLowerCase().includes('thu hộ'));
+        expect(thuHo).toBeDefined();
+        expect(thuHo?.isRevenueEligible).toBe(false);
+        expect(thuHo?.classification).toBe('thu_ho');
+
+        const huy = items.find(it => it.name.toLowerCase().includes('hủy'));
+        expect(huy).toBeDefined();
+        expect(huy?.isRevenueEligible).toBe(false);
+    });
+
+    it('parseExcelHtxConfigFile accurately parses HTX file with classification and revenue status', async () => {
+        const { parseExcelHtxConfigFile, DEFAULT_HTX_SAMPLE_ROWS } = await import('./firebaseProductConfigService');
+        const XLSX = await import('xlsx');
+
+        expect(DEFAULT_HTX_SAMPLE_ROWS.length).toBeGreaterThan(0);
+
+        const headers = ['Tên Hình Thức Xuất', 'Phân Loại', 'Tính Doanh Thu', 'Ghi Chú'];
+        const rows = [headers, ...DEFAULT_HTX_SAMPLE_ROWS];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, 'Hình thức xuất');
+
+        const u8 = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        const mockFile = new File([u8], 'test-htx.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const parsed = await parseExcelHtxConfigFile(mockFile);
+        expect(parsed.length).toBe(DEFAULT_HTX_SAMPLE_ROWS.length);
+
+        const banLe = parsed.find(it => it.name === 'Xuất bán lẻ tại siêu thị');
+        expect(banLe).toBeDefined();
+        expect(banLe?.classification).toBe('tien_mat');
+        expect(banLe?.isRevenueEligible).toBe(true);
+
+        const traGop = parsed.find(it => it.name === 'Xuất bán hàng trả góp tại siêu thị');
+        expect(traGop).toBeDefined();
+        expect(traGop?.classification).toBe('tra_gop');
+        expect(traGop?.isRevenueEligible).toBe(true);
+
+        const thuHo = parsed.find(it => it.name === 'Xuất dịch vụ thu hộ tiền điện');
+        expect(thuHo).toBeDefined();
+        expect(thuHo?.classification).toBe('thu_ho');
+        expect(thuHo?.isRevenueEligible).toBe(false);
+    });
 });
 
 

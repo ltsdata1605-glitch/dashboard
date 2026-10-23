@@ -66,7 +66,7 @@ service cloud.firestore {
 
     match /shared_configs/{id} {
       allow read:  if true;
-      allow write: if isSuperAdmin();
+      allow write: if isAdmin() || isSuperAdmin();
     }
 
     // Dữ liệu doanh số DÙNG CHUNG theo Mã Kho (mục 37 implementation_plan.md) — khác với

@@ -11,15 +11,20 @@ import {
     saveGlobalProductConfig,
     parseExcelProductConfigFile,
     parseExcelProductCodeConfigFile,
+    parseExcelHtxConfigFile,
     exportProductConfigToExcel,
     exportProductCodeConfigToExcel,
+    exportHtxConfigToExcel,
     exportCategoryConfigTemplateToExcel,
+    exportHtxConfigTemplateToExcel,
+    extractHtxTableItems,
     computeConfigSummary,
 } from '../services/firebaseProductConfigService';
 import { ConfigTable } from './ConfigTable';
 import { ProductCodeConfigTable } from './ProductCodeConfigTable';
+import { HtxConfigTable } from './HtxConfigTable';
 import { ProductConfigTemplateHub } from './ProductConfigTemplateHub';
-import type { CategoryTableItem, ProductCodeTableItem, ProductConfigSummary } from '../types';
+import type { CategoryTableItem, ProductCodeTableItem, HtxTableItem, ProductConfigSummary } from '../types';
 import * as dbService from '../../../services/dbService';
 
 export const ProductConfigManagerTab: React.FC = () => {
@@ -28,7 +33,7 @@ export const ProductConfigManagerTab: React.FC = () => {
     const laDienThoai = useIsSheetWidth();
     const [config, setConfig] = useState<ProductConfig | null>(null);
     const [summary, setSummary] = useState<ProductConfigSummary | null>(null);
-    const [configType, setConfigType] = useState<'category' | 'productCode' | 'template'>('category');
+    const [configType, setConfigType] = useState<'category' | 'productCode' | 'htx' | 'template'>('category');
     const [updatedAt, setUpdatedAt] = useState<string | undefined>(undefined);
     const [updatedBy, setUpdatedBy] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(true);
@@ -36,12 +41,13 @@ export const ProductConfigManagerTab: React.FC = () => {
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // CHỈ Super Admin mới có quyền thêm, sửa, xoá và lưu cấu hình
-    const isSuperAdmin = Boolean(
+    // CHỈ Quản trị hệ thống (userRole === 'admin' hoặc Super Admin) mới có quyền thêm, sửa, xoá và lưu cấu hình
+    const isSystemAdmin = Boolean(
+        userRole === 'admin' ||
         user?.email === 'lts.truongson@gmail.com' ||
-        (userRole === 'admin' && (departmentId || '').startsWith('ALL (Super Admin)'))
+        (departmentId || '').startsWith('ALL')
     );
-    const isCanManage = isSuperAdmin;
+    const isCanManage = isSystemAdmin;
 
     const loadConfig = async () => {
         setIsLoading(true);
@@ -137,11 +143,15 @@ export const ProductConfigManagerTab: React.FC = () => {
         }));
     }, [config]);
 
+    const htxTableItems = useMemo<HtxTableItem[]>(() => {
+        return extractHtxTableItems(config);
+    }, [config]);
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (!isCanManage) {
-            toast.error('Chỉ Super Admin mới có quyền tải file cấu hình lên.');
+            toast.error('Chỉ Quản trị hệ thống mới có quyền tải file cấu hình lên.');
             return;
         }
         const toastId = toast.loading('Đang đọc file cấu hình Excel...');
@@ -178,6 +188,40 @@ export const ProductConfigManagerTab: React.FC = () => {
                     cfg.productCodeItems = Array.from(existingMap.values());
                 });
                 toast.success(`Đã nhập thành công ${importedItems.length} mã sản phẩm từ Excel!`, { id: toastId });
+            } else if (configType === 'htx') {
+                const importedItems = await parseExcelHtxConfigFile(file);
+                mutateConfig(cfg => {
+                    const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+                    if (!cfg.revenueEligibleHTX) cfg.revenueEligibleHTX = new Set();
+                    if (!cfg.nonRevenueEligibleHTX) cfg.nonRevenueEligibleHTX = new Set();
+                    if (!cfg.htxClassification) cfg.htxClassification = {};
+
+                    importedItems.forEach(item => {
+                        const norm = clean(item.name);
+                        if (item.isRevenueEligible) {
+                            cfg.revenueEligibleHTX!.add(item.name);
+                            cfg.revenueEligibleHTX!.add(norm);
+                            cfg.nonRevenueEligibleHTX!.delete(item.name);
+                            cfg.nonRevenueEligibleHTX!.delete(norm);
+                        } else {
+                            cfg.nonRevenueEligibleHTX!.add(item.name);
+                            cfg.nonRevenueEligibleHTX!.add(norm);
+                            cfg.revenueEligibleHTX!.delete(item.name);
+                            cfg.revenueEligibleHTX!.delete(norm);
+                        }
+                        cfg.htxClassification![norm] = item.classification;
+                        cfg.htxClassification![item.name] = item.classification;
+                    });
+
+                    const items = extractHtxTableItems(cfg);
+                    cfg.htxItems = items.map(it => ({
+                        name: it.name,
+                        isRevenueEligible: it.isRevenueEligible,
+                        classification: it.classification,
+                        description: it.description,
+                    }));
+                });
+                toast.success(`Đã nhập thành công ${importedItems.length} hình thức xuất từ Excel!`, { id: toastId });
             } else {
                 const parsedConfig = await parseExcelProductConfigFile(file);
                 if ((!parsedConfig.productCodeItems || parsedConfig.productCodeItems.length === 0) && config?.productCodeItems) {
@@ -201,7 +245,7 @@ export const ProductConfigManagerTab: React.FC = () => {
     const handleSaveToCloud = async () => {
         if (!config) return;
         if (!isCanManage) {
-            toast.error('Chỉ Super Admin mới có quyền lưu cấu hình ngành hàng lên Cloud.');
+            toast.error('Chỉ Quản trị hệ thống mới có quyền lưu cấu hình ngành hàng lên Cloud.');
             return;
         }
         setIsSaving(true);
@@ -230,16 +274,21 @@ export const ProductConfigManagerTab: React.FC = () => {
                 toast.success(
                     isTemplate
                         ? 'Đã tải xuống file Excel mẫu (gồm 3 dòng mẫu: SL, DT, Cả hai)!'
-                        : 'Đã tải xuống file Excel cấu hình mã sản phẩm thành công!',
+                        : 'Đã tải xuống file Excel cấu hình theo mã sản phẩm thành công!',
                     { id: toastId }
                 );
+            } else if (configType === 'htx') {
+                await exportHtxConfigToExcel(htxTableItems);
+                toast.success('Đã tải xuống file Excel hình thức xuất thành công!', { id: toastId });
             } else if (configType === 'template') {
                 await exportCategoryConfigTemplateToExcel();
                 await exportProductCodeConfigToExcel([], { asTemplate: true });
-                toast.success('Đã tải xuống cả 2 file Excel mẫu (Ngành hàng & Mã sản phẩm)!', { id: toastId });
+                await exportHtxConfigTemplateToExcel();
+                toast.success('Đã tải xuống cả 3 file Excel mẫu (Ngành hàng, Mã sản phẩm & Hình thức xuất)!', { id: toastId });
             } else {
-                await exportProductConfigToExcel(config);
-                toast.success('Đã tải xuống file Excel cấu hình ngành hàng thành công!', { id: toastId });
+                const dateStr = new Date().toISOString().split('T')[0];
+                await exportProductConfigToExcel(config, `Khai_Bao_Nganh_Hang_${dateStr}.xlsx`);
+                toast.success('Đã tải xuống file Excel khai báo ngành hàng thành công!', { id: toastId });
             }
         } catch (err) {
             console.error('[ProductConfigManagerTab] Lỗi xuất file:', err);
@@ -249,7 +298,7 @@ export const ProductConfigManagerTab: React.FC = () => {
 
     const mutateConfig = useCallback((fn: (cfg: ProductConfig) => void) => {
         if (!isCanManage) {
-            toast.error('Chỉ Super Admin mới có quyền chỉnh sửa cấu hình ngành hàng.');
+            toast.error('Chỉ Quản trị hệ thống mới có quyền cập nhật, sửa, xoá hay thêm mới cấu hình.');
             return;
         }
         setConfig(prev => {
@@ -415,6 +464,148 @@ export const ProductConfigManagerTab: React.FC = () => {
         toast.success(`Đã xoá mã sản phẩm ${maSanPham}`);
     }, [mutateConfig]);
 
+    const handleToggleRevenueHtxItem = useCallback((name: string, isRevenueEligible: boolean) => {
+        mutateConfig(cfg => {
+            const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+            const norm = clean(name);
+            if (!cfg.revenueEligibleHTX) cfg.revenueEligibleHTX = new Set();
+            if (!cfg.nonRevenueEligibleHTX) cfg.nonRevenueEligibleHTX = new Set();
+
+            if (isRevenueEligible) {
+                cfg.nonRevenueEligibleHTX.delete(name);
+                cfg.nonRevenueEligibleHTX.delete(norm);
+                cfg.revenueEligibleHTX.add(name);
+                cfg.revenueEligibleHTX.add(norm);
+            } else {
+                cfg.revenueEligibleHTX.delete(name);
+                cfg.revenueEligibleHTX.delete(norm);
+                cfg.nonRevenueEligibleHTX.add(name);
+                cfg.nonRevenueEligibleHTX.add(norm);
+            }
+
+            const items = extractHtxTableItems(cfg).map(it =>
+                clean(it.name) === norm ? { ...it, isRevenueEligible } : it
+            );
+            cfg.htxItems = items.map(it => ({
+                name: it.name,
+                isRevenueEligible: it.isRevenueEligible,
+                classification: it.classification,
+                description: it.description,
+            }));
+        });
+        toast.success(`${isRevenueEligible ? 'Bật' : 'Tắt'} tính doanh thu cho "${name}"`);
+    }, [mutateConfig]);
+
+    const handleAddHtxItem = useCallback((item: HtxTableItem) => {
+        mutateConfig(cfg => {
+            const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+            const norm = clean(item.name);
+            if (!cfg.revenueEligibleHTX) cfg.revenueEligibleHTX = new Set();
+            if (!cfg.nonRevenueEligibleHTX) cfg.nonRevenueEligibleHTX = new Set();
+            if (!cfg.htxClassification) cfg.htxClassification = {};
+
+            if (item.isRevenueEligible) {
+                cfg.revenueEligibleHTX.add(item.name);
+                cfg.revenueEligibleHTX.add(norm);
+                cfg.nonRevenueEligibleHTX.delete(item.name);
+                cfg.nonRevenueEligibleHTX.delete(norm);
+            } else {
+                cfg.nonRevenueEligibleHTX.add(item.name);
+                cfg.nonRevenueEligibleHTX.add(norm);
+                cfg.revenueEligibleHTX.delete(item.name);
+                cfg.revenueEligibleHTX.delete(norm);
+            }
+
+            cfg.htxClassification[norm] = item.classification;
+            cfg.htxClassification[item.name] = item.classification;
+
+            const items = extractHtxTableItems(cfg);
+            const exists = items.some(it => clean(it.name) === norm);
+            if (!exists) {
+                items.unshift(item);
+            }
+            cfg.htxItems = items.map(it => ({
+                name: it.name,
+                isRevenueEligible: it.isRevenueEligible,
+                classification: it.classification,
+                description: it.description,
+            }));
+        });
+        toast.success(`Đã thêm hình thức xuất "${item.name}"`);
+    }, [mutateConfig]);
+
+    const handleUpdateHtxItem = useCallback((oldName: string, updates: Partial<HtxTableItem>) => {
+        mutateConfig(cfg => {
+            const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+            const oldNorm = clean(oldName);
+            const newName = updates.name ? updates.name.trim() : oldName;
+            const newNorm = clean(newName);
+
+            if (!cfg.revenueEligibleHTX) cfg.revenueEligibleHTX = new Set();
+            if (!cfg.nonRevenueEligibleHTX) cfg.nonRevenueEligibleHTX = new Set();
+            if (!cfg.htxClassification) cfg.htxClassification = {};
+
+            cfg.revenueEligibleHTX.delete(oldName);
+            cfg.revenueEligibleHTX.delete(oldNorm);
+            cfg.nonRevenueEligibleHTX.delete(oldName);
+            cfg.nonRevenueEligibleHTX.delete(oldNorm);
+            delete cfg.htxClassification[oldName];
+            delete cfg.htxClassification[oldNorm];
+
+            const isRevenue = updates.isRevenueEligible ?? false;
+            if (isRevenue) {
+                cfg.revenueEligibleHTX.add(newName);
+                cfg.revenueEligibleHTX.add(newNorm);
+            } else {
+                cfg.nonRevenueEligibleHTX.add(newName);
+                cfg.nonRevenueEligibleHTX.add(newNorm);
+            }
+
+            const classification = updates.classification ?? 'khac';
+            cfg.htxClassification[newName] = classification;
+            cfg.htxClassification[newNorm] = classification;
+
+            const items = extractHtxTableItems(cfg).map(it => {
+                if (clean(it.name) === oldNorm) {
+                    return {
+                        ...it,
+                        ...updates,
+                        name: newName,
+                    };
+                }
+                return it;
+            });
+            cfg.htxItems = items.map(it => ({
+                name: it.name,
+                isRevenueEligible: it.isRevenueEligible,
+                classification: it.classification,
+                description: it.description,
+            }));
+        });
+        toast.success(`Đã cập nhật hình thức xuất "${updates.name || oldName}"`);
+    }, [mutateConfig]);
+
+    const handleDeleteHtxItem = useCallback((name: string) => {
+        mutateConfig(cfg => {
+            const clean = (s: string) => (s || '').toString().trim().toLowerCase().normalize('NFC');
+            const norm = clean(name);
+
+            cfg.revenueEligibleHTX?.delete(name);
+            cfg.revenueEligibleHTX?.delete(norm);
+            cfg.nonRevenueEligibleHTX?.delete(name);
+            cfg.nonRevenueEligibleHTX?.delete(norm);
+            if (cfg.htxClassification) {
+                delete cfg.htxClassification[name];
+                delete cfg.htxClassification[norm];
+            }
+
+            if (cfg.htxItems) {
+                cfg.htxItems = cfg.htxItems.filter(it => clean(it.name) !== norm);
+            }
+        });
+        toast.success(`Đã xoá hình thức xuất "${name}"`);
+    }, [mutateConfig]);
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-card border border-slate-200 shadow-sm">
@@ -449,16 +640,16 @@ export const ProductConfigManagerTab: React.FC = () => {
                                 </span>
                             )}
                             {!isCanManage && (
-                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-semibold flex items-center gap-1">
+                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold flex items-center gap-1">
                                     <AppIcon name="show" size="xs" />
-                                    Chế độ xem (Chỉ Super Admin mới có quyền sửa & lưu)
+                                    Chế độ xem (Chỉ Quản trị hệ thống mới có quyền thêm, sửa, xoá & lưu)
                                 </span>
                             )}
                         </h2>
                         <p className="text-xs text-slate-500 mt-0.5">
                             {isCanManage
                                 ? 'Quản lý toàn bộ nhóm cha, nhóm con, mã ngành hàng và hệ số quy đổi áp dụng trực tiếp cho toàn hệ thống.'
-                                : 'Xem và tải file dữ liệu cấu hình ngành hàng, nhóm cha, nhóm con và hệ số quy đổi áp dụng toàn hệ thống.'}
+                                : 'Chế độ xem: Tra cứu và tải file dữ liệu cấu hình ngành hàng, mã sản phẩm và hình thức xuất áp dụng toàn hệ thống.'}
                         </p>
                     </div>
                 </div>
@@ -494,80 +685,95 @@ export const ProductConfigManagerTab: React.FC = () => {
                     onChange={(id) => setConfigType(id as typeof configType)}
                     items={[
                         { id: 'category', label: laDienThoai ? 'Ngành hàng' : 'Khai báo ngành hàng', icon: 'table', badge: tableItems.length },
-                        { id: 'productCode', label: laDienThoai ? 'Mã sản phẩm' : 'Cấu hình theo Mã sản phẩm', icon: 'template', badge: productCodeTableItems.length },
+                        { id: 'productCode', label: laDienThoai ? 'Mã SP' : 'Cấu hình theo Mã sản phẩm', icon: 'template', badge: productCodeTableItems.length },
+                        { id: 'htx', label: laDienThoai ? 'HT xuất' : 'Hình thức xuất', icon: 'viewList', badge: htxTableItems.length },
                         { id: 'template', label: laDienThoai ? 'File mẫu' : 'Tải file mẫu', icon: 'download' },
                     ]}
                 />
 
-                {/* Cụm 3 nút chức năng gom gọn: Tải file Excel, Xuất Excel, Lưu (Chỉ để icon, không để text) */}
-                <div className="flex items-center gap-1.5 self-end sm:self-center">
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".xlsx, .xls"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
+                {/* Cụm 3 nút chức năng gom gọn: Tải file Excel, Xuất Excel, Lưu (Ẩn khi ở tab Tải file mẫu) */}
+                {configType !== 'template' && (
+                    <div className="flex items-center gap-1.5 self-end sm:self-center">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
 
-                    {isCanManage && configType !== 'template' && (
+                        {isCanManage && (
+                            <Button
+                                variant="tinted"
+                                size="icon"
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                title={
+                                    configType === 'category'
+                                        ? 'Tải file Excel (.xlsx) - Khai báo ngành hàng'
+                                        : configType === 'productCode'
+                                        ? 'Tải file Excel (.xlsx) - Cấu hình theo mã sản phẩm'
+                                        : 'Tải file Excel (.xlsx) - Hình thức xuất'
+                                }
+                                aria-label={
+                                    configType === 'category'
+                                        ? 'Tải file Excel (.xlsx) - Khai báo ngành hàng'
+                                        : configType === 'productCode'
+                                        ? 'Tải file Excel (.xlsx) - Cấu hình theo mã sản phẩm'
+                                        : 'Tải file Excel (.xlsx) - Hình thức xuất'
+                                }
+                                className="w-8.5 h-8.5 border-sky-200 shadow-2xs"
+                            >
+                                <AppIcon name="upload" size="sm" />
+                            </Button>
+                        )}
+
                         <Button
-                            variant="tinted"
+                            variant="secondary"
                             size="icon"
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            title={configType === 'category' ? 'Tải file Excel (.xlsx) - Khai báo ngành hàng' : 'Tải file Excel (.xlsx) - Cấu hình theo mã sản phẩm'}
-                            aria-label={configType === 'category' ? 'Tải file Excel (.xlsx) - Khai báo ngành hàng' : 'Tải file Excel (.xlsx) - Cấu hình theo mã sản phẩm'}
-                            className="w-8.5 h-8.5 border-sky-200 shadow-2xs"
+                            disabled={!config}
+                            onClick={handleExportExcel}
+                            title={
+                                configType === 'category'
+                                    ? 'Xuất Excel - Khai báo ngành hàng'
+                                    : configType === 'productCode'
+                                    ? (!config?.productCodeItems || config.productCodeItems.length === 0)
+                                        ? 'Tải file mẫu Excel (3 dòng mẫu: SL, DT, Cả hai)'
+                                        : 'Xuất Excel - Cấu hình theo mã sản phẩm'
+                                    : 'Xuất Excel - Hình thức xuất'
+                            }
+                            aria-label={
+                                configType === 'category'
+                                    ? 'Xuất Excel - Khai báo ngành hàng'
+                                    : configType === 'productCode'
+                                    ? (!config?.productCodeItems || config.productCodeItems.length === 0)
+                                        ? 'Tải file mẫu Excel (3 dòng mẫu: SL, DT, Cả hai)'
+                                        : 'Xuất Excel - Cấu hình theo mã sản phẩm'
+                                    : 'Xuất Excel - Hình thức xuất'
+                            }
+                            className="w-8.5 h-8.5 shadow-2xs"
                         >
-                            <AppIcon name="upload" size="sm" />
+                            <AppIcon name="download" size="sm" />
                         </Button>
-                    )}
 
-                    <Button
-                        variant="secondary"
-                        size="icon"
-                        type="button"
-                        disabled={!config}
-                        onClick={handleExportExcel}
-                        title={
-                            configType === 'template'
-                                ? 'Tải cả 2 file mẫu Excel (Ngành hàng & Mã sản phẩm)'
-                                : configType === 'category'
-                                ? 'Xuất Excel - Khai báo ngành hàng'
-                                : (!config?.productCodeItems || config.productCodeItems.length === 0)
-                                    ? 'Tải file mẫu Excel (3 dòng mẫu: SL, DT, Cả hai)'
-                                    : 'Xuất Excel - Cấu hình theo mã sản phẩm'
-                        }
-                        aria-label={
-                            configType === 'template'
-                                ? 'Tải cả 2 file mẫu Excel (Ngành hàng & Mã sản phẩm)'
-                                : configType === 'category'
-                                ? 'Xuất Excel - Khai báo ngành hàng'
-                                : (!config?.productCodeItems || config.productCodeItems.length === 0)
-                                    ? 'Tải file mẫu Excel (3 dòng mẫu: SL, DT, Cả hai)'
-                                    : 'Xuất Excel - Cấu hình theo mã sản phẩm'
-                        }
-                        className="w-8.5 h-8.5 shadow-2xs"
-                    >
-                        <AppIcon name="download" size="sm" />
-                    </Button>
-
-                    {isCanManage && (
-                        <Button
-                            variant="primary"
-                            size="icon"
-                            type="button"
-                            disabled={!config || isSaving}
-                            onClick={handleSaveToCloud}
-                            title={isDirty ? 'Lưu lên Cloud Firebase (Có thay đổi chưa lưu)' : 'Lưu lên Cloud Firebase'}
-                            aria-label="Lưu lên Cloud Firebase"
-                            // Có thay đổi chưa lưu: nền hổ phách nhấp nháy (thiết kế cũ, nhắc lưu)
-                            className={`w-8.5 h-8.5 shadow-2xs ${isDirty ? 'bg-amber-600 hover:bg-amber-700 animate-pulse' : ''}`}
-                        >
-                            <AppIcon name={isSaving ? 'loading' : 'cloud'} size="sm" spin={isSaving} />
-                        </Button>
-                    )}
-                </div>
+                        {isCanManage && (
+                            <Button
+                                variant="primary"
+                                size="icon"
+                                type="button"
+                                disabled={!config || isSaving}
+                                onClick={handleSaveToCloud}
+                                title={isDirty ? 'Lưu lên Cloud Firebase (Có thay đổi chưa lưu)' : 'Lưu lên Cloud Firebase'}
+                                aria-label="Lưu lên Cloud Firebase"
+                                // Có thay đổi chưa lưu: nền hổ phách nhấp nháy (thiết kế cũ, nhắc lưu)
+                                className={`w-8.5 h-8.5 shadow-2xs ${isDirty ? 'bg-amber-600 hover:bg-amber-700 animate-pulse' : ''}`}
+                            >
+                                <AppIcon name={isSaving ? 'loading' : 'cloud'} size="sm" spin={isSaving} />
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Bảng tra cứu tương ứng */}
@@ -587,10 +793,20 @@ export const ProductConfigManagerTab: React.FC = () => {
                     onUpdateItem={handleUpdateProductCodeItem}
                     onDeleteItem={handleDeleteProductCodeItem}
                 />
+            ) : configType === 'htx' ? (
+                <HtxConfigTable
+                    items={htxTableItems}
+                    isEditable={isCanManage}
+                    onAddItem={handleAddHtxItem}
+                    onUpdateItem={handleUpdateHtxItem}
+                    onToggleRevenue={handleToggleRevenueHtxItem}
+                    onDeleteItem={handleDeleteHtxItem}
+                />
             ) : (
                 <ProductConfigTemplateHub
                     onDownloadCategoryTemplate={exportCategoryConfigTemplateToExcel}
                     onDownloadProductCodeTemplate={() => exportProductCodeConfigToExcel([], { asTemplate: true })}
+                    onDownloadHtxTemplate={exportHtxConfigTemplateToExcel}
                 />
             )}
         </div>

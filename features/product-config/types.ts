@@ -9,6 +9,7 @@ export interface ProductConfigSummary {
     revenueHtxCount: number;
     nonRevenueHtxCount: number;
     productCodeCount?: number;
+    htxCount?: number;
 }
 
 export interface GlobalProductConfigDoc {
@@ -40,3 +41,12 @@ export interface ProductCodeTableItem {
     sheetSource?: string;
 }
 
+export type HtxClassificationType = 'tien_mat' | 'tra_gop' | 'thu_ho' | 'khac';
+
+export interface HtxTableItem {
+    id: string;
+    name: string;
+    isRevenueEligible: boolean;
+    classification: HtxClassificationType;
+    description?: string;
+}

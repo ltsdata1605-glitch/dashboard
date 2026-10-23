@@ -31,6 +31,14 @@ export interface ProductConfig {
     industryBiMap?: { [nhomHang: string]: { parent: string; child: string } };
     originalCategoryItems?: Array<{ industry?: string; nhomHang: string; nhomCha: string; nhomCon: string; heSoQuyDoi: number }>;
     productCodeItems?: ProductCodeConfigItem[];
+    htxItems?: HtxConfigItem[];
+}
+
+export interface HtxConfigItem {
+    name: string;
+    isRevenueEligible: boolean;
+    classification: 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac';
+    description?: string;
 }
 
 export interface ProductCodeConfigItem {
