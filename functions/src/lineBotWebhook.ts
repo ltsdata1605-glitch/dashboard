@@ -1987,15 +1987,33 @@ async function handleIssueCouponByProductName(params: {
     if (config.autoApprove !== false) {
         let chosenDoc: FirebaseFirestore.QueryDocumentSnapshot | undefined;
 
+        // 1. Ưu tiên tìm khớp chính xác 100% tên sản phẩm
         for (const d of snap.docs) {
             const c = d.data();
             if (c.status === 'UNUSED' || !c.status) {
                 const matchesCat = getCouponCategoryMeta(c).id === category;
                 if (matchesCat) {
                     const pName = (c.productName || c.type || '').toLowerCase().trim();
-                    if (pName === cleanTargetName || pName.includes(cleanTargetName) || cleanTargetName.includes(pName)) {
+                    if (pName === cleanTargetName) {
                         chosenDoc = d;
                         break;
+                    }
+                }
+            }
+        }
+
+        // 2. Dự phòng: nếu không khớp chính xác, tìm khớp tương đối
+        if (!chosenDoc) {
+            for (const d of snap.docs) {
+                const c = d.data();
+                if (c.status === 'UNUSED' || !c.status) {
+                    const matchesCat = getCouponCategoryMeta(c).id === category;
+                    if (matchesCat) {
+                        const pName = (c.productName || c.type || '').toLowerCase().trim();
+                        if (pName.includes(cleanTargetName) || cleanTargetName.includes(pName)) {
+                            chosenDoc = d;
+                            break;
+                        }
                     }
                 }
             }
