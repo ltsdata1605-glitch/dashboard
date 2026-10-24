@@ -256,7 +256,8 @@ export const getOrPreparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
 export const _resetPkcePrewarmForTesting = (): void => {
     prewarmedPkce = null;
     prewarmPromise = null;
-    currentPrewarmSeq = 0;
+    // BUMP sequence thêm 1000 để vô hiệu hoá triệt để mọi Promise cũ đang chạy dở dang từ bài test trước
+    currentPrewarmSeq += 1000;
 };
 
 // Kích hoạt chuẩn bị trước ngay khi ứng dụng khởi chạy
@@ -315,7 +316,7 @@ export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff, retUrl?: stri
     }
 };
 
-const readPendingHandoff = (): string | null => {
+export const readPendingHandoff = (): string | null => {
     try {
         const raw = localStorage.getItem(PWA_HANDOFF_KEY);
         if (!raw) return null;
@@ -328,8 +329,22 @@ const readPendingHandoff = (): string | null => {
 
 export const hasPendingPwaHandoff = (): boolean => readPendingHandoff() !== null;
 
-export const clearPendingPwaHandoff = (): void => {
-    try { localStorage.removeItem(PWA_HANDOFF_KEY); } catch { /* bỏ qua */ }
+/**
+ * Xoá phiên handoff chờ xử lý khỏi localStorage.
+ * Nếu truyền expectedVerifier: CHỈ xoá khi mã trong localStorage đúng bằng expectedVerifier.
+ * Nếu người dùng đã mở phiên mới (verifier khác), hàm sẽ BẢO TOÀN phiên mới và không xoá nhầm.
+ */
+export const clearPendingPwaHandoff = (expectedVerifier?: string): void => {
+    try {
+        if (expectedVerifier) {
+            const currentVerifier = readPendingHandoff();
+            // Nếu phiên hiện tại trong storage khác với expectedVerifier (đã mở phiên mới), bảo toàn phiên mới!
+            if (currentVerifier && currentVerifier !== expectedVerifier) {
+                return;
+            }
+        }
+        localStorage.removeItem(PWA_HANDOFF_KEY);
+    } catch { /* bỏ qua */ }
 };
 
 /** Lỗi khi ĐÃ nhận được phiên từ trang đăng nhập nhưng không vào được (token hỏng/hết hạn) — khác với "chưa xong". */
@@ -398,6 +413,11 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
     if (!verifier) return false;
 
     for (let attempt = 0; attempt < retries; attempt++) {
+        // Kiểm tra xem phiên này đã bị người dùng huỷ hoặc thay thế bởi phiên mới hay chưa
+        if (readPendingHandoff() !== verifier) {
+            return false;
+        }
+
         let data: KetQuaNhanPhien | null = null;
         try {
             const res = await httpsCallable<{ verifier: string }, KetQuaNhanPhien>(functions, 'pwaHandoffClaim')({ verifier });
@@ -405,15 +425,15 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
         } catch (err) {
             // Phiên đã quá 5 phút trên máy chủ: thử lại vô ích, báo để người dùng bấm lại.
             if ((err as { code?: string })?.code === 'functions/deadline-exceeded') {
-                clearPendingPwaHandoff();
+                clearPendingPwaHandoff(verifier);
                 throw new PwaHandoffSignInError(err);
             }
             // Lỗi mạng / máy chủ khởi động: thử lại. Phiên (nếu có) vẫn nằm nguyên trên máy chủ.
             console.warn(`[claimPwaHandoff] Lần thử ${attempt + 1}/${retries} không thành công:`, err);
         }
         if (data?.ready && data.idToken) {
-            // Máy chủ đã xoá phiên khi trả về (dùng 1 lần) → không thử lại được nữa, phải báo lỗi rõ.
-            clearPendingPwaHandoff();
+            // Máy chủ đã xoá phiên khi trả về (dùng 1 lần) → xoá phiên này nếu nó vẫn là phiên hiện hành
+            clearPendingPwaHandoff(verifier);
             // Phiên máy chủ đã tính sẵn lúc trang đăng nhập gửi về → cất lại TRƯỚC khi đăng nhập (onAuthStateChanged chạy ngay
             // trong signInWithCredential) để AuthContext khỏi gọi resolveSession — bớt 1 lượt gọi máy chủ (2026-10-21).
             if (data.uid && data.profile) cat_hoSoDaTinhSan(data.uid, data.profile);
@@ -426,7 +446,10 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             return true;
         }
         if (data && !data.ready) return false; // trang kia chưa xong — không cần thử lại ngay
-        if (attempt < retries - 1) await new Promise(r => setTimeout(r, 600));
+        if (attempt < retries - 1) {
+            await new Promise(r => setTimeout(r, 600));
+            if (readPendingHandoff() !== verifier) return false;
+        }
     }
     return false;
 };

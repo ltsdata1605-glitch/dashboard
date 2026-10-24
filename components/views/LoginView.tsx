@@ -6,6 +6,7 @@ import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 import {
     isStandaloneMode, isInAppBrowser, isIOSDevice,
     preparePwaHandoff, startPwaHandoffLogin, claimPwaHandoff, hasPendingPwaHandoff, clearPendingPwaHandoff,
+    readPendingHandoff,
     isPwaHandoffClaiming, takePwaHandoffError, PwaHandoffSignInError,
     layTaiKhoanGanNhat, quenTaiKhoan, takePrewarmedPwaHandoff, getOrPreparePwaHandoff,
     type PreparedPwaHandoff,
@@ -84,13 +85,21 @@ const LoginView: React.FC = () => {
                 return;
             }
             busy = true;
+            const currentHandoffVerifier = readPendingHandoff();
             try {
                 // Vào được thì onAuthStateChanged ở AuthContext tự chuyển màn hình.
                 if (await claimPwaHandoff(1)) stopped = true;
             } catch (err: unknown) {
+                // RACE CONDITION PROTECTION: Nếu trong lúc claim đang gọi máy chủ, người dùng đã mở phiên mới
+                // (hoặc bấm Huỷ), lỗi của phiên cũ KHÔNG ĐƯỢC huỷ màn hình chờ hoặc xoá phiên mới!
+                const activeVerifierNow = readPendingHandoff();
+                if (stopped || (currentHandoffVerifier && activeVerifierNow !== currentHandoffVerifier)) {
+                    console.warn('[Auth] Bỏ qua lỗi của phiên cũ vì người dùng đã mở phiên mới hoặc huỷ:', err);
+                    return;
+                }
                 console.error('[Auth] Nhận phiên đăng nhập từ trang Google lỗi:', err);
                 takePwaHandoffError();
-                clearPendingPwaHandoff();
+                clearPendingPwaHandoff(currentHandoffVerifier ?? undefined);
                 isLoggingInRef.current = false;
                 isReopeningRef.current = false;
                 setWaitingHandoff(false);

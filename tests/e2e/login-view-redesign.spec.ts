@@ -569,4 +569,87 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         // Mã mới phải hoàn toàn khác mã cũ (single-use guarantee, không tái sử dụng)
         expect(v2).not.toBe(v1);
     });
+
+    test('12. [Cross-Session Race Condition] Late failure of superseded Session A does not wipe or disrupt active Session B', async ({ page }) => {
+        let sessionACalled = false;
+        let resolveSessionA!: () => void;
+        const sessionAPromise = new Promise<void>(res => { resolveSessionA = res; });
+
+        // Mock Cloud Function pwaHandoffClaim
+        await page.route('**/pwaHandoffClaim', async (route) => {
+            // Nếu là request của Session A, trì hoãn cho đến khi có tín hiệu
+            if (!sessionACalled) {
+                sessionACalled = true;
+                await sessionAPromise;
+                await route.fulfill({
+                    status: 400,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        error: {
+                            status: 'DEADLINE_EXCEEDED',
+                            message: 'Phiên đăng nhập đã quá hạn 5 phút',
+                        }
+                    }),
+                });
+                return;
+            }
+            // Request của Session B: trả về ready = false (đang chờ người dùng)
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({ result: { ready: false } }),
+            });
+        });
+
+        await page.evaluate(() => {
+            (window as any).__ycxTestRedirectHook = () => {};
+        });
+
+        // 1. Khởi động phiên A
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+
+        // Lấy verifier A
+        const rawA = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawA).not.toBeNull();
+        const vA = JSON.parse(rawA!).v;
+
+        // Đợi một tích tắc để request pwaHandoffClaim của Session A được gửi đi
+        await page.waitForTimeout(300);
+        expect(sessionACalled).toBe(true);
+
+        // 2. Trong lúc Session A đang chờ response từ máy chủ, người dùng bấm "Mở lại trang đăng nhập Google" -> sinh phiên B
+        const reopenBtn = page.getByTestId('login-handoff-reopen');
+        await expect(reopenBtn).toBeVisible();
+        await expect(reopenBtn).toBeEnabled();
+        await reopenBtn.click();
+
+        // Lấy verifier B
+        const rawB = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawB).not.toBeNull();
+        const vB = JSON.parse(rawB!).v;
+        expect(vB).not.toBe(vA);
+
+        // 3. Bây giờ Session A mới hoàn thành với lỗi DEADLINE_EXCEEDED (trả về muộn)
+        resolveSessionA();
+        await page.waitForTimeout(500);
+
+        // 4. KIỂM CHỨNG BẢO TOÀN PHIÊN B:
+        // - Màn hình chờ handoff VẪN ĐANG HIỆN DIỆN (không bị huỷ về form đăng nhập)
+        await expect(waitingScreen).toBeVisible();
+
+        // - localStorage VẪN GIỮ NGUYÊN Session B (không bị clearPendingPwaHandoff của Session A xóa nhầm!)
+        const rawCurrent = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawCurrent).not.toBeNull();
+        const vCurrent = JSON.parse(rawCurrent!).v;
+        expect(vCurrent).toBe(vB);
+
+        // - Không hiện Error Banner của phiên A đè lên giao diện của phiên B
+        const alertBanner = page.getByRole('alert');
+        await expect(alertBanner).toHaveCount(0);
+    });
 });
