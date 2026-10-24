@@ -256,6 +256,7 @@ export const getOrPreparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
 export const _resetPkcePrewarmForTesting = (): void => {
     prewarmedPkce = null;
     prewarmPromise = null;
+    lastHandoffError = null;
     // BUMP sequence thêm 1000 để vô hiệu hoá triệt để mọi Promise cũ đang chạy dở dang từ bài test trước
     currentPrewarmSeq += 1000;
 };
@@ -413,7 +414,7 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
     if (!verifier) return false;
 
     for (let attempt = 0; attempt < retries; attempt++) {
-        // Kiểm tra xem phiên này đã bị người dùng huỷ hoặc thay thế bởi phiên mới hay chưa
+        // Kiểm tra quyền sở hữu phiên: Nếu phiên này đã bị thay thế hoặc huỷ, lập tức dừng lại
         if (readPendingHandoff() !== verifier) {
             return false;
         }
@@ -423,6 +424,10 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             const res = await httpsCallable<{ verifier: string }, KetQuaNhanPhien>(functions, 'pwaHandoffClaim')({ verifier });
             data = res.data;
         } catch (err) {
+            // Kiểm tra lại sau thao tác mạng: nếu phiên đã bị thay thế trong lúc chờ, bỏ qua hoàn toàn không ném lỗi
+            if (readPendingHandoff() !== verifier) {
+                return false;
+            }
             // Phiên đã quá 5 phút trên máy chủ: thử lại vô ích, báo để người dùng bấm lại.
             if ((err as { code?: string })?.code === 'functions/deadline-exceeded') {
                 clearPendingPwaHandoff(verifier);
@@ -431,6 +436,18 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             // Lỗi mạng / máy chủ khởi động: thử lại. Phiên (nếu có) vẫn nằm nguyên trên máy chủ.
             console.warn(`[claimPwaHandoff] Lần thử ${attempt + 1}/${retries} không thành công:`, err);
         }
+
+        // CHÍNH SÁCH QUYỀN SỞ HỮU PHIÊN: Phiên mới B thay thế hoàn toàn phiên A.
+        // Nếu người dùng đã mở phiên mới B trong lúc request A đang chạy, kết quả của A
+        // (kể cả ready: true lẫn idToken) TUYỆT ĐỐI KHÔNG ĐƯỢC:
+        // 1. Gọi signInWithCredential (ngăn đăng nhập nhầm tài khoản cũ)
+        // 2. Ghi đè bộ đệm hồ sơ tính sẵn (cat_hoSoDaTinhSan)
+        // 3. Ghi đè token vào sessionStorage
+        // 4. Xóa verifier của phiên B trong localStorage
+        if (readPendingHandoff() !== verifier) {
+            return false;
+        }
+
         if (data?.ready && data.idToken) {
             // Máy chủ đã xoá phiên khi trả về (dùng 1 lần) → xoá phiên này nếu nó vẫn là phiên hiện hành
             clearPendingPwaHandoff(verifier);
@@ -440,6 +457,9 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             try {
                 await signInWithCredential(auth, GoogleAuthProvider.credential(data.idToken, data.accessToken ?? undefined));
             } catch (err) {
+                if (readPendingHandoff() !== verifier) {
+                    return false;
+                }
                 throw new PwaHandoffSignInError(err);
             }
             if (data.accessToken) sessionStorage.setItem('googleOAuthToken', data.accessToken);

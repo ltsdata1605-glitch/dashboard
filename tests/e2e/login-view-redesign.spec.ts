@@ -652,4 +652,84 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         const alertBanner = page.getByRole('alert');
         await expect(alertBanner).toHaveCount(0);
     });
+
+    test('13. [Session Ownership Policy] Late ready=true response from superseded Session A does not trigger login or disrupt Session B', async ({ page }) => {
+        let sessionACalled = false;
+        let resolveSessionA!: () => void;
+        const sessionAPromise = new Promise<void>(res => { resolveSessionA = res; });
+
+        // Giả lập mock token riêng cho phiên A
+        const TOKEN_A = 'MOCK_GOOGLE_ACCESS_TOKEN_SESSION_A';
+
+        await page.route('**/pwaHandoffClaim', async (route) => {
+            if (!sessionACalled) {
+                sessionACalled = true;
+                await sessionAPromise;
+                // Trả về ready = true cho Session A (nhưng Session A đã bị Session B thay thế!)
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        result: {
+                            ready: true,
+                            idToken: 'mock-id-token-a',
+                            accessToken: TOKEN_A,
+                            uid: 'user-a-superseded',
+                            profile: { role: 'admin', hoTen: 'User A Cũ' }
+                        }
+                    }),
+                });
+                return;
+            }
+            // Session B: vẫn đang chờ người dùng thao tác ở Google
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({ result: { ready: false } }),
+            });
+        });
+
+        await page.evaluate(() => {
+            (window as any).__ycxTestRedirectHook = () => {};
+        });
+
+        // 1. Mở phiên A
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+
+        await page.waitForTimeout(300);
+        expect(sessionACalled).toBe(true);
+
+        // 2. Người dùng chủ động mở phiên B -> thay thế hoàn toàn phiên A
+        const reopenBtn = page.getByTestId('login-handoff-reopen');
+        await expect(reopenBtn).toBeVisible();
+        await expect(reopenBtn).toBeEnabled();
+        await reopenBtn.click();
+
+        const rawB = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawB).not.toBeNull();
+        const vB = JSON.parse(rawB!).v;
+
+        // 3. Bây giờ Session A mới hoàn thành với ready: true (trả về muộn)
+        resolveSessionA();
+        await page.waitForTimeout(500);
+
+        // 4. KIỂM CHỨNG QUYỀN SỞ HỮU PHIÊN:
+        // - Kết quả của phiên A TUYỆT ĐỐI KHÔNG được lưu token vào sessionStorage
+        const savedToken = await page.evaluate(() => sessionStorage.getItem('googleOAuthToken'));
+        expect(savedToken).toBeNull();
+
+        // - Màn hình chờ VẪN DUY TRÌ cho phiên B (chưa vào app bằng phiên A)
+        await expect(waitingScreen).toBeVisible();
+
+        // - localStorage VẪN NẮM GIỮ đúng verifier B
+        const rawCurrent = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawCurrent).not.toBeNull();
+        const vCurrent = JSON.parse(rawCurrent!).v;
+        expect(vCurrent).toBe(vB);
+    });
 });
