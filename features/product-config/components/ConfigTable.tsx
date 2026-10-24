@@ -173,17 +173,6 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-                    {isEditable && (
-                        <Button
-                            variant="secondary"
-                            size="none"
-                            onClick={() => setShowAddForm(!showAddForm)}
-                            className="ycx-hit h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-semibold rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-                        >
-                            <AppIcon name={showAddForm ? 'close' : 'add'} size="sm" />
-                            <span>{showAddForm ? 'Đóng' : 'Thêm mới'}</span>
-                        </Button>
-                    )}
                     <div className="flex-1 sm:w-48 min-w-0">
                         <Select
                             dense
@@ -195,6 +184,18 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                             {parentGroups.map(p => <option key={p} value={p}>{p}</option>)}
                         </Select>
                     </div>
+                    {isEditable && (
+                        <Button
+                            variant="secondary"
+                            size="none"
+                            onClick={() => setShowAddForm(!showAddForm)}
+                            title={showAddForm ? 'Đóng form thêm mới' : 'Thêm mới ngành hàng'}
+                            aria-label={showAddForm ? 'Đóng' : 'Thêm mới'}
+                            className="ycx-hit w-8 h-8 rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer shadow-2xs"
+                        >
+                            <AppIcon name={showAddForm ? 'close' : 'add'} size="sm" />
+                        </Button>
+                    )}
                 </div>
             </div>
 

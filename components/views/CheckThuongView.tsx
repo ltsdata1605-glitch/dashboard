@@ -9,7 +9,7 @@ import { Button } from '../shared/ui/Button';
 import { TopBarActions } from '../shared/ui/TopBarActions';
 import { usePageActions } from '../shared/ui/PageActions';
 import { getUnifiedCheckThuongData } from '../../services/checkThuongIframeService';
-import { CheckThuongLeaderboardView, CheckThuongSearchView } from '../../features/check-thuong';
+import { CheckThuongLeaderboardView, CheckThuongSearchView, parseCheckThuongFile } from '../../features/check-thuong';
 import { db } from '../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { assembleChunkedHeavyValue, restoreNestedArraysFromFirestore } from '../../services/firestoreService';
@@ -505,7 +505,6 @@ export const CheckThuongView: React.FC = () => {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     try {
-                        const { parseCheckThuongFile } = await import('../../features/check-thuong');
                         const res = await parseCheckThuongFile(file);
                         handleFileLoaded(res);
                         toast.success(`Đã nạp file: ${file.name}`);

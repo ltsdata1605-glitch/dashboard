@@ -3,7 +3,7 @@ import type { DataRow, SummaryTableNode, ProductConfig } from '../types';
 import { COL, VARIANT_TO_SHORT_KEY, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
 // 4 hàm nhỏ khung app cần lúc mở (thanh bên, thanh tab, đồng bộ cloud) nằm ở basicHelpers.ts — xem chú thích đầu file đó.
 // Vẫn xuất lại ở đây: features/* chỉ được import utils/dataUtils (CLAUDE.md mục 1), không phải sửa nơi nào đang dùng.
-export { parseKhoList, getErrorMessage, getErrorCode, formatCleanDisplayName } from './basicHelpers';
+export { parseKhoList, getErrorMessage, getErrorCode, formatCleanDisplayName, getLocalDateString } from './basicHelpers';
 
 // Tailwind safelist (implementation_plan.md mục 61) — viền dưới 3px đổi màu theo nhóm cột ở
 // nhiều bảng biểu khắp dự án được ghép ĐỘNG qua template literal (vd `border-b-${colorName}-400`)

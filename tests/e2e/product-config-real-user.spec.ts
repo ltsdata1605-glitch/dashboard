@@ -46,10 +46,15 @@ test('Kiểm tra giao diện Cấu hình ngành hàng: đủ 5 cột chuẩn, c�
     // Xác nhận nút "Đồng bộ từ Google Sheets" KHÔNG còn xuất hiện
     await expect(page.getByRole('button', { name: /Đồng bộ từ Google Sheets/i })).toHaveCount(0);
 
+    // Kiểm tra bảng cấu hình
+    const table = page.locator('table').first();
+    await table.waitFor({ state: 'visible', timeout: 15_000 });
+
     // Kiểm tra các nút độc lập (Icon buttons): Tải file Excel, Xuất Excel, Lưu Cloud
     await expect(page.locator('button[title*="Tải file Excel"]')).toBeVisible();
     const exportBtn = page.locator('button[title*="Xuất Excel"]').first();
     await expect(exportBtn).toBeVisible();
+    await expect(exportBtn).toBeEnabled({ timeout: 10_000 });
 
     // Xác thực tải file từ tab "Khai báo ngành hàng": tên file phải khớp tên tab (Khai_Bao_Nganh_Hang_*.xlsx)
     const [downloadCategory] = await Promise.all([
@@ -63,10 +68,6 @@ test('Kiểm tra giao diện Cấu hình ngành hàng: đủ 5 cột chuẩn, c�
     // Xác thực badge "... mục" KHÔNG CÒN xuất hiện ở góc phải filter bar của tab Khai báo ngành hàng
     await expect(page.locator('.p-3').first().locator('span:has-text("mục")')).toHaveCount(0);
     await page.screenshot({ path: 'test-results/audit-tab-1-category.png', fullPage: true });
-
-    // Kiểm tra bảng cấu hình
-    const table = page.locator('table').first();
-    await table.waitFor({ state: 'visible', timeout: 15_000 });
 
     const headers = (await page.locator('table thead th').allInnerTexts()).map(t => t.trim().toUpperCase());
     console.log('CÁC CỘT TRONG BẢNG CẤU HÌNH THỰC TẾ:', JSON.stringify(headers));

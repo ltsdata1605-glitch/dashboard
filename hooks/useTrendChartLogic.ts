@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { TrendData } from '../types';
+import { getLocalDateString } from '../utils/dataUtils';
 
 export interface RechartsTrendData {
     label: string;
@@ -53,7 +54,7 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
                 const dayOfWeek = date.getDay();
                 const dateOfMonday = new Date(date);
                 dateOfMonday.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
-                const key = dateOfMonday.toISOString().split('T')[0];
+                const key = getLocalDateString(dateOfMonday);
                 if (!acc[key]) acc[key] = { date: dateOfMonday, value: 0 };
                 acc[key].value += day[metricKey];
                 return acc;
@@ -93,7 +94,7 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
             const monthlyData = Object.values(trendData.daily || {}).reduce((acc: { [key: string]: AggregatedBucket }, day: DailyPoint) => {
                 const date = new Date(day.date);
                 const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-                const key = firstDayOfMonth.toISOString().split('T')[0];
+                const key = getLocalDateString(firstDayOfMonth);
                 if (!acc[key]) acc[key] = { date: firstDayOfMonth, value: 0 };
                 acc[key].value += day[metricKey];
                 return acc;

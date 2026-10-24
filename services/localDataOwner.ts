@@ -14,7 +14,7 @@
  * nguyên. Các kho còn lại vẫn dùng chung nên vẫn phải dọn khi đổi tài khoản.
  */
 
-import { LEGACY_BI_HUB_DB_NAME, KHAI_THAC_LEGACY_DB_NAME, setActiveLocalUid, biHubDbName, khaiThacDbName, isPerAccountDbName } from '../utils/localDbScope';
+import { LEGACY_BI_HUB_DB_NAME, KHAI_THAC_LEGACY_DB_NAME, setActiveLocalUid, biHubDbName, khaiThacDbName, isPerAccountDbName, markCleanSlateMigrated, resetLocalScopeInheritance } from '../utils/localDbScope';
 
 const OWNER_KEY = 'ycx-local-data-owner-uid';
 
@@ -238,7 +238,6 @@ export const resetAllDataAsNewUser = async (
 
     // 3. Đánh dấu cấm kế thừa dữ liệu cũ (đặt MIGRATED_MARKER rỗng vào DB riêng của user)
     try {
-        const { markCleanSlateMigrated, resetLocalScopeInheritance } = await import('../utils/localDbScope');
         if (user?.uid) {
             setLocalDataOwner(user.uid);
             resetLocalScopeInheritance(user.uid);

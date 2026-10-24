@@ -79,3 +79,24 @@ export function formatCleanDisplayName(name?: string | null, fallback = 'Thành 
 
     return clean || fallback;
 }
+
+/**
+ * Lấy chuỗi ngày YYYY-MM-DD theo giờ địa phương (local calendar date),
+ * an toàn 100% trước lệch múi giờ (tránh bug của toISOString() bị lùi 1 ngày
+ * trong khung giờ 00:00 - 06:59 sáng tại Việt Nam UTC+7).
+ */
+export function getLocalDateString(val?: Date | number | string | null): string {
+    if (val === undefined || val === null) {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const date = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${date}`;
+    }
+    const d = val instanceof Date ? val : new Date(val);
+    if (isNaN(d.getTime())) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const date = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${date}`;
+}

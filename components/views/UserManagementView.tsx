@@ -18,8 +18,9 @@ import {
     isPendingApprovalsLoaded,
     refreshPendingApprovals,
 } from '../../services/pendingApprovalsStore';
+import { usePendingApprovals } from '../../hooks/usePendingApprovalCount';
 import { getManagedUsers, hasFreshManagedUsers } from '../../services/managedUsersCache';
-import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
+import { getErrorMessage, getErrorCode, formatCleanDisplayName, getLocalDateString } from '../../utils/dataUtils';
 import { ProductConfigManagerTab } from '../../features/product-config';
 import { ApprovalSettingsTab } from './settings/ApprovalSettingsTab';
 
@@ -43,20 +44,46 @@ const toTimestampLike = (val: unknown): TimestampLike | undefined => {
     return undefined;
 };
 
-// Rút trích chuỗi ngày ISO dạng YYYY-MM-DD an toàn
+// Rút trích chuỗi ngày ISO dạng YYYY-MM-DD an toàn (theo múi giờ địa phương)
 const getIsoDateString = (val: unknown): string => {
     if (!val) return '';
     if (typeof val === 'string') return val.split('T')[0];
     const v = val as { toDate?: () => Date };
     if (typeof v.toDate === 'function') {
         try {
-            return v.toDate().toISOString().split('T')[0];
+            return getLocalDateString(v.toDate());
         } catch {
             return '';
         }
     }
-    if (val instanceof Date) return val.toISOString().split('T')[0];
+    if (val instanceof Date) return getLocalDateString(val);
     return '';
+};
+
+// Helper kiểm tra hết hạn — dùng chung cho lọc danh sách và đếm số lượng từng tab
+const isUserExpired = (status?: string, expiresAt?: unknown): boolean => {
+    if (status === 'expired') return true;
+    if (!expiresAt) return false;
+    try {
+        if (typeof expiresAt === 'string') {
+            const ms = new Date(expiresAt).getTime();
+            return Number.isFinite(ms) && ms < Date.now();
+        }
+        if (typeof expiresAt === 'number') {
+            return expiresAt < Date.now();
+        }
+        const obj = expiresAt as { toDate?: () => Date; toMillis?: () => number };
+        if (typeof obj.toMillis === 'function') {
+            const ms = obj.toMillis();
+            return typeof ms === 'number' && Number.isFinite(ms) && ms < Date.now();
+        }
+        if (typeof obj.toDate === 'function') {
+            return obj.toDate().getTime() < Date.now();
+        }
+    } catch {
+        return false;
+    }
+    return false;
 };
 
 /**
@@ -111,7 +138,9 @@ interface CacheEntry {
 
 const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) => {
     const { user, userRole, departmentId, isDemoMode } = useAuth();
+    const { users: pendingStoreUsers } = usePendingApprovals();
     const [requests, setRequests] = useState<AccessRequest[]>([]);
+    const [tabCounts, setTabCounts] = useState<{ pending?: number; active?: number; expired?: number }>({});
     const [isLoading, setIsLoading] = useState(true);
     const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
     const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
@@ -288,8 +317,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 ];
                 
                 const newExpiry: Record<string, string> = {
-                    'demo-user-2': new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-                    'demo-user-3': new Date(Date.now() - 86400000).toISOString().split('T')[0]
+                    'demo-user-2': getLocalDateString(new Date(Date.now() + 30 * 86400000)),
+                    'demo-user-3': getLocalDateString(new Date(Date.now() - 86400000))
                 };
                 const newDept: Record<string, string> = { 'demo-user-1': '58614', 'demo-user-2': '58614', 'demo-user-3': '58614' };
                 const newNames: Record<string, string> = { 'demo-user-1': 'Nguyễn Văn A', 'demo-user-2': 'Trần Thị B', 'demo-user-3': 'Lê Văn C' };
@@ -302,6 +331,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                 const filteredData = listMode === 'pending' ? [mockRequests[0]] : listMode === 'expired' ? [mockRequests[2]] : [mockRequests[1]];
                 setRequests(filteredData);
+                setTabCounts({ pending: 1, active: 1, expired: 1 });
                 usersCacheRef.current[listMode] = {
                     data: filteredData,
                     expiry: newExpiry,
@@ -331,7 +361,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
              *   - đang có request bay    -> dùng chung request đó, không tạo cái thứ 2;
              *   - quá hạn/chưa có        -> gọi đúng một lượt.
              */
-            let dungNguonChung = listMode === 'pending' && !forceRefresh;
+            let dungNguonChung = userRole !== 'admin' && listMode === 'pending' && !forceRefresh;
             if (dungNguonChung) {
                 await refreshPendingApprovals();
                 if (isPendingApprovalsLoaded()) {
@@ -344,7 +374,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             }
 
             // 2. Admin: Query TRỰC TIẾP Firestore Client SDK 1 lần toàn bộ users collection (~50ms)
-            if (!dungNguonChung && userRole === 'admin') {
+            if (userRole === 'admin') {
                 if (!allAdminUsersRef.current || forceRefresh) {
                     try {
                         const usersRef = collection(db, 'users');
@@ -425,30 +455,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             setEditDepartments(newDept);
             setEditNames(newNames);
             setEditRoles(newRoles);
-            
-            // Helper kiểm tra hết hạn
-            const isUserExpired = (status?: string, expiresAt?: TimestampLike | { toDate?: () => Date } | string | null): boolean => {
-                if (status === 'expired') return true;
-                if (!expiresAt) return false;
-                // Phải xử lý CẢ HAI dạng. Lúc TẢI danh sách, `expiresAt` đã được
-                // `toTimestampLike()` bọc thành object (xem chỗ dựng `data` ở trên) — nên đường
-                // đó vốn đã đúng. Nhưng sau khi DUYỆT một người dùng, `setRequests` gán thẳng
-                // chuỗi ISO vào `expiresAt` (không qua `toTimestampLike`), nên bản ghi đó mang
-                // chuỗi cho tới lần tải lại kế tiếp — và nhánh cũ chỉ kiểm `.toDate` sẽ coi nó là
-                // "chưa hết hạn" trong suốt thời gian đó.
-                try {
-                    if (typeof expiresAt === 'string') {
-                        const ms = new Date(expiresAt).getTime();
-                        return Number.isFinite(ms) && ms < Date.now();
-                    }
-                    if (typeof expiresAt.toDate === 'function') {
-                        return expiresAt.toDate().getTime() < Date.now();
-                    }
-                } catch {
-                    return false;
-                }
-                return false;
-            };
 
             // Client side filter 
             let filteredData = data;
@@ -461,6 +467,16 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 } else {
                     filteredData = filteredData.filter(req => !isUserExpired(req.status, req.expiresAt) && (req.status === 'pending' || req.status === 'new' || req.role === 'pending'));
                 }
+
+                // Cập nhật số lượng cho cả 3 tab từ toàn bộ danh sách Admin
+                const pCount = data.filter(req => !isUserExpired(req.status, req.expiresAt) && (req.status === 'pending' || req.status === 'new' || req.role === 'pending')).length;
+                const aCount = data.filter(req => !isUserExpired(req.status, req.expiresAt) && (req.status === 'approved' || (req.role && req.role !== 'pending' && req.role !== 'blocked'))).length;
+                const eCount = data.filter(req => isUserExpired(req.status, req.expiresAt)).length;
+                setTabCounts({
+                    pending: pCount,
+                    active: aCount,
+                    expired: eCount,
+                });
             }
             else if (userRole === 'manager' && departmentId) {
                 const allowedKhos = departmentId.split(',').map(s=>s.trim()).filter(Boolean);
@@ -473,6 +489,14 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 }
                 // Manager only sees matching departments
                 filteredData = filteredData.filter(req => allowedKhos.includes(req.departmentId));
+
+                if (listMode === 'pending') {
+                    setTabCounts(prev => ({ ...prev, pending: filteredData.length }));
+                } else {
+                    const aCount = data.filter(req => req.role === 'employee' && req.status !== 'pending' && req.status !== 'new' && !isUserExpired(req.status, req.expiresAt) && allowedKhos.includes(req.departmentId)).length;
+                    const eCount = data.filter(req => req.role === 'employee' && isUserExpired(req.status, req.expiresAt) && allowedKhos.includes(req.departmentId)).length;
+                    setTabCounts(prev => ({ ...prev, active: aCount, expired: eCount }));
+                }
             }
             
             // Sort client side by requestDate descending, but put "chưa cập nhật mã Kho" first if active/expired
@@ -525,6 +549,21 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         };
     }, [userRole, departmentId, listMode]);
 
+    // Đồng bộ số lượng chờ duyệt từ pendingStore (chuông / background store)
+    useEffect(() => {
+        if (isDemoMode) return;
+        if (userRole === 'admin') {
+            if (tabCounts.pending === undefined && pendingStoreUsers.length > 0) {
+                const pCount = pendingStoreUsers.filter(u => !isUserExpired(u.status, u.expiresAt) && (u.status === 'pending' || u.status === 'new' || u.role === 'pending')).length;
+                setTabCounts(prev => ({ ...prev, pending: pCount }));
+            }
+        } else if (userRole === 'manager' && departmentId) {
+            const allowedKhos = departmentId.split(',').map(s => s.trim()).filter(Boolean);
+            const pCount = pendingStoreUsers.filter(u => u.requestedRole === 'employee' && u.status === 'pending' && allowedKhos.includes(u.departmentId || '')).length;
+            setTabCounts(prev => ({ ...prev, pending: pCount }));
+        }
+    }, [pendingStoreUsers, userRole, departmentId, isDemoMode, tabCounts.pending]);
+
     const handleApproval = async (requestId: string, isApproved: boolean, customExpiresAt?: string | null) => {
         if (isDemoMode) {
             toast.success(isApproved 
@@ -532,6 +571,30 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 : (listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu (Demo Mode)!' : 'Đã THU HỒI quyền truy cập (Demo Mode)!')
             );
             setRequests(prev => prev.filter(req => req.id !== requestId));
+            setTabCounts(prev => {
+                if (listMode === 'pending') {
+                    return {
+                        ...prev,
+                        pending: Math.max(0, (prev.pending ?? 1) - 1),
+                        active: isApproved ? (prev.active ?? 1) + 1 : (prev.active ?? 1),
+                    };
+                }
+                if (listMode === 'expired') {
+                    return {
+                        ...prev,
+                        expired: Math.max(0, (prev.expired ?? 1) - 1),
+                        active: isApproved ? (prev.active ?? 1) + 1 : (prev.active ?? 1),
+                    };
+                }
+                if (listMode === 'active' && !isApproved) {
+                    return {
+                        ...prev,
+                        active: Math.max(0, (prev.active ?? 1) - 1),
+                        expired: (prev.expired ?? 1) + 1,
+                    };
+                }
+                return prev;
+            });
             return;
         }
 
@@ -556,7 +619,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     let dateStr = expiryDates[requestId];
                     if (listMode === 'expired' && (!dateStr || new Date(dateStr).getTime() < Date.now())) {
                         const nextMonth = new Date(Date.now() + 30 * 86400000);
-                        dateStr = nextMonth.toISOString().split('T')[0];
+                        dateStr = getLocalDateString(nextMonth);
                     }
                     if (dateStr) {
                         const d = new Date(dateStr);
@@ -587,6 +650,23 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 } else {
                     setRequests(prev => prev.map(req => req.id === requestId ? { ...req, role: targetRole, status: 'approved', expiresAt: expiresAtIso } : req));
                 }
+                setTabCounts(prev => {
+                    if (listMode === 'pending') {
+                        return {
+                            ...prev,
+                            pending: Math.max(0, (prev.pending ?? 1) - 1),
+                            active: (prev.active ?? 1) + 1,
+                        };
+                    }
+                    if (listMode === 'expired') {
+                        return {
+                            ...prev,
+                            expired: Math.max(0, (prev.expired ?? 1) - 1),
+                            active: (prev.active ?? 1) + 1,
+                        };
+                    }
+                    return prev;
+                });
                 if (allAdminUsersRef.current) {
                     allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
                         u.id === requestId ? { ...u, role: targetRole, status: 'approved', expiresAt: expiresAtIso, departmentId: editDepartments[requestId] || '', employeeName: editNames[requestId] || '' } : u
@@ -607,6 +687,22 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                 // Thu hồi / từ chối: xóa khỏi danh sách hiện tại
                 setRequests(prev => prev.filter(req => req.id !== requestId));
+                setTabCounts(prev => {
+                    if (listMode === 'pending') {
+                        return {
+                            ...prev,
+                            pending: Math.max(0, (prev.pending ?? 1) - 1),
+                        };
+                    }
+                    if (listMode === 'active') {
+                        return {
+                            ...prev,
+                            active: Math.max(0, (prev.active ?? 1) - 1),
+                            expired: (prev.expired ?? 1) + 1,
+                        };
+                    }
+                    return prev;
+                });
                 if (allAdminUsersRef.current) {
                     allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
                         u.id === requestId ? { ...u, status: listMode === 'pending' ? 'rejected' : 'expired' } : u
@@ -636,7 +732,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         const defaultDays = 30;
         setExtendDays(defaultDays);
         const target = new Date(Date.now() + defaultDays * 86400000);
-        setExtendDate(target.toISOString().split('T')[0]);
+        setExtendDate(getLocalDateString(target));
     };
 
     const handleDaysInputChange = (val: number | string) => {
@@ -645,7 +741,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         const days = isNaN(num) || num <= 0 ? 1 : num;
         setExtendDays(days);
         const target = new Date(Date.now() + days * 86400000);
-        setExtendDate(target.toISOString().split('T')[0]);
+        setExtendDate(getLocalDateString(target));
     };
 
     const handleDateInputChange = (dateStr: string) => {
@@ -663,7 +759,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         setIsUnlimited(false);
         setExtendDays(days);
         const target = new Date(Date.now() + days * 86400000);
-        setExtendDate(target.toISOString().split('T')[0]);
+        setExtendDate(getLocalDateString(target));
     };
 
     const handleToggleUnlimited = () => {
@@ -698,7 +794,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         const num = parseInt(val, 10);
         if (!isNaN(num) && num > 0) {
             const target = new Date(Date.now() + num * 86400000);
-            const dateStr = target.toISOString().split('T')[0];
+            const dateStr = getLocalDateString(target);
             setExpiryDates(prev => ({ ...prev, [requestId]: dateStr }));
             if (listMode === 'active' || listMode === 'expired') {
                 autoSave(requestId, 'expiresAt', dateStr);
@@ -754,9 +850,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     activeId={listMode}
                                     onChange={id => { const m = id as 'pending' | 'active' | 'expired'; setListMode(m); setLastPermissionTab(m); }}
                                     items={[
-                                        { id: 'pending', label: 'Chờ duyệt' },
-                                        { id: 'active', label: 'Hoạt động' },
-                                        { id: 'expired', label: 'Hết hạn' },
+                                        { id: 'pending', label: 'Chờ duyệt', badge: tabCounts.pending },
+                                        { id: 'active', label: 'Hoạt động', badge: tabCounts.active },
+                                        { id: 'expired', label: 'Hết hạn', badge: tabCounts.expired },
                                     ]}
                                 />
                                 <Button
@@ -1180,7 +1276,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     <Input
                                         type="date"
                                         value={extendDate}
-                                        min={new Date().toISOString().split('T')[0]}
+                                        min={getLocalDateString()}
                                         onChange={e => handleDateInputChange(e.target.value)}
                                         className="h-10 text-sm font-medium"
                                     />

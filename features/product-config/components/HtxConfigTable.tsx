@@ -31,9 +31,9 @@ const CLASSIFICATION_CONFIG: Record<
     },
     tra_gop: {
         label: 'Trả góp',
-        bg: 'bg-indigo-50 dark:bg-indigo-950/50',
-        text: 'text-indigo-700 dark:text-indigo-300',
-        border: 'border-indigo-200 dark:border-indigo-800',
+        bg: 'bg-emerald-50 dark:bg-emerald-950/50',
+        text: 'text-emerald-700 dark:text-emerald-300',
+        border: 'border-emerald-200 dark:border-emerald-800',
         icon: 'calendar',
     },
     thu_ho: {
@@ -218,18 +218,6 @@ export const HtxConfigTable: React.FC<HtxConfigTableProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-                        {isEditable && (
-                            <Button
-                                variant="secondary"
-                                size="none"
-                                onClick={handleOpenAddModal}
-                                className="ycx-hit h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-semibold rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-                            >
-                                <AppIcon name={isAddModalOpen ? 'close' : 'add'} size="sm" />
-                                <span>{isAddModalOpen ? 'Đóng' : 'Thêm mới'}</span>
-                            </Button>
-                        )}
-
                         <div className="flex-1 sm:w-36 min-w-0">
                             <Select
                                 dense
@@ -257,6 +245,19 @@ export const HtxConfigTable: React.FC<HtxConfigTableProps> = ({
                                 <option value="non_revenue">Không tính DT</option>
                             </Select>
                         </div>
+
+                        {isEditable && (
+                            <Button
+                                variant="secondary"
+                                size="none"
+                                onClick={handleOpenAddModal}
+                                title={isAddModalOpen ? 'Đóng form thêm mới' : 'Thêm mới hình thức xuất'}
+                                aria-label={isAddModalOpen ? 'Đóng' : 'Thêm mới'}
+                                className="ycx-hit w-8 h-8 rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer shadow-2xs"
+                            >
+                                <AppIcon name={isAddModalOpen ? 'close' : 'add'} size="sm" />
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -314,13 +315,15 @@ export const HtxConfigTable: React.FC<HtxConfigTableProps> = ({
                         <div className="flex flex-wrap items-center gap-3">
                             <div className="flex items-center gap-1.5">
                                 <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Phân loại:</span>
-                                <div className="inline-flex items-center p-0.5 bg-slate-200/80 dark:bg-slate-700/80 rounded-lg text-[11px] font-semibold">
+                                <div className="inline-flex items-center p-0.5 bg-slate-200/80 dark:bg-slate-700/80 rounded-control text-[11px] font-semibold">
                                     {(['tien_mat', 'tra_gop', 'thu_ho', 'khac'] as HtxClassificationType[]).map(cls => {
                                         const cfg = CLASSIFICATION_CONFIG[cls];
                                         const isSelected = formClassification === cls;
                                         return (
-                                            <button
+                                            <Button
                                                 key={cls}
+                                                variant="unstyled"
+                                                size="none"
                                                 type="button"
                                                 onClick={() => handleClassificationChange(cls)}
                                                 className={`px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1 ${
@@ -331,7 +334,7 @@ export const HtxConfigTable: React.FC<HtxConfigTableProps> = ({
                                             >
                                                 <AppIcon name={cfg.icon} size="xs" />
                                                 <span>{cfg.label}</span>
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>
@@ -602,11 +605,13 @@ export const HtxConfigTable: React.FC<HtxConfigTableProps> = ({
                                 const cfg = CLASSIFICATION_CONFIG[cls];
                                 const isSelected = formClassification === cls;
                                 return (
-                                    <button
+                                    <Button
                                         key={cls}
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => setFormClassification(cls)}
-                                        className={`flex flex-col items-center justify-center p-2.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                                        className={`flex flex-col items-center justify-center p-2.5 rounded-control border text-xs font-semibold transition-all cursor-pointer ${
                                             isSelected
                                                 ? `${cfg.bg} ${cfg.text} ${cfg.border} ring-2 ring-sky-500/20 shadow-xs font-bold`
                                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
@@ -614,7 +619,7 @@ export const HtxConfigTable: React.FC<HtxConfigTableProps> = ({
                                     >
                                         <AppIcon name={cfg.icon} size="sm" className="mb-1" />
                                         <span>{cfg.label}</span>
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </div>

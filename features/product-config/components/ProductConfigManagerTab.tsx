@@ -26,6 +26,7 @@ import { HtxConfigTable } from './HtxConfigTable';
 import { ProductConfigTemplateHub } from './ProductConfigTemplateHub';
 import type { CategoryTableItem, ProductCodeTableItem, HtxTableItem, ProductConfigSummary } from '../types';
 import * as dbService from '../../../services/dbService';
+import { getLocalDateString } from '../../../utils/dataUtils';
 
 export const ProductConfigManagerTab: React.FC = () => {
     const { user, userRole, departmentId } = useAuth();
@@ -286,7 +287,7 @@ export const ProductConfigManagerTab: React.FC = () => {
                 await exportHtxConfigTemplateToExcel();
                 toast.success('Đã tải xuống cả 3 file Excel mẫu (Ngành hàng, Mã sản phẩm & Hình thức xuất)!', { id: toastId });
             } else {
-                const dateStr = new Date().toISOString().split('T')[0];
+                const dateStr = getLocalDateString();
                 await exportProductConfigToExcel(config, `Khai_Bao_Nganh_Hang_${dateStr}.xlsx`);
                 toast.success('Đã tải xuống file Excel khai báo ngành hàng thành công!', { id: toastId });
             }
@@ -684,9 +685,9 @@ export const ProductConfigManagerTab: React.FC = () => {
                     activeId={configType}
                     onChange={(id) => setConfigType(id as typeof configType)}
                     items={[
-                        { id: 'category', label: laDienThoai ? 'Ngành hàng' : 'Khai báo ngành hàng', icon: 'table', badge: tableItems.length },
-                        { id: 'productCode', label: laDienThoai ? 'Mã SP' : 'Cấu hình theo Mã sản phẩm', icon: 'template', badge: productCodeTableItems.length },
-                        { id: 'htx', label: laDienThoai ? 'HT xuất' : 'Hình thức xuất', icon: 'viewList', badge: htxTableItems.length },
+                        { id: 'category', label: laDienThoai ? 'Ngành hàng' : 'Khai báo ngành hàng', icon: 'table' },
+                        { id: 'productCode', label: laDienThoai ? 'Mã SP' : 'Cấu hình theo Mã sản phẩm', icon: 'template' },
+                        { id: 'htx', label: laDienThoai ? 'HT xuất' : 'Hình thức xuất', icon: 'viewList' },
                         { id: 'template', label: laDienThoai ? 'File mẫu' : 'Tải file mẫu', icon: 'download' },
                     ]}
                 />

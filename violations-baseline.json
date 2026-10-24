@@ -8,7 +8,11 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
     "iconEmoji": 10,
-    "offScaleText": 0
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/common/ProcessingLoader.tsx": {
     "nonSemanticColor": 0,
@@ -17,12 +21,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "iconRawSvg": 0,
-    "offScaleText": 0
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/employees/EmployeeAnalysisContent.tsx": {
     "nonSemanticColor": 0,
@@ -31,8 +36,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
-    "offScaleText": 0
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/employees/industry/useIndustryAnalysisLogic.ts": {
     "nonSemanticColor": 0,
@@ -41,7 +51,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
-    "iconEmoji": 0
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/employees/performance/PerformanceSingleTable.tsx": {
     "nonSemanticColor": 0,
@@ -52,7 +68,26 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
     "iconEmoji": 3,
-    "offScaleText": 0
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
+  },
+  "components/layout/HeaderSystemGroup.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 0,
+    "missingMobileToolbar": 1,
+    "iconDirectImport": 0,
+    "iconNumericSize": 0,
+    "iconLegacyCall": 0,
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/layout/Sidebar.tsx": {
     "nonSemanticColor": 0,
@@ -66,7 +101,8 @@
     "rawOverlay": 0,
     "tinyText": 1,
     "offScaleRadius": 0,
-    "offScaleText": 0
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/modals/AdminAnnouncementModal.tsx": {
     "nonSemanticColor": 0,
@@ -76,7 +112,12 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
-    "iconEmoji": 1
+    "iconEmoji": 1,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/modals/PerformanceModal.tsx": {
     "nonSemanticColor": 0,
@@ -85,12 +126,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "iconRawSvg": 0,
-    "offScaleText": 0
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/shared/ui/KpiCard.tsx": {
     "nonSemanticColor": 0,
@@ -99,9 +141,28 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
+    "rawOverlay": 0,
     "tinyText": 0,
-    "offScaleRadius": 1
+    "offScaleRadius": 1,
+    "offScaleText": 0,
+    "legacyRadius": 0
+  },
+  "components/shared/ui/TopBarActions.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 0,
+    "missingMobileToolbar": 1,
+    "iconDirectImport": 0,
+    "iconNumericSize": 0,
+    "iconLegacyCall": 0,
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "components/views/LoginView.tsx": {
     "nonSemanticColor": 0,
@@ -112,9 +173,11 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 1,
     "iconEmoji": 0,
-    "offScaleText": 0,
+    "rawOverlay": 0,
     "tinyText": 0,
-    "offScaleRadius": 0
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/bi-dashboard/components/AutoClickGuideModal.tsx": {
     "nonSemanticColor": 0,
@@ -124,7 +187,12 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
-    "iconEmoji": 21
+    "iconEmoji": 21,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/bi-dashboard/components/common/TampermonkeyInstallGuideContent.tsx": {
     "nonSemanticColor": 0,
@@ -133,11 +201,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "iconRawSvg": 0
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
     "nonSemanticColor": 0,
@@ -146,8 +216,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
-    "offScaleText": 0
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
     "nonSemanticColor": 0,
@@ -156,8 +231,43 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
-    "offScaleText": 0
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
+  },
+  "features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 1,
+    "missingMobileToolbar": 0,
+    "iconDirectImport": 0,
+    "iconNumericSize": 0,
+    "iconLegacyCall": 0,
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 2,
+    "offScaleRadius": 0,
+    "offScaleText": 1,
+    "legacyRadius": 1
+  },
+  "features/bi-dashboard/components/shared/Badges.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 0,
+    "missingMobileToolbar": 0,
+    "iconDirectImport": 0,
+    "iconNumericSize": 0,
+    "iconLegacyCall": 0,
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 3,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
     "nonSemanticColor": 0,
@@ -166,8 +276,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
-    "tinyText": 0
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/check-thuong/components/CheckThuongChannelTopGrid.tsx": {
     "nonSemanticColor": 0,
@@ -176,7 +291,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
-    "iconEmoji": 0
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/check-thuong/components/CheckThuongSummaryCards.tsx": {
     "nonSemanticColor": 0,
@@ -185,12 +306,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
+    "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "iconRawSvg": 0,
-    "offScaleText": 0
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/check-thuong/components/CheckThuongTopTable.tsx": {
     "nonSemanticColor": 0,
@@ -199,7 +321,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
-    "iconEmoji": 0
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/line-bot/components/AdminDeclarationTab.tsx": {
     "nonSemanticColor": 0,
@@ -209,7 +337,12 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
-    "iconEmoji": 1
+    "iconEmoji": 1,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/line-bot/components/IPhoneChatPreview.tsx": {
     "nonSemanticColor": 0,
@@ -222,7 +355,9 @@
     "iconEmoji": 71,
     "rawOverlay": 0,
     "tinyText": 50,
-    "offScaleRadius": 2
+    "offScaleRadius": 2,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/line-bot/components/LineBotSettingsTab.tsx": {
     "nonSemanticColor": 0,
@@ -232,7 +367,12 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
-    "iconEmoji": 1
+    "iconEmoji": 1,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/line-bot/components/ScheduleEditModal.tsx": {
     "nonSemanticColor": 0,
@@ -245,7 +385,9 @@
     "iconEmoji": 2,
     "rawOverlay": 0,
     "tinyText": 0,
-    "offScaleRadius": 0
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/line-bot/components/SyntaxConfigTab.tsx": {
     "nonSemanticColor": 0,
@@ -255,7 +397,12 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
-    "iconEmoji": 1
+    "iconEmoji": 1,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/phan-ca/components/DailyStatsTable.tsx": {
     "nonSemanticColor": 0,
@@ -264,7 +411,28 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
-    "iconEmoji": 0
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
+  },
+  "features/product-config/components/ProductConfigTemplateHub.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 10,
+    "missingMobileToolbar": 0,
+    "iconDirectImport": 0,
+    "iconNumericSize": 0,
+    "iconLegacyCall": 0,
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 1,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 4
   },
   "features/sticker-event/ResultsDisplay.tsx": {
     "nonSemanticColor": 0,
@@ -278,7 +446,8 @@
     "rawOverlay": 0,
     "tinyText": 5,
     "offScaleRadius": 0,
-    "offScaleText": 0
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "features/sticker-event/SavedListsModal.tsx": {
     "nonSemanticColor": 0,
@@ -287,7 +456,13 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
-    "iconEmoji": 0
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   },
   "utils/dataUtils.ts": {
     "nonSemanticColor": 0,
@@ -296,6 +471,12 @@
     "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
-    "iconEmoji": 0
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 0,
+    "legacyRadius": 0
   }
 }

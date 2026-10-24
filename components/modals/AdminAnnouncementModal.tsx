@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../shared/ui/Modal';
 import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
+import { getLocalDateString } from '../../utils/dataUtils';
 
 interface AdminAnnouncementModalProps {
     isOpen: boolean;
@@ -39,7 +40,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                             const d = typeof (found.expiresAt as any).toDate === 'function'
                                 ? (found.expiresAt as any).toDate()
                                 : new Date(found.expiresAt as any);
-                            setExpiresDate(d.toISOString().split('T')[0]);
+                            setExpiresDate(getLocalDateString(d));
                         } catch {
                             setExpiresDate('');
                         }

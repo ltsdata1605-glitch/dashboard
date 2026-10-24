@@ -286,7 +286,9 @@ const SegmentTrack: React.FC<{
             {item.badge !== undefined && (
               <span className={cn(
                 'min-w-[18px] h-[18px] rounded-full px-1 text-[11px] font-bold flex items-center justify-center leading-none',
-                isActive ? 'bg-sky-100 text-sky-700' : 'bg-slate-300/70 text-slate-600'
+                isActive
+                  ? 'bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300'
+                  : 'bg-slate-300/70 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
               )}>
                 {item.badge}
               </span>

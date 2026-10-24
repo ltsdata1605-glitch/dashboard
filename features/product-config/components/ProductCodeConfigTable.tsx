@@ -212,18 +212,6 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-                    {isEditable && (
-                        <Button
-                            variant="secondary"
-                            size="none"
-                            onClick={() => setIsAdding(!isAdding)}
-                            className="ycx-hit h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-semibold rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-                        >
-                            <AppIcon name={isAdding ? 'close' : 'add'} size="sm" />
-                            <span>{isAdding ? 'Đóng' : 'Thêm mới'}</span>
-                        </Button>
-                    )}
-
                     {uniqueNhoms.length > 0 && (
                         <div className="flex-1 sm:w-44 min-w-0">
                             <Select
@@ -258,6 +246,19 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                 ))}
                             </Select>
                         </div>
+                    )}
+
+                    {isEditable && (
+                        <Button
+                            variant="secondary"
+                            size="none"
+                            onClick={() => setIsAdding(!isAdding)}
+                            title={isAdding ? 'Đóng form thêm mới' : 'Thêm mới mã sản phẩm'}
+                            aria-label={isAdding ? 'Đóng' : 'Thêm mới'}
+                            className="ycx-hit w-8 h-8 rounded-control border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-center shrink-0 transition-colors cursor-pointer shadow-2xs"
+                        >
+                            <AppIcon name={isAdding ? 'close' : 'add'} size="sm" />
+                        </Button>
                     )}
                 </div>
             </div>
@@ -322,8 +323,10 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                         <div className="flex flex-wrap items-center gap-3">
                             <div className="flex items-center gap-1.5">
                                 <span className="text-[11px] font-bold text-slate-600">Loại hệ số:</span>
-                                <div className="inline-flex items-center p-0.5 bg-slate-200/80 rounded-lg text-[11px] font-semibold">
-                                    <button
+                                <div className="inline-flex items-center p-0.5 bg-slate-200/80 rounded-control text-[11px] font-semibold">
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => setNewLoaiHeSo('so_luong')}
                                         className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
@@ -333,8 +336,10 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                         }`}
                                     >
                                         Số lượng (SL)
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => setNewLoaiHeSo('doanh_thu')}
                                         className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
@@ -344,18 +349,20 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                         }`}
                                     >
                                         Doanh thu (DT)
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
                                         type="button"
                                         onClick={() => setNewLoaiHeSo('ca_hai')}
                                         className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                                             newLoaiHeSo === 'ca_hai'
-                                                ? 'bg-white text-purple-700 shadow-2xs font-bold'
+                                                ? 'bg-white text-amber-700 shadow-2xs font-bold'
                                                 : 'text-slate-600 hover:text-slate-900'
                                         }`}
                                     >
                                         Cả hai (SL & DT)
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
@@ -432,7 +439,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             >
                                 <div className="flex flex-col items-center justify-center leading-tight">
                                     <span>HỆ SỐ SL</span>
-                                    <span className="text-[10px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
+                                    <span className="text-[11px] font-normal text-slate-400 lowercase tracking-normal">(quy đổi)</span>
                                 </div>
                             </th>
                             <th 
@@ -441,7 +448,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             >
                                 <div className="flex flex-col items-center justify-center leading-tight">
                                     <span>HỆ SỐ DT</span>
-                                    <span className="text-[10px] font-normal text-slate-400 lowercase tracking-normal">(nhân DT)</span>
+                                    <span className="text-[11px] font-normal text-slate-400 lowercase tracking-normal">(nhân DT)</span>
                                 </div>
                             </th>
                             <th className="py-2.5 px-3 min-w-[120px]">LOẠI</th>
@@ -590,7 +597,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                                 <span
                                                     className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                                                         valDT > 1
-                                                            ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                                                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
                                                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                                     }`}
                                                     title={isEditable ? 'Nhấp đúp để sửa hệ số doanh thu (nhân vào doanh thu tính DTQĐ)' : 'Hệ số quy đổi doanh thu (DTQĐ)'}

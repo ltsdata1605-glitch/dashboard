@@ -4,6 +4,7 @@ import type { ProductConfig } from '../../../types';
 import { toCloudProductConfig, fromCloudProductConfig, isProductConfigComplete, DEFAULT_REVENUE_ELIGIBLE_HTX } from '../../../services/productConfigSerialization';
 import type { GlobalProductConfigDoc, ProductConfigSummary, HtxTableItem, HtxClassificationType } from '../types';
 import { DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../../../constants';
+import { getLocalDateString } from '../../../utils/dataUtils';
 
 export const GLOBAL_PRODUCT_CONFIG_DOC_ID = 'global_product_config';
 export const SHARED_CONFIGS_COLLECTION = 'shared_configs';
@@ -260,7 +261,7 @@ export async function exportProductConfigToExcel(config: ProductConfig, customFi
     ];
     XLSX.utils.book_append_sheet(workbook, htxSheet, 'Hình thức xuất');
 
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = getLocalDateString();
     const fileName = customFileName || `Khai_Bao_Nganh_Hang_${dateStr}.xlsx`;
     XLSX.writeFile(workbook, fileName);
 }
@@ -292,7 +293,7 @@ export async function exportCategoryConfigTemplateToExcel(): Promise<void> {
     ];
 
     XLSX.utils.book_append_sheet(workbook, categorySheet, 'Ngành hàng');
-    XLSX.writeFile(workbook, `Mau_Khai_Bao_Nganh_Hang_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(workbook, `Mau_Khai_Bao_Nganh_Hang_${getLocalDateString()}.xlsx`);
 }
 
 export const DEFAULT_PRODUCT_CODE_SAMPLE_ROWS: Array<[string, string, number | string, number | string, string, string]> = [
@@ -373,7 +374,7 @@ export async function exportProductCodeConfigToExcel(
 
     XLSX.utils.book_append_sheet(workbook, productSheet, 'Bảo Hiểm ĐMX');
 
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = getLocalDateString();
     const fileName = isTemplate
         ? `Mau_Cau_Hinh_Theo_Ma_San_Pham_${dateStr}.xlsx`
         : `Cau_Hinh_Theo_Ma_San_Pham_${dateStr}.xlsx`;
@@ -521,7 +522,7 @@ export async function exportHtxConfigToExcel(items: HtxTableItem[]): Promise<voi
     ];
 
     XLSX.utils.book_append_sheet(workbook, sheet, 'Hình thức xuất');
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = getLocalDateString();
     XLSX.writeFile(workbook, `Hinh_Thuc_Xuat_${dateStr}.xlsx`);
 }
 
@@ -543,7 +544,7 @@ export async function exportHtxConfigTemplateToExcel(): Promise<void> {
     ];
 
     XLSX.utils.book_append_sheet(workbook, sheet, 'Hình thức xuất');
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dateStr = getLocalDateString();
     XLSX.writeFile(workbook, `Mau_Hinh_Thuc_Xuat_${dateStr}.xlsx`);
 }
 
