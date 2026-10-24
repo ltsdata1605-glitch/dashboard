@@ -425,7 +425,11 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             data = res.data;
         } catch (err) {
             // Kiểm tra lại sau thao tác mạng: nếu phiên đã bị thay thế trong lúc chờ, bỏ qua hoàn toàn không ném lỗi
-            if (readPendingHandoff() !== verifier) {
+            const currentVerifier = readPendingHandoff();
+            if (currentVerifier && currentVerifier !== verifier) {
+                return false;
+            }
+            if (!currentVerifier) {
                 return false;
             }
             // Phiên đã quá 5 phút trên máy chủ: thử lại vô ích, báo để người dùng bấm lại.
@@ -449,19 +453,53 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
         }
 
         if (data?.ready && data.idToken) {
-            // Máy chủ đã xoá phiên khi trả về (dùng 1 lần) → xoá phiên này nếu nó vẫn là phiên hiện hành
-            clearPendingPwaHandoff(verifier);
+            const previousTaiKhoan = layTaiKhoanGanNhat();
             // Phiên máy chủ đã tính sẵn lúc trang đăng nhập gửi về → cất lại TRƯỚC khi đăng nhập (onAuthStateChanged chạy ngay
             // trong signInWithCredential) để AuthContext khỏi gọi resolveSession — bớt 1 lượt gọi máy chủ (2026-10-21).
             if (data.uid && data.profile) cat_hoSoDaTinhSan(data.uid, data.profile);
             try {
                 await signInWithCredential(auth, GoogleAuthProvider.credential(data.idToken, data.accessToken ?? undefined));
             } catch (err) {
-                if (readPendingHandoff() !== verifier) {
+                // Dọn sạch cache hồ sơ tính sẵn khi đăng nhập lỗi để không bị rò rỉ sang phiên sau:
+                delete (globalThis as any).__ycxHoSoDaTinhSan;
+                // KIỂM TRA QUYỀN SỞ HỮU KHI SIGN-IN THẤT BẠI:
+                const currentVerifier = readPendingHandoff();
+                if (currentVerifier && currentVerifier !== verifier) {
+                    // Người dùng đã mở phiên mới B trong lúc sign-in đang chạy!
+                    // Phiên B thay thế A -> bỏ qua lỗi của phiên A, không làm ô nhiễm phiên B
                     return false;
                 }
+                if (!currentVerifier) {
+                    // Người dùng đã chủ động bấm Huỷ -> không ném lỗi
+                    return false;
+                }
+                // Phiên A vẫn là phiên hợp lệ hiện hành nhưng token bị từ chối -> dọn storage và BÁO LỖI THỰC SỰ
+                clearPendingPwaHandoff(verifier);
                 throw new PwaHandoffSignInError(err);
             }
+
+            // KIỂM TRA QUYỀN SỞ HỮU KHI SIGN-IN THÀNH CÔNG:
+            // Tình huống race condition: Người dùng mở phiên B trong lúc signInWithCredential(A) đang chờ Firebase.
+            const currentVerifierAfterSignIn = readPendingHandoff();
+            if (currentVerifierAfterSignIn !== verifier) {
+                // Phiên B đã được tạo (hoặc người dùng đã bấm Huỷ) trong lúc signInWithCredential đang chạy.
+                // Tuân thủ chính sách Session Ownership: Phiên B thay thế hoàn toàn phiên A.
+                // 1. Huỷ phiên đăng nhập sai của User A vừa tạo:
+                try { await signOut(auth); } catch { /* bỏ qua */ }
+                // 2. Dọn sạch cache hồ sơ tính sẵn của User A:
+                delete (globalThis as any).__ycxHoSoDaTinhSan;
+                // 3. Khôi phục lại tài khoản nhớ trước đó (nếu có) để không ghi đè nhầm User A:
+                if (previousTaiKhoan) {
+                    nhoTaiKhoan(previousTaiKhoan.email, previousTaiKhoan.ten);
+                } else {
+                    quenTaiKhoan();
+                }
+                // 4. Không lưu access token của User A vào sessionStorage và không xoá verifier của phiên B
+                return false;
+            }
+
+            // Phiên A thành công trọn vẹn và vẫn là chủ sở hữu hợp pháp duy nhất:
+            clearPendingPwaHandoff(verifier);
             if (data.accessToken) sessionStorage.setItem('googleOAuthToken', data.accessToken);
             return true;
         }

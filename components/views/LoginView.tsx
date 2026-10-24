@@ -93,7 +93,7 @@ const LoginView: React.FC = () => {
                 // RACE CONDITION PROTECTION: Nếu trong lúc claim đang gọi máy chủ, người dùng đã mở phiên mới
                 // (hoặc bấm Huỷ), lỗi của phiên cũ KHÔNG ĐƯỢC huỷ màn hình chờ hoặc xoá phiên mới!
                 const activeVerifierNow = readPendingHandoff();
-                if (stopped || (currentHandoffVerifier && activeVerifierNow !== currentHandoffVerifier)) {
+                if (stopped || (activeVerifierNow && currentHandoffVerifier && activeVerifierNow !== currentHandoffVerifier)) {
                     console.warn('[Auth] Bỏ qua lỗi của phiên cũ vì người dùng đã mở phiên mới hoặc huỷ:', err);
                     return;
                 }

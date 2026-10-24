@@ -732,4 +732,64 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         const vCurrent = JSON.parse(rawCurrent!).v;
         expect(vCurrent).toBe(vB);
     });
+
+    test('14. [Token Rejection Error Reporting] Firebase signInWithCredential token rejection reports real error on LoginView banner when session is active', async ({ page }) => {
+        // Intercept identitytoolkit to reject the token
+        await page.route('https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp**', async (route) => {
+            await route.fulfill({
+                status: 400,
+                contentType: 'application/json',
+                headers: { 'access-control-allow-origin': '*' },
+                body: JSON.stringify({
+                    error: {
+                        code: 400,
+                        message: 'INVALID_CREDENTIAL',
+                        errors: [{ message: 'INVALID_CREDENTIAL', domain: 'global', reason: 'invalid' }]
+                    }
+                })
+            });
+        });
+
+        // Mock pwaHandoffClaim to return ready = true with a mock idToken
+        await page.route('**/pwaHandoffClaim', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    result: {
+                        ready: true,
+                        idToken: 'mock-rejected-id-token',
+                        accessToken: 'mock-rejected-access-token',
+                        uid: 'user-rejected',
+                        profile: { role: 'employee' }
+                    }
+                }),
+            });
+        });
+
+        await page.evaluate(() => {
+            (window as any).__ycxTestRedirectHook = () => {};
+        });
+
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+
+        // Chờ LoginView polling nhận kết quả, gọi signInWithCredential, nhận lỗi và hiển thị error banner
+        const alertBanner = page.getByRole('alert');
+        await expect(alertBanner).toBeVisible({ timeout: 10_000 });
+        await expect(alertBanner).toContainText('Chưa vào được ứng dụng');
+
+        // Màn hình waiting tự động tắt để người dùng thấy nút bấm thử lại
+        await expect(waitingScreen).toHaveCount(0);
+        await expect(googleBtn).toBeVisible();
+        await expect(googleBtn).toBeEnabled();
+
+        // localStorage đã được dọn sạch vì phiên đã thất bại thật sự
+        const rawHandoff = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawHandoff).toBeNull();
+    });
 });
