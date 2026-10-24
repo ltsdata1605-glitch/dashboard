@@ -464,4 +464,109 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         const waitingScreen = page.getByTestId('login-handoff-waiting');
         await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
     });
+
+    test('10. [Reopen Failure Recovery & Session Preservation] Verify reopen failure does not wipe pending session and error retry recovers', async ({ page }) => {
+        await page.evaluate(() => {
+            (window as any).__redirectCalls = 0;
+            (window as any).__ycxTestRedirectHook = (url: string) => {
+                (window as any).__redirectCalls = ((window as any).__redirectCalls || 0) + 1;
+            };
+        });
+
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+
+        // Ghi lại mã pending ban đầu trong localStorage
+        const initialHandoff = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(initialHandoff).not.toBeNull();
+
+        // Cấu hình mock để lần gọi chuyển hướng tiếp theo bị lỗi
+        await page.evaluate(() => {
+            (window as any).__ycxTestRedirectHook = () => {
+                throw new Error('Lỗi kết nối Safari popup blocked');
+            };
+        });
+
+        // Bấm nút "Mở lại trang đăng nhập Google"
+        const reopenBtn = page.getByTestId('login-handoff-reopen');
+        await expect(reopenBtn).toBeVisible();
+        await expect(reopenBtn).toBeEnabled();
+        await reopenBtn.click();
+
+        // 10.1 Error banner xuất hiện với thông báo lỗi
+        const alertBanner = page.getByRole('alert');
+        await expect(alertBanner).toBeVisible({ timeout: 5_000 });
+        await expect(alertBanner).toContainText('Lỗi kết nối Safari popup blocked');
+
+        // 10.2 QUAN TRỌNG: Không xóa nhầm phiên handoff còn hợp lệ trong localStorage
+        const handoffAfterFailure = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(handoffAfterFailure).toBe(initialHandoff);
+
+        // 10.3 Nút "Mở lại trang đăng nhập" trong Error Banner KHÔNG được bị disabled
+        const retryBannerBtn = alertBanner.getByRole('button', { name: /Mở lại trang đăng nhập/i });
+        await expect(retryBannerBtn).toBeVisible();
+        await expect(retryBannerBtn).toBeEnabled();
+
+        // 10.4 Khôi phục hook thành công và bấm nút retry trên Error Banner
+        await page.evaluate(() => {
+            (window as any).__ycxTestRedirectHook = (url: string) => {
+                (window as any).__redirectCalls = ((window as any).__redirectCalls || 0) + 1;
+            };
+        });
+
+        await retryBannerBtn.click();
+
+        // Kiểm tra lượt chuyển hướng mới đã được kích hoạt thành công
+        const totalCalls = await page.evaluate(() => (window as any).__redirectCalls || 0);
+        expect(totalCalls).toBeGreaterThanOrEqual(2);
+    });
+
+    test('11. [Cancel & Re-Login Lifecycle] Verify full cancel lifecycle clears storage and generates fresh PKCE pair on re-login', async ({ page }) => {
+        await page.evaluate(() => {
+            (window as any).__ycxTestRedirectHook = (url: string) => {};
+        });
+
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        // Chờ màn hình waiting xuất hiện
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+
+        // Lấy mã PKCE lượt 1
+        const raw1 = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(raw1).not.toBeNull();
+        const v1 = JSON.parse(raw1!).v;
+        expect(typeof v1).toBe('string');
+
+        // Bấm nút "Huỷ"
+        const cancelBtn = page.getByRole('button', { name: 'Huỷ' });
+        await cancelBtn.click();
+
+        // Màn hình waiting biến mất, quay về màn hình đăng nhập
+        await expect(waitingScreen).toHaveCount(0);
+        await expect(googleBtn).toBeVisible();
+        await expect(googleBtn).toBeEnabled();
+
+        // localStorage đã được dọn sạch
+        const rawAfterCancel = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(rawAfterCancel).toBeNull();
+
+        // Bấm Đăng nhập lần 2
+        await googleBtn.click();
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+
+        // Lấy mã PKCE lượt 2
+        const raw2 = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(raw2).not.toBeNull();
+        const v2 = JSON.parse(raw2!).v;
+
+        // Mã mới phải hoàn toàn khác mã cũ (single-use guarantee, không tái sử dụng)
+        expect(v2).not.toBe(v1);
+    });
 });

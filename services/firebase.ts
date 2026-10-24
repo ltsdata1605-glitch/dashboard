@@ -179,24 +179,88 @@ export const preparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
 };
 
 let prewarmedPkce: PreparedPwaHandoff | null = null;
+let prewarmPromise: Promise<PreparedPwaHandoff> | null = null;
+let currentPrewarmSeq = 0;
 
-/** Tự động chuẩn bị trước cặp mã PKCE ngay khi module nạp, đảm bảo có sẵn đồng bộ khi người dùng bấm đăng nhập. */
-export const prewarmPwaHandoff = (): void => {
-    if (typeof crypto !== 'undefined' && crypto.subtle && !prewarmedPkce) {
-        preparePwaHandoff().then(p => { prewarmedPkce = p; }).catch(() => {});
+/**
+ * Tự động chuẩn bị trước cặp mã PKCE:
+ * - Khử trùng lặp (deduplication): các lời gọi đồng thời chia sẻ chung 1 in-flight Promise.
+ * - Sequence tag (currentPrewarmSeq): ngăn Promise cũ giải quyết sau ghi đè lên kết quả mới hơn.
+ */
+export const prewarmPwaHandoff = (): Promise<PreparedPwaHandoff> => {
+    if (prewarmedPkce) {
+        return Promise.resolve(prewarmedPkce);
     }
+    if (prewarmPromise) {
+        return prewarmPromise;
+    }
+    if (typeof crypto === 'undefined' || !crypto.subtle) {
+        return Promise.reject(new Error('Web Crypto API không khả dụng'));
+    }
+    const seq = ++currentPrewarmSeq;
+    prewarmPromise = preparePwaHandoff()
+        .then(prepared => {
+            if (seq === currentPrewarmSeq) {
+                prewarmedPkce = prepared;
+            }
+            return prepared;
+        })
+        .finally(() => {
+            if (seq === currentPrewarmSeq) {
+                prewarmPromise = null;
+            }
+        });
+    return prewarmPromise;
 };
 
-/** Lấy cặp mã PKCE đã chuẩn bị sẵn (nếu có) và kích hoạt chuẩn bị mã tiếp theo. */
+/**
+ * Lấy cặp mã PKCE đã chuẩn bị sẵn (tiêu thụ một lần duy nhất).
+ * Khi đã lấy ra, bộ nhớ đệm được xóa ngay lập tức để không bao giờ dùng lại mã cũ,
+ * đồng thời tự động kích hoạt chuẩn bị mã tiếp theo trong nền.
+ */
 export const takePrewarmedPwaHandoff = (): PreparedPwaHandoff | null => {
     const p = prewarmedPkce;
-    prewarmedPkce = null;
-    prewarmPwaHandoff();
+    if (p) {
+        prewarmedPkce = null;
+        // Bắt đầu chuẩn bị mã mới cho lượt tương tác tiếp theo
+        prewarmPwaHandoff().catch(() => {});
+    }
     return p;
 };
 
+/**
+ * Lấy ngay mã đã chuẩn bị sẵn nếu có, hoặc đợi Promise chuẩn bị đang chạy giải quyết.
+ * Đảm bảo mỗi lời gọi luôn nhận được một cặp mã độc nhất và an toàn (không trùng lặp).
+ */
+export const getOrPreparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
+    // 1. Nếu đã có sẵn trong bộ đệm -> lấy ngay lập tức (0ms)
+    const ready = takePrewarmedPwaHandoff();
+    if (ready) return ready;
+
+    // 2. Nếu đang có promise in-flight hoặc chưa kích hoạt -> đợi promise đó xong
+    try {
+        await prewarmPwaHandoff();
+    } catch {
+        // Nếu prewarm lỗi, thử tạo trực tiếp bên dưới
+    }
+
+    // 3. Tiêu thụ mã vừa sinh (nếu chưa bị consumer đồng thời khác lấy mất)
+    const taken = takePrewarmedPwaHandoff();
+    if (taken) return taken;
+
+    // 4. Nếu mã đã bị tiêu thụ bởi lượt gọi khác cùng thời điểm, sinh mã riêng biệt
+    return preparePwaHandoff();
+};
+
+/** Helper nội bộ để reset trạng thái module trong các bài unit test */
+export const _resetPkcePrewarmForTesting = (): void => {
+    prewarmedPkce = null;
+    prewarmPromise = null;
+    currentPrewarmSeq = 0;
+};
+
 // Kích hoạt chuẩn bị trước ngay khi ứng dụng khởi chạy
-prewarmPwaHandoff();
+prewarmPwaHandoff().catch(() => {});
 
 /**
  * Đường dẫn đăng nhập: ĐI THẲNG tới trang xử lý của Firebase (/__/auth/handler — chính URL mà signInWithRedirect dựng), trang
