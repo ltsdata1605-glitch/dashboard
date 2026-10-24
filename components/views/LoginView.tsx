@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../shared/ui/Button';
+import { Button, cn } from '../shared/ui/Button';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 import {
     isStandaloneMode, isInAppBrowser, isIOSDevice,
@@ -268,7 +268,7 @@ const LoginView: React.FC = () => {
                                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
                             )}
-                            <span className="min-w-0 flex-1 flex flex-col items-start text-left justify-center">
+                            <span className={cn('min-w-0 flex flex-col items-start text-left justify-center', taiKhoanNho && 'flex-1')}>
                                 <span className="type-subhead font-semibold text-slate-800 leading-tight">Tiếp tục với Google</span>
                                 {taiKhoanNho && (
                                     <span data-testid="login-tai-khoan-nho" className="type-caption text-slate-500 truncate w-full leading-tight mt-0.5">{taiKhoanNho.email}</span>
