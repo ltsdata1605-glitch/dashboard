@@ -257,6 +257,10 @@ export const _resetPkcePrewarmForTesting = (): void => {
     prewarmedPkce = null;
     prewarmPromise = null;
     lastHandoffError = null;
+    activeClaimVerifier = null;
+    activeClaimUid = null;
+    claimInFlight = null;
+    claimInFlightVerifier = null;
     // BUMP sequence thêm 1000 để vô hiệu hoá triệt để mọi Promise cũ đang chạy dở dang từ bài test trước
     currentPrewarmSeq += 1000;
 };
@@ -291,8 +295,33 @@ export const taoUrlDangNhapHandoff = (code: string, laPwa: boolean, retUrl?: str
     return `https://${firebaseConfig.authDomain}/__/auth/handler?${q.toString()}`;
 };
 
+let activeClaimVerifier: string | null = null;
+let activeClaimUid: string | null = null;
+
+/**
+ * Kiểm tra xem sự kiện đổi Auth State (onAuthStateChanged) có thuộc về phiên hợp lệ hay không.
+ * Nếu đang chờ PWA handoff, chỉ chấp nhận user được xác thực bởi đúng phiên verifier hiện hành.
+ * Ngăn chặn triệt để việc phiên cũ A hoàn thành muộn kích hoạt side effects (dọn data, ghi đè profile) lên phiên B.
+ */
+export const isAuthTransitionAuthorized = (currentUser: { uid: string } | null): boolean => {
+    // Trạng thái đăng xuất / unauthenticated luôn được phép cập nhật
+    if (!currentUser) return true;
+
+    // Nếu không có phiên PWA handoff nào đang chờ (vd: đăng nhập desktop popup, restore từ IDB/persistence): luôn hợp lệ
+    const pendingVerifier = readPendingHandoff();
+    if (!pendingVerifier) return true;
+
+    // Đang có phiên PWA handoff chờ: currentUser PHẢI thuộc về đúng phiên claiming hiện hành và đúng UID đã được xác thực
+    if (activeClaimVerifier !== pendingVerifier) return false;
+    if (!activeClaimUid || activeClaimUid !== currentUser.uid) return false;
+
+    return true;
+};
+
 /** Gọi ĐỒNG BỘ trong onClick: chuyển hướng trong cùng tab, không mở popup. */
 export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff, retUrl?: string): void => {
+    activeClaimVerifier = prepared.verifier;
+    activeClaimUid = null;
     try {
         localStorage.setItem(PWA_HANDOFF_KEY, JSON.stringify({ v: prepared.verifier, at: Date.now() }));
     } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
@@ -307,13 +336,15 @@ export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff, retUrl?: stri
             return;
         }
     }
-    if (isIOSStandalonePwa()) {
-        // m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi iOS → xong thì đóng khung
-        const win = window.open(taoUrlDangNhapHandoff(prepared.code, true, retUrl), '_blank');
-        if (!win) window.location.assign(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
-    } else {
-        // Mọi trình duyệt (Desktop Chrome, Mac/PC, Safari, Android): chuyển hướng mượt mà trong cùng tab
-        window.location.assign(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
+    if (typeof window !== 'undefined') {
+        if (isIOSStandalonePwa()) {
+            // m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi iOS → xong thì đóng khung
+            const win = window.open(taoUrlDangNhapHandoff(prepared.code, true, retUrl), '_blank');
+            if (!win) window.location.assign(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
+        } else {
+            // Mọi trình duyệt (Desktop Chrome, Mac/PC, Safari, Android): chuyển hướng mượt mà trong cùng tab
+            window.location.assign(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
+        }
     }
 };
 
@@ -324,7 +355,7 @@ export const readPendingHandoff = (): string | null => {
         const { v, at } = JSON.parse(raw) as { v?: string; at?: number };
         if (typeof v === 'string' && typeof at === 'number' && Date.now() - at < PWA_HANDOFF_MAX_AGE_MS) return v;
         localStorage.removeItem(PWA_HANDOFF_KEY);
-    } catch { /* bỏ qua */ }
+    } catch { /* bộ nhớ bị chặn */ }
     return null;
 };
 
@@ -345,6 +376,14 @@ export const clearPendingPwaHandoff = (expectedVerifier?: string): void => {
             }
         }
         localStorage.removeItem(PWA_HANDOFF_KEY);
+        if (!expectedVerifier || expectedVerifier === activeClaimVerifier) {
+            activeClaimVerifier = null;
+            activeClaimUid = null;
+        }
+        if (!expectedVerifier || expectedVerifier === claimInFlightVerifier) {
+            claimInFlight = null;
+            claimInFlightVerifier = null;
+        }
     } catch { /* bỏ qua */ }
 };
 
@@ -357,6 +396,7 @@ export class PwaHandoffSignInError extends Error {
 }
 
 let claimInFlight: Promise<boolean> | null = null;
+let claimInFlightVerifier: string | null = null;
 let lastHandoffError: PwaHandoffSignInError | null = null;
 
 /** Đang có lượt nhận phiên chạy dở (vd AuthContext gọi lúc mở app, trước khi LoginView kịp hiện)? */
@@ -374,17 +414,29 @@ export const takePwaHandoffError = (): PwaHandoffSignInError | null => {
  * false khi trang kia chưa xong (hỏi lại sau). Ném `PwaHandoffSignInError` khi ĐÃ nhận phiên mà không vào được —
  * trước 2026-10-13 lỗi này bị nuốt rồi trả false, app lặng lẽ quay về màn đăng nhập như chưa có gì xảy ra.
  *
- * Gộp lượt gọi đồng thời (AuthContext lúc mở app + vòng hỏi của LoginView cùng chạy): mỗi lúc chỉ 1 yêu cầu.
+ * Gộp lượt gọi đồng thời của CÙNG một phiên verifier: mỗi lúc chỉ 1 yêu cầu.
+ * Nếu phiên mới B đã thay thế phiên A, không dùng lại promise của phiên A mà tạo yêu cầu nhận phiên mới ngay.
  */
 export const claimPwaHandoff = (retries = 3): Promise<boolean> => {
-    if (!claimInFlight) {
-        claimInFlight = claimPwaHandoffOnce(retries)
-            .catch((err: unknown) => {
-                if (err instanceof PwaHandoffSignInError) lastHandoffError = err;
-                throw err;
-            })
-            .finally(() => { claimInFlight = null; });
+    const currentVerifier = readPendingHandoff();
+    if (!currentVerifier) return Promise.resolve(false);
+
+    if (claimInFlight && claimInFlightVerifier === currentVerifier) {
+        return claimInFlight;
     }
+
+    claimInFlightVerifier = currentVerifier;
+    claimInFlight = claimPwaHandoffOnce(retries)
+        .catch((err: unknown) => {
+            if (err instanceof PwaHandoffSignInError) lastHandoffError = err;
+            throw err;
+        })
+        .finally(() => {
+            if (claimInFlightVerifier === currentVerifier) {
+                claimInFlight = null;
+                claimInFlightVerifier = null;
+            }
+        });
     return claimInFlight;
 };
 
@@ -412,6 +464,7 @@ export const layHoSoDaTinhSan = (uid: string): Record<string, unknown> | null =>
 const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
     const verifier = readPendingHandoff();
     if (!verifier) return false;
+    activeClaimVerifier = verifier;
 
     for (let attempt = 0; attempt < retries; attempt++) {
         // Kiểm tra quyền sở hữu phiên: Nếu phiên này đã bị thay thế hoặc huỷ, lập tức dừng lại
@@ -453,6 +506,7 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
         }
 
         if (data?.ready && data.idToken) {
+            activeClaimUid = data.uid ?? null;
             const previousTaiKhoan = layTaiKhoanGanNhat();
             // Phiên máy chủ đã tính sẵn lúc trang đăng nhập gửi về → cất lại TRƯỚC khi đăng nhập (onAuthStateChanged chạy ngay
             // trong signInWithCredential) để AuthContext khỏi gọi resolveSession — bớt 1 lượt gọi máy chủ (2026-10-21).
@@ -462,6 +516,7 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             } catch (err) {
                 // Dọn sạch cache hồ sơ tính sẵn khi đăng nhập lỗi để không bị rò rỉ sang phiên sau:
                 delete (globalThis as any).__ycxHoSoDaTinhSan;
+                activeClaimUid = null;
                 // KIỂM TRA QUYỀN SỞ HỮU KHI SIGN-IN THẤT BẠI:
                 const currentVerifier = readPendingHandoff();
                 if (currentVerifier && currentVerifier !== verifier) {
@@ -484,10 +539,13 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
             if (currentVerifierAfterSignIn !== verifier) {
                 // Phiên B đã được tạo (hoặc người dùng đã bấm Huỷ) trong lúc signInWithCredential đang chạy.
                 // Tuân thủ chính sách Session Ownership: Phiên B thay thế hoàn toàn phiên A.
-                // 1. Huỷ phiên đăng nhập sai của User A vừa tạo:
-                try { await signOut(auth); } catch { /* bỏ qua */ }
+                // 1. CHỈ đăng xuất User A nếu auth.currentUser vẫn đang là User A (TUYỆT ĐỐI không đăng xuất nhầm User B!):
+                if (auth.currentUser && auth.currentUser.uid === data.uid) {
+                    try { await signOut(auth); } catch { /* bỏ qua */ }
+                }
                 // 2. Dọn sạch cache hồ sơ tính sẵn của User A:
                 delete (globalThis as any).__ycxHoSoDaTinhSan;
+                activeClaimUid = null;
                 // 3. Khôi phục lại tài khoản nhớ trước đó (nếu có) để không ghi đè nhầm User A:
                 if (previousTaiKhoan) {
                     nhoTaiKhoan(previousTaiKhoan.email, previousTaiKhoan.ten);
@@ -500,6 +558,8 @@ const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
 
             // Phiên A thành công trọn vẹn và vẫn là chủ sở hữu hợp pháp duy nhất:
             clearPendingPwaHandoff(verifier);
+            activeClaimVerifier = null;
+            activeClaimUid = null;
             if (data.accessToken) sessionStorage.setItem('googleOAuthToken', data.accessToken);
             return true;
         }

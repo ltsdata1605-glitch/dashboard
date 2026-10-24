@@ -3,7 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
 import { clearAllLocalAppData, ensureLocalDataBelongsTo, setLocalDataOwner } from '../services/localDataOwner';
-import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider, nhoTaiKhoan } from '../services/firebase';
+import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider, nhoTaiKhoan, isAuthTransitionAuthorized } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService/core';
 import { initSyncListeners, locCaiDatDongBoCu } from '../services/syncService';
 import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
@@ -126,6 +126,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // (vd: Cloud Function cold-start > 5s ngay sau khi vừa deploy) — tái tạo lại đúng
             // race nháy màn "Cập Nhật Mã Kho" mà finally bên dưới vừa mới chặn.
             clearTimeout(fallbackTimer);
+            // KIỂM SOÁT RANH GIỚI AUTH STATE (BOUNDARY GUARD):
+            // Nếu sự kiện đăng nhập này đến từ một phiên PWA handoff cũ đã bị thay thế bởi phiên mới,
+            // TUYỆT ĐỐI KHÔNG nhận user này vào app, không dọn dữ liệu cục bộ và không nạp quyền.
+            if (!isAuthTransitionAuthorized(currentUser)) {
+                console.warn('[Auth] Chặn Auth State từ phiên cũ đã bị thay thế:', currentUser?.uid);
+                return;
+            }
             setUser(currentUser);
             if (currentUser) {
                 // Tự động tắt demo mode nếu user đã đăng nhập tài khoản thật
