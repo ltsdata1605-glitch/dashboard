@@ -7,7 +7,7 @@ import {
     isStandaloneMode, isInAppBrowser, isIOSDevice,
     preparePwaHandoff, startPwaHandoffLogin, claimPwaHandoff, hasPendingPwaHandoff, clearPendingPwaHandoff,
     isPwaHandoffClaiming, takePwaHandoffError, PwaHandoffSignInError,
-    layTaiKhoanGanNhat, quenTaiKhoan,
+    layTaiKhoanGanNhat, quenTaiKhoan, takePrewarmedPwaHandoff,
     type PreparedPwaHandoff,
 } from '../../services/firebase';
 
@@ -29,13 +29,44 @@ const LoginView: React.FC = () => {
     const useHandoff = true;
 
     const preparedRef = useRef<PreparedPwaHandoff | null>(null);
+    const [isPreparingPkce, setIsPreparingPkce] = useState(() => {
+        if (!useHandoff) return false;
+        const prewarmed = takePrewarmedPwaHandoff();
+        if (prewarmed) {
+            preparedRef.current = prewarmed;
+            return false;
+        }
+        return true;
+    });
+
+    const isReopeningRef = useRef(false);
+    const [isReopening, setIsReopening] = useState(false);
+
     // Vừa quay về từ trang đăng nhập (còn mã chờ, hoặc AuthContext đang nhận phiên): hiện màn "Đang hoàn tất",
     // KHÔNG hiện lại form đăng nhập — trước 2026-10-13 form hiện lại vài giây khiến người dùng tưởng bị lỗi.
     const [waitingHandoff, setWaitingHandoff] = useState(() => useHandoff && (hasPendingPwaHandoff() || isPwaHandoffClaiming()));
+
     useEffect(() => {
         if (!useHandoff) return;
-        preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
+        if (preparedRef.current) return;
+        let unmounted = false;
+        preparePwaHandoff()
+            .then(p => {
+                if (!unmounted) {
+                    preparedRef.current = p;
+                    setIsPreparingPkce(false);
+                }
+            })
+            .catch(err => {
+                console.error('[Auth] Chuẩn bị PKCE ban đầu thất bại:', err);
+                if (!unmounted) {
+                    setIsPreparingPkce(false);
+                    setError('Không thể khởi tạo mã bảo mật xác thực (Web Crypto). Vui lòng thử lại.');
+                }
+            });
+        return () => { unmounted = true; };
     }, [useHandoff]);
+
     useEffect(() => {
         if (!waitingHandoff) return;
         let stopped = false;
@@ -50,8 +81,10 @@ const LoginView: React.FC = () => {
             lanCuoi = Date.now();
             if (!hasPendingPwaHandoff() && !isPwaHandoffClaiming()) {
                 isLoggingInRef.current = false;
+                isReopeningRef.current = false;
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
+                setIsReopening(false);
                 return;
             }
             busy = true;
@@ -63,8 +96,10 @@ const LoginView: React.FC = () => {
                 takePwaHandoffError();
                 clearPendingPwaHandoff();
                 isLoggingInRef.current = false;
+                isReopeningRef.current = false;
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
+                setIsReopening(false);
                 const goc = err instanceof PwaHandoffSignInError ? err.cause : err;
                 setError(`Chưa vào được ứng dụng (${getErrorCode(goc) || getErrorMessage(goc)}). Vui lòng bấm "Tiếp tục với Google" lại.`);
             } finally {
@@ -84,8 +119,8 @@ const LoginView: React.FC = () => {
     }, [waitingHandoff]);
 
     const handlePwaLogin = async () => {
-        // Guard đồng bộ tức thì: chặn hoàn toàn click liên tiếp trong cùng render cycle
-        if (isLoggingInRef.current) return;
+        // Guard đồng bộ tức thì: chặn hoàn toàn click liên tiếp trong cùng render cycle hoặc khi mã đang chuẩn bị
+        if (isLoggingInRef.current || isPreparingPkce) return;
         isLoggingInRef.current = true;
         setIsLoggingIn(true);
         setError(null);
@@ -95,7 +130,8 @@ const LoginView: React.FC = () => {
             try {
                 prepared = await preparePwaHandoff();
                 preparedRef.current = prepared;
-            } catch {
+            } catch (err: unknown) {
+                console.error('[Auth] Chuẩn bị PKCE thất bại:', err);
                 isLoggingInRef.current = false;
                 setIsLoggingIn(false);
                 setError('Đang chuẩn bị kết nối đăng nhập, vui lòng bấm lại sau giây lát.');
@@ -103,23 +139,70 @@ const LoginView: React.FC = () => {
             }
         }
 
-        // BẢO TOÀN USER ACTIVATION (iOS SAFARI): Tuyệt đối không chèn delay bất đồng bộ (như setTimeout)
-        // tại đây. Với iOS Standalone PWA, startPwaHandoffLogin() gọi window.open() mở khung trình duyệt nổi,
-        // Safari bắt buộc hàm này phải chạy trực tiếp trong cử chỉ chạm (User Gesture). Bất kỳ khoảng trễ async
-        // nào đều khiến Safari chặn popup.
-        startPwaHandoffLogin(prepared);
-        setWaitingHandoff(true);
+        // BẢO TOÀN USER ACTIVATION (iOS SAFARI): Tuyệt đối không chèn delay bất đồng bộ.
+        // startPwaHandoffLogin() chạy trực tiếp trong cử chỉ chạm để window.open() không bị Safari chặn.
+        try {
+            startPwaHandoffLogin(prepared);
+            setWaitingHandoff(true);
+        } catch (err: unknown) {
+            console.error('[Auth] Khởi tạo chuyển hướng đăng nhập thất bại:', err);
+            isLoggingInRef.current = false;
+            setIsLoggingIn(false);
+            clearPendingPwaHandoff();
+            setError(getErrorMessage(err) || 'Không thể mở trang đăng nhập Google. Vui lòng thử lại.');
+            return;
+        }
 
-        // Mã đã dùng: chuẩn bị mã mới cho lần bấm sau.
+        // Mã đã dùng: chuẩn bị mã mới cho lần bấm sau (hoặc khi bấm Mở lại).
         preparedRef.current = null;
         preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
     };
 
+    const handleReopenPwaLogin = async () => {
+        // Guard riêng cho thao tác chủ động mở lại: chặn double-click liên thanh mà KHÔNG bị chặn bởi isLoggingInRef
+        if (isReopeningRef.current) return;
+        isReopeningRef.current = true;
+        setIsReopening(true);
+        setError(null);
+
+        let prepared = preparedRef.current;
+        if (!prepared) {
+            try {
+                prepared = await preparePwaHandoff();
+                preparedRef.current = prepared;
+            } catch (err: unknown) {
+                console.error('[Auth] Chuẩn bị mã mới khi mở lại thất bại:', err);
+                isReopeningRef.current = false;
+                setIsReopening(false);
+                setError('Không thể chuẩn bị kết nối mới. Vui lòng bấm Huỷ và thử lại.');
+                return;
+            }
+        }
+
+        try {
+            startPwaHandoffLogin(prepared);
+        } catch (err: unknown) {
+            console.error('[Auth] Mở lại trang đăng nhập thất bại:', err);
+            setError(getErrorMessage(err) || 'Không thể mở lại trang đăng nhập Google.');
+        } finally {
+            preparedRef.current = null;
+            preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
+
+            // Cooldown 1s để chống người dùng bấm liên thanh (rapid spamming)
+            setTimeout(() => {
+                isReopeningRef.current = false;
+                setIsReopening(false);
+            }, 1000);
+        }
+    };
+
     const handleCancelPwaLogin = () => {
         isLoggingInRef.current = false;
+        isReopeningRef.current = false;
         clearPendingPwaHandoff();
         setWaitingHandoff(false);
         setIsLoggingIn(false);
+        setIsReopening(false);
     };
 
     const handleLogin = async () => {
@@ -264,7 +347,15 @@ const LoginView: React.FC = () => {
                             <p className="mt-1 type-footnote text-slate-500">Đăng nhập Google xong là ứng dụng tự vào.</p>
                         </div>
                         <div className="w-full flex flex-col gap-1 pt-2">
-                            <Button variant="secondary" size="lg" icon="refresh" onClick={handlePwaLogin} className="w-full">
+                            <Button
+                                data-testid="login-handoff-reopen"
+                                variant="secondary"
+                                size="lg"
+                                icon="refresh"
+                                onClick={handleReopenPwaLogin}
+                                disabled={isReopening}
+                                className="w-full"
+                            >
                                 Mở lại trang đăng nhập Google
                             </Button>
                             <Button variant="ghost" size="md" onClick={handleCancelPwaLogin} className="w-full">
@@ -279,7 +370,7 @@ const LoginView: React.FC = () => {
                             variant="unstyled"
                             size="none"
                             onClick={handleLogin}
-                            disabled={isLoggingIn}
+                            disabled={isLoggingIn || isPreparingPkce}
                             className="ycx-hit w-full max-w-[280px] h-11 px-4 flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 rounded-control shadow-xs hover:shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-60 cursor-pointer select-none"
                         >
                             {isLoggingIn ? (

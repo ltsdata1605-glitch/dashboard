@@ -380,4 +380,88 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
             expect(parsed.v.length).toBeGreaterThan(10);
         }
     });
+
+    test('8. [Reopen Handoff & Anti-Double-Click] Verify Active Reopen button triggers redirect and blocks consecutive double-reopen', async ({ page }) => {
+        await page.evaluate(() => {
+            (window as any).__reopenRedirectCalls = 0;
+            (window as any).__ycxTestRedirectHook = (url: string) => {
+                (window as any).__reopenRedirectCalls = ((window as any).__reopenRedirectCalls || 0) + 1;
+            };
+        });
+
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        // 8.1 Chuyển sang màn chờ Handoff (lượt 1)
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+        let calls = await page.evaluate(() => (window as any).__reopenRedirectCalls || 0);
+        expect(calls).toBe(1);
+
+        const reopenBtn = page.getByTestId('login-handoff-reopen');
+        await expect(reopenBtn).toBeVisible();
+        await expect(reopenBtn).toBeEnabled();
+
+        // 8.2 Bấm nút "Mở lại trang đăng nhập Google": thao tác chủ động hợp lệ phải kích hoạt chuyển hướng mới
+        await reopenBtn.click();
+
+        // Số lượt chuyển hướng phải tăng lên 2 (không bị isLoggingInRef chặn)
+        calls = await page.evaluate(() => (window as any).__reopenRedirectCalls || 0);
+        expect(calls).toBe(2);
+
+        // 8.3 Chống spam double-click trên nút "Mở lại": hai click gần như đồng thời chỉ kích hoạt tối đa 1 lượt
+        await Promise.all([
+            page.evaluate(() => {
+                const btn = document.querySelector('[data-testid="login-handoff-reopen"]') as HTMLButtonElement;
+                if (btn) btn.click();
+            }),
+            page.evaluate(() => {
+                const btn = document.querySelector('[data-testid="login-handoff-reopen"]') as HTMLButtonElement;
+                if (btn) btn.click();
+            }),
+        ]);
+
+        // Số lượt chuyển hướng vẫn giữ nguyên là 2 (double-click trên Mở Lại bị chặn)
+        calls = await page.evaluate(() => (window as any).__reopenRedirectCalls || 0);
+        expect(calls).toBe(2);
+
+        // 8.4 Huỷ phiên và khôi phục giao diện đăng nhập ban đầu
+        const cancelBtn = page.getByRole('button', { name: 'Huỷ' });
+        await cancelBtn.click();
+        await expect(waitingScreen).toHaveCount(0);
+        await expect(googleBtn).toBeVisible();
+        await expect(googleBtn).toBeEnabled();
+    });
+
+    test('9. [Error Path Hardening] Verify startPwaHandoffLogin failure cleanly resets isLoggingInRef and recovers UI', async ({ page }) => {
+        // Mô phỏng startPwaHandoffLogin ném lỗi ngoại lệ (vd: sandbox security policy chặn navigation)
+        await page.evaluate(() => {
+            (window as any).__failOnce = true;
+            (window as any).__ycxTestRedirectHook = (url: string) => {
+                if ((window as any).__failOnce) {
+                    (window as any).__failOnce = false;
+                    throw new Error('Chính sách bảo mật trình duyệt chặn chuyển hướng');
+                }
+            };
+        });
+
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await googleBtn.click();
+
+        // 9.1 Giao diện không bị treo ở trạng thái waiting; Error banner xuất hiện
+        const alertBanner = page.getByRole('alert');
+        await expect(alertBanner).toBeVisible({ timeout: 5_000 });
+        await expect(alertBanner).toContainText('Chính sách bảo mật');
+
+        // 9.2 Trạng thái isLoggingInRef phải được reset hoàn toàn về false: nút Google trở lại Enabled
+        await expect(googleBtn).toBeVisible();
+        await expect(googleBtn).toBeEnabled();
+
+        // 9.3 Người dùng có thể bấm đăng nhập lại mà không bị khóa (re-click recovery)
+        await googleBtn.click();
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+    });
 });

@@ -178,6 +178,26 @@ export const preparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
     return { verifier, code: toBase64Url(new Uint8Array(digest)) };
 };
 
+let prewarmedPkce: PreparedPwaHandoff | null = null;
+
+/** Tự động chuẩn bị trước cặp mã PKCE ngay khi module nạp, đảm bảo có sẵn đồng bộ khi người dùng bấm đăng nhập. */
+export const prewarmPwaHandoff = (): void => {
+    if (typeof crypto !== 'undefined' && crypto.subtle && !prewarmedPkce) {
+        preparePwaHandoff().then(p => { prewarmedPkce = p; }).catch(() => {});
+    }
+};
+
+/** Lấy cặp mã PKCE đã chuẩn bị sẵn (nếu có) và kích hoạt chuẩn bị mã tiếp theo. */
+export const takePrewarmedPwaHandoff = (): PreparedPwaHandoff | null => {
+    const p = prewarmedPkce;
+    prewarmedPkce = null;
+    prewarmPwaHandoff();
+    return p;
+};
+
+// Kích hoạt chuẩn bị trước ngay khi ứng dụng khởi chạy
+prewarmPwaHandoff();
+
 /**
  * Đường dẫn đăng nhập: ĐI THẲNG tới trang xử lý của Firebase (/__/auth/handler — chính URL mà signInWithRedirect dựng), trang
  * đó chuyển sang Google, xong quay về pwa-login.html?c=… để gửi phiên (2026-10-21). Trước đây đi qua pwa-login.html trước để
