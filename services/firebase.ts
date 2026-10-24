@@ -211,6 +211,10 @@ export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff, retUrl?: stri
         localStorage.setItem(PWA_HANDOFF_KEY, JSON.stringify({ v: prepared.verifier, at: Date.now() }));
     } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
     warmUpPwaHandoff();
+    if (typeof window !== 'undefined' && (window as any).__ycxChuyenHuongDangNhap) {
+        (window as any).__ycxChuyenHuongDangNhap(taoUrlDangNhapHandoff(prepared.code, false, retUrl));
+        return;
+    }
     if (isIOSStandalonePwa()) {
         // m=pwa: trang đăng nhập biết đang ở khung trình duyệt nổi iOS → xong thì đóng khung
         const win = window.open(taoUrlDangNhapHandoff(prepared.code, true, retUrl), '_blank');

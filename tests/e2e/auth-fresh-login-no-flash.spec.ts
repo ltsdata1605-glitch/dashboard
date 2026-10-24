@@ -14,6 +14,7 @@ const noop = () => {};
 export class GoogleAuthProvider {
   addScope() {} setCustomParameters() {}
   static credentialFromResult() { return null; }
+  static credential(idToken, accessToken) { return { idToken, accessToken, providerId: 'google.com' }; }
 }
 export function getAuth() { return { currentUser: null }; }
 export function initializeAuth() { return { currentUser: null }; } // services/firebase.ts dùng initializeAuth (2026-10-21)
@@ -31,7 +32,10 @@ const fakeUser = {
 export async function signInWithPopup() { window.__authCb(fakeUser); return { user: fakeUser }; }
 export async function signInWithRedirect() {}
 export async function getRedirectResult() { return null; }
-export async function signInWithCredential() { return { user: null }; } // đăng nhập app Màn hình chính iPhone (services/firebase.ts, 2026-10-12)
+export async function signInWithCredential() {
+  if (window.__authCb) window.__authCb(fakeUser);
+  return { user: fakeUser };
+}
 export async function signOut() { window.__authCb(null); }
 export const browserLocalPersistence = {}; export const browserSessionPersistence = {};
 export async function setPersistence() {}
@@ -50,6 +54,35 @@ async function installStubs(page: import('@playwright/test').Page, authStub = AU
         route.fulfill({ status: 200, contentType: 'application/javascript', body: authStub }));
     await page.route('**/services/sessionService.ts*', route =>
         route.fulfill({ status: 200, contentType: 'application/javascript', body: SESSION_STUB }));
+
+    // PKCE Handoff: Chặn chuyển hướng ra ngoài domain Google / auth.dashboard.pro.vn để giữ tab kiểm thử
+    await page.addInitScript(() => {
+        (window as any).__ycxChuyenHuongDangNhap = (url: string) => {
+            console.log('[E2E Stub] Intercepted external PKCE Handoff redirect to:', url);
+        };
+    });
+
+    // Mock Cloud Function pwaHandoffClaim: Trả về phiên hợp lệ đã hoàn tất xác thực từ trang Google
+    await page.route('**/*pwaHandoffClaim*', route => {
+        const postData = route.request().postDataJSON() || {};
+        if (postData.data?.warmup) {
+            return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: {} }) });
+        }
+        return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+                result: {
+                    ready: true,
+                    idToken: 'fake-id-token',
+                    uid: 'u-test',
+                },
+            }),
+        });
+    });
+    await page.route('**/*pwaHandoffStore*', route => {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: {} }) });
+    });
 }
 
 test('đăng nhập mới: không nháy "Cập Nhật Mã Kho" trước khi vào dashboard', async ({ page }) => {

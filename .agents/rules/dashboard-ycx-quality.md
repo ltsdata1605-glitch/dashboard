@@ -376,3 +376,27 @@ Never change an established business rule merely to make a test pass.
 Never silently skip unfinished work.
 
 Maintain a professional, consistent, Apple-inspired design system while preserving reliability, security, business behavior, and maintainability.
+
+---
+
+## 15. EMPIRICAL VERIFICATION & ZERO SPECULATIVE CLAIMS
+
+All implementation and quality claims must be backed by genuine runtime proof:
+
+1. **No Synthetic DOM as E2E Proof:**
+   Never claim that an application's React state, error handler, or UI workflow has been tested when the test merely injects artificial HTML elements (`document.createElement`, `innerHTML`) into the DOM. Every state (loading, error, retry, success) must be produced naturally through the component's actual props, state machine, and mocked system boundaries.
+
+2. **No Hidden Red Tests:**
+   When any test fails, immediately investigate, isolate, and report the root cause. Never mark a milestone as COMPLETE while unresolved or unclassified failing tests remain in the suite. Never bypass failing tests by silently deleting assertions, inflating timeouts indefinitely, or adding arbitrary test skips.
+
+3. **Semantic Token Fidelity:**
+   Verify that UI components actually consume mapped semantic design tokens and design utilities (`--radius-control`, `type-subhead`, `type-caption`, etc.) rather than ad-hoc arbitrary values or unaliased utilities. If a token is claimed to be in use, prove it in computed styles.
+
+4. **Authentic Focus-Visible Verification:**
+   Do not merely trigger programmatic `.focus()`. Verify keyboard tab navigation (`page.keyboard.press('Tab')`) and inspect the computed outline style, width, offset, and non-transparent color to prove standard accessibility.
+
+5. **Test Scope Preservation:**
+   When refactoring or upgrading tests, never delete existing test cases that protect critical paths (such as demo/trial access, remembered accounts, loading transitions, or error recovery). Always replace weaker tests with stronger, authentic tests.
+
+6. **Environment & Platform Honesty:**
+   Never claim verification on a browser or device (e.g. Mobile Safari, WebKit, physical iPhone) unless tests were actually executed in that specific environment. If an engine or binary is not installed locally (e.g. WebKit), explicitly report its status as BLOCKED. Mobile emulation tests on Chromium must be clearly reported as touch-emulated under Chromium.

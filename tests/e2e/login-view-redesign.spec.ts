@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, devices } from '@playwright/test';
 
 test.describe('LoginView Apple Design System V2 & Google Button Verification', () => {
     test.beforeEach(async ({ page }) => {
@@ -180,85 +180,174 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         await expect(switchBtn).toHaveCount(0);
     });
 
-    test('4. Verify Loading, Handoff Waiting, and Cancellation back to Normal', async ({ page }) => {
-        // Gieo mã chờ handoff vào localStorage (mô phỏng vừa quay về từ trang đăng nhập Google)
+    test('4. Verify authentic Button Loading & Disabled state, Handoff Waiting, and Cancellation', async ({ page }) => {
         await page.evaluate(() => {
-            localStorage.setItem('ycxPwaHandoff', JSON.stringify({ v: 'verifier-test-123', at: Date.now() }));
+            (window as any).__redirectCalls = 0;
+            (window as any).__ycxChuyenHuongDangNhap = (url: string) => {
+                (window as any).__redirectCalls = ((window as any).__redirectCalls || 0) + 1;
+            };
         });
-        await page.reload();
-        await page.waitForLoadState('networkidle');
 
-        // Màn hình chuyển sang trạng thái chờ nhận phiên đăng nhập (Handoff Waiting)
-        const waitingScreen = page.getByTestId('login-handoff-waiting');
-        await expect(waitingScreen).toBeVisible();
-        await expect(waitingScreen.locator('.animate-spin')).toBeVisible();
-        await expect(page.getByText('Đang hoàn tất đăng nhập…')).toBeVisible();
-
-        // Nút "Huỷ" hiển thị
-        const cancelBtn = page.getByRole('button', { name: 'Huỷ' });
-        await expect(cancelBtn).toBeVisible();
-
-        // Bấm "Huỷ" -> huỷ phiên chờ, trả về màn hình đăng nhập ban đầu với nút sẵn sàng
-        await cancelBtn.click();
-        await expect(waitingScreen).toHaveCount(0);
         const googleBtn = page.getByTestId('login-google');
         await expect(googleBtn).toBeVisible();
         await expect(googleBtn).toBeEnabled();
+
+        // 4.1 Bấm nút đăng nhập: Quan sát ngay trạng thái Loading & Disabled trên chính nút
+        await googleBtn.click();
+
+        // Nút phải bị disabled ngay lập tức
+        await expect(googleBtn).toBeDisabled();
+
+        // Nút hiển thị spinner loading bên trong (thay cho logo Google)
+        const btnSpinner = googleBtn.locator('.animate-spin');
+        await expect(btnSpinner).toBeVisible();
+
+        // Thử click liên tiếp khi đang loading -> không sinh thêm yêu cầu chuyển hướng (chặn double-click)
+        await googleBtn.click({ force: true }).catch(() => {});
+
+        // 4.2 Chuyển sang màn hình chờ nhận phiên Handoff (Handoff Waiting Screen)
+        const waitingScreen = page.getByTestId('login-handoff-waiting');
+        await expect(waitingScreen).toBeVisible({ timeout: 5_000 });
+        await expect(waitingScreen.locator('.animate-spin')).toBeVisible();
+        await expect(page.getByText('Đang hoàn tất đăng nhập…')).toBeVisible();
+
+        // Xác nhận số lần gọi chuyển hướng chỉ đúng 1 lần duy nhất (không trùng lặp)
+        const totalRedirects = await page.evaluate(() => (window as any).__redirectCalls || 0);
+        expect(totalRedirects).toBe(1);
+
+        // 4.3 Bấm "Huỷ" trên màn handoff -> trở lại trạng thái hợp lệ của nút đăng nhập ban đầu
+        const cancelBtn = page.getByRole('button', { name: 'Huỷ' });
+        await expect(cancelBtn).toBeVisible();
+        await cancelBtn.click();
+
+        // Màn hình handoff biến mất, nút Google trở lại bình thường và Enabled
+        await expect(waitingScreen).toHaveCount(0);
+        await expect(googleBtn).toBeVisible();
+        await expect(googleBtn).toBeEnabled();
+        // Spinner trên nút biến mất, logo Google hiển thị lại
+        await expect(googleBtn.locator('svg')).toBeVisible();
+        await expect(googleBtn.locator('.animate-spin')).toHaveCount(0);
     });
 
-    test('5. Verify Error Banner appearance and retry action', async ({ page }) => {
-        // Kích hoạt thông báo lỗi bằng cách mô phỏng lỗi handoff đã ghi nhận
-        await page.evaluate(() => {
-            // Giả lập lỗi trả về từ PWA handoff
-            const errBanner = document.createElement('div');
-            errBanner.setAttribute('role', 'alert');
-            errBanner.className = 'mb-4 p-3 bg-rose-50 text-rose-700 rounded-popup type-footnote font-medium border border-rose-200 leading-relaxed';
-            errBanner.innerHTML = `
-                <div class="flex items-start gap-2">
-                    <span class="text-rose-500 shrink-0 mt-0.5">⚠️</span>
-                    <div class="flex-1">Chưa vào được ứng dụng sau khi đăng nhập Google. Vui lòng bấm "Tiếp tục với Google" lại.</div>
-                </div>
-                <div class="mt-2 flex justify-end">
-                    <button type="button" class="ycx-hit font-bold text-sky-700 hover:underline inline-flex items-center gap-1 cursor-pointer">
-                        Thử đăng nhập lại
-                    </button>
-                </div>
-            `;
-            const cardInner = document.querySelector('[data-testid="login-view"] > div');
-            if (cardInner) cardInner.insertBefore(errBanner, cardInner.children[1]);
+    test('5. Verify authentic React Error Banner, Role Alert, AppIcon Warning, and Retry Action', async ({ page }) => {
+        let claimCallCount = 0;
+        // Mock Cloud Function pwaHandoffClaim:
+        // - Lần 1: trả về mã lỗi deadline-exceeded để kích hoạt Error Banner thật của React
+        // - Lần 2 (khi retry): trả về ready: false để giữ màn hình chờ handoff
+        await page.route('**/*pwaHandoffClaim*', route => {
+            claimCallCount++;
+            if (claimCallCount === 1) {
+                return route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        error: {
+                            status: 'DEADLINE_EXCEEDED',
+                            message: 'Phiên chờ đã quá hạn trên máy chủ (functions/deadline-exceeded)',
+                        },
+                    }),
+                });
+            }
+            return route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    result: { ready: false },
+                }),
+            });
         });
 
-        const alertBanner = page.getByRole('alert');
-        await expect(alertBanner).toBeVisible();
-        await expect(alertBanner).toContainText('Chưa vào được ứng dụng sau khi đăng nhập Google');
+        // Gieo mã handoff chờ vào localStorage để LoginView kích hoạt vòng nhận phiên tick() và gặp lỗi thật
+        await page.evaluate(() => {
+            localStorage.setItem('ycxPwaHandoff', JSON.stringify({ v: 'verifier-err-test', at: Date.now() }));
+        });
+        await page.reload();
+        await expect(page.locator('#ycx-splash')).toHaveCount(0, { timeout: 5_000 });
 
+        await page.evaluate(() => {
+            (window as any).__retryTriggered = false;
+            (window as any).__ycxChuyenHuongDangNhap = (url: string) => {
+                (window as any).__retryTriggered = true;
+            };
+        });
+
+        // 5.1 Kiểm tra React Error Banner thực tế do React render
+        const alertBanner = page.getByRole('alert');
+        await expect(alertBanner).toBeVisible({ timeout: 5_000 });
+
+        // Kiểm tra AppIcon warning thực tế bên trong banner lỗi
+        const warningIcon = alertBanner.locator('svg').first();
+        await expect(warningIcon).toBeVisible();
+
+        // Nội dung thông báo lỗi phù hợp với mã lỗi nhận được
+        await expect(alertBanner).toContainText('Chưa vào được ứng dụng');
+        await expect(alertBanner).toContainText('Vui lòng bấm "Tiếp tục với Google" lại');
+
+        // Chụp ảnh bằng chứng Error Banner thật của React
         const card = page.getByRole('heading', { name: 'Dashboard YCX' }).locator('..').locator('..');
         await card.screenshot({ path: 'test-results/login-card-v2-error.png' });
+
+        // 5.2 Kiểm tra nút Retry là Button có handler thực
+        const retryBtn = alertBanner.getByRole('button', { name: /Thử đăng nhập lại/i });
+        await expect(retryBtn).toBeVisible();
+        await expect(retryBtn).toBeEnabled();
+
+        // Bấm nút retry -> kích hoạt handlePwaLogin, dọn sạch error banner và chuyển sang màn chờ
+        await retryBtn.click();
+        await expect(alertBanner).toHaveCount(0);
+        await expect(page.getByTestId('login-handoff-waiting')).toBeVisible({ timeout: 5_000 });
+
+        // Xác minh cờ chuyển hướng đã được gọi từ handler retry (không redirect sang Google thật)
+        const retryTriggered = await page.evaluate(() => (window as any).__retryTriggered);
+        expect(retryTriggered).toBe(true);
     });
 
-    test('6. Verify Mobile Viewport touch target and Trial Mode Entry', async ({ page }) => {
-        // Mô phỏng viewport iPhone 15 (393 x 852)
-        await page.setViewportSize({ width: 393, height: 852 });
-        await page.goto('/');
-        await page.waitForLoadState('networkidle');
+    test('6. Verify Mobile Touch emulation, touch targets, and layout responsiveness', async ({ browser }) => {
+        // Sử dụng device descriptor iPhone 15 với hasTouch: true, isMobile: true
+        const context = await browser.newContext({
+            ...devices['iPhone 15'],
+        });
+        const page = await context.newPage();
+        try {
+            await page.goto('/');
+            await page.evaluate(() => {
+                localStorage.removeItem('ycxTaiKhoanGanNhat');
+                localStorage.removeItem('ycxPwaHandoff');
+            });
+            await page.reload();
+            await page.waitForLoadState('networkidle');
 
-        const googleBtn = page.getByTestId('login-google');
-        await expect(googleBtn).toBeVisible();
+            const googleBtn = page.getByTestId('login-google');
+            await expect(googleBtn).toBeVisible();
 
-        const box = await googleBtn.boundingBox();
-        expect(box).not.toBeNull();
-        if (box) {
-            // Chuẩn Apple HIG: touch target >= 44px
-            expect(box.height).toBeGreaterThanOrEqual(44);
-            // Chiều rộng nút không tràn viền màn hình di động
-            expect(box.width).toBeLessThan(393);
-            expect(box.width).toBeGreaterThan(200);
+            // Xác minh hasTouch và isMobile đã được kích hoạt trong context
+            const isTouchCapable = await page.evaluate(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0);
+            expect(isTouchCapable).toBe(true);
+
+            // Kiểm tra bounding box trên màn hình di động (393px width)
+            const box = await googleBtn.boundingBox();
+            expect(box).not.toBeNull();
+            if (box) {
+                // Chuẩn Apple HIG: touch target >= 44px
+                expect(box.height).toBeGreaterThanOrEqual(44);
+                // Nút nằm gọn bên trong viewport di động, không bị tràn (overflow)
+                expect(box.width).toBeLessThan(393);
+                expect(box.width).toBeGreaterThan(200);
+            }
+
+            // Kiểm tra không có thanh cuộn ngang gây bể layout trên mobile
+            const hasHorizontalOverflow = await page.evaluate(() => {
+                return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+            });
+            expect(hasHorizontalOverflow).toBe(false);
+
+            // Kiểm tra vào app bằng Dùng Thử
+            const trialBtn = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i });
+            await expect(trialBtn).toBeVisible();
+            await trialBtn.click();
+            await page.locator('[data-app-chrome="header"]:visible, [data-app-chrome="topbar"]:visible').first().waitFor({ state: 'visible', timeout: 15_000 });
+        } finally {
+            await context.close();
         }
-
-        // Kiểm tra vào app bằng Dùng Thử
-        const trialBtn = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i });
-        await expect(trialBtn).toBeVisible();
-        await trialBtn.click();
-        await page.locator('[data-app-chrome="header"]:visible, [data-app-chrome="topbar"]:visible').first().waitFor({ state: 'visible', timeout: 15_000 });
     });
 });

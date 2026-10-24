@@ -81,18 +81,22 @@ const LoginView: React.FC = () => {
     }, [waitingHandoff]);
 
     const handlePwaLogin = async () => {
+        if (isLoggingIn) return;
+        setIsLoggingIn(true);
+        setError(null);
         let prepared = preparedRef.current;
         if (!prepared) {
             try {
                 prepared = await preparePwaHandoff();
                 preparedRef.current = prepared;
             } catch {
+                setIsLoggingIn(false);
                 setError('Đang chuẩn bị kết nối đăng nhập, vui lòng bấm lại sau giây lát.');
                 return;
             }
         }
-        setError(null);
-        setIsLoggingIn(true);
+        // Micro-delay để giao diện render trạng thái loading/disabled trên nút, ngăn bấm liên tiếp
+        await new Promise(r => setTimeout(r, 60));
         startPwaHandoffLogin(prepared);
         setWaitingHandoff(true);
         // Mã đã dùng: chuẩn bị mã mới cho lần bấm sau.
