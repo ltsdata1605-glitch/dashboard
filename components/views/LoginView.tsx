@@ -249,17 +249,17 @@ const LoginView: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center w-full">
                         <Button
                             data-testid="login-google"
                             variant="unstyled"
                             size="none"
                             onClick={handleLogin}
                             disabled={isLoggingIn}
-                            className="ycx-hit w-full max-w-[230px] min-h-10 px-3 py-1.5 flex items-center justify-center gap-2.5 bg-white border border-slate-300 hover:border-slate-400 rounded-control shadow-2xs hover:bg-slate-50 hover:shadow-xs active:scale-[0.99] transition-all disabled:opacity-60 cursor-pointer"
+                            className="ycx-hit w-full max-w-[280px] h-11 px-4 flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 rounded-control shadow-xs hover:shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-60 cursor-pointer select-none"
                         >
                             {isLoggingIn ? (
-                                <div className="w-4 h-4 border-2 border-sky-600 border-t-transparent rounded-full animate-spin shrink-0" />
+                                <div className="w-4.5 h-4.5 border-2 border-sky-600 border-t-transparent rounded-full animate-spin shrink-0" />
                             ) : (
                                 <svg className="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -268,10 +268,10 @@ const LoginView: React.FC = () => {
                                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                 </svg>
                             )}
-                            <span className="min-w-0 flex flex-col items-start text-left leading-tight">
-                                <span className="text-[13px] font-semibold text-slate-800 leading-tight">Tiếp tục với Google</span>
+                            <span className="min-w-0 flex-1 flex flex-col items-start text-left justify-center">
+                                <span className="type-subhead font-semibold text-slate-800 leading-tight">Tiếp tục với Google</span>
                                 {taiKhoanNho && (
-                                    <span data-testid="login-tai-khoan-nho" className="text-[11px] text-slate-500 truncate max-w-[170px] leading-tight mt-0.5">{taiKhoanNho.email}</span>
+                                    <span data-testid="login-tai-khoan-nho" className="type-caption text-slate-500 truncate w-full leading-tight mt-0.5">{taiKhoanNho.email}</span>
                                 )}
                             </span>
                         </Button>
