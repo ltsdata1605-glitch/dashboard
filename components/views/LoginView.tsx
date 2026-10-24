@@ -14,6 +14,7 @@ import {
 const LoginView: React.FC = () => {
     const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const isLoggingInRef = useRef(false);
     const [error, setError] = useState<string | null>(() =>
         takePwaHandoffError() ? 'Chưa vào được ứng dụng sau khi đăng nhập Google. Vui lòng bấm "Tiếp tục với Google" lại.' : null);
 
@@ -48,6 +49,7 @@ const LoginView: React.FC = () => {
             if (ngay === 'dinh-ky' && Date.now() - batDau > 30_000 && Date.now() - lanCuoi < 4_000) return;
             lanCuoi = Date.now();
             if (!hasPendingPwaHandoff() && !isPwaHandoffClaiming()) {
+                isLoggingInRef.current = false;
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
                 return;
@@ -60,6 +62,7 @@ const LoginView: React.FC = () => {
                 console.error('[Auth] Nhận phiên đăng nhập từ trang Google lỗi:', err);
                 takePwaHandoffError();
                 clearPendingPwaHandoff();
+                isLoggingInRef.current = false;
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
                 const goc = err instanceof PwaHandoffSignInError ? err.cause : err;
@@ -81,30 +84,39 @@ const LoginView: React.FC = () => {
     }, [waitingHandoff]);
 
     const handlePwaLogin = async () => {
-        if (isLoggingIn) return;
+        // Guard đồng bộ tức thì: chặn hoàn toàn click liên tiếp trong cùng render cycle
+        if (isLoggingInRef.current) return;
+        isLoggingInRef.current = true;
         setIsLoggingIn(true);
         setError(null);
+
         let prepared = preparedRef.current;
         if (!prepared) {
             try {
                 prepared = await preparePwaHandoff();
                 preparedRef.current = prepared;
             } catch {
+                isLoggingInRef.current = false;
                 setIsLoggingIn(false);
                 setError('Đang chuẩn bị kết nối đăng nhập, vui lòng bấm lại sau giây lát.');
                 return;
             }
         }
-        // Micro-delay để giao diện render trạng thái loading/disabled trên nút, ngăn bấm liên tiếp
-        await new Promise(r => setTimeout(r, 60));
+
+        // BẢO TOÀN USER ACTIVATION (iOS SAFARI): Tuyệt đối không chèn delay bất đồng bộ (như setTimeout)
+        // tại đây. Với iOS Standalone PWA, startPwaHandoffLogin() gọi window.open() mở khung trình duyệt nổi,
+        // Safari bắt buộc hàm này phải chạy trực tiếp trong cử chỉ chạm (User Gesture). Bất kỳ khoảng trễ async
+        // nào đều khiến Safari chặn popup.
         startPwaHandoffLogin(prepared);
         setWaitingHandoff(true);
+
         // Mã đã dùng: chuẩn bị mã mới cho lần bấm sau.
         preparedRef.current = null;
         preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
     };
 
     const handleCancelPwaLogin = () => {
+        isLoggingInRef.current = false;
         clearPendingPwaHandoff();
         setWaitingHandoff(false);
         setIsLoggingIn(false);
@@ -115,12 +127,15 @@ const LoginView: React.FC = () => {
             handlePwaLogin();
             return;
         }
+        if (isLoggingInRef.current) return;
+        isLoggingInRef.current = true;
         try {
             setError(null);
             setIsLoggingIn(true);
 
             // Bảo hiểm 180s: Cho người dùng thoải mái thời gian chọn tài khoản, nhập mật khẩu và 2FA trên thiết bị mới
             const failsafeTimer = setTimeout(() => {
+                isLoggingInRef.current = false;
                 setIsLoggingIn(false);
                 setError('Quá trình kết nối Google mất nhiều thời gian hơn dự kiến.\nNếu trang chưa tự chuyển, vui lòng thử lại hoặc mở bằng Safari/Chrome.');
             }, 180000);
@@ -136,6 +151,7 @@ const LoginView: React.FC = () => {
 
             // Người dùng chủ động đóng cửa sổ đăng nhập — reset trạng thái êm dịu, không hiển thị lỗi đỏ
             if (errCode === 'auth/popup-closed-by-user' || errCode === 'auth/cancelled-popup-request') {
+                isLoggingInRef.current = false;
                 setIsLoggingIn(false);
                 return;
             }
@@ -157,6 +173,7 @@ const LoginView: React.FC = () => {
                 errMsg = 'Mã cấu hình Firebase API Key không hợp lệ. Vui lòng kiểm tra lại services/firebase.ts.';
             }
             
+            isLoggingInRef.current = false;
             setError(errMsg);
             setIsLoggingIn(false);
         }
@@ -167,6 +184,8 @@ const LoginView: React.FC = () => {
             handlePwaLogin();
             return;
         }
+        if (isLoggingInRef.current) return;
+        isLoggingInRef.current = true;
         try {
             setError(null);
             setIsLoggingIn(true);
@@ -175,6 +194,7 @@ const LoginView: React.FC = () => {
             setWaitingHandoff(true);
         } catch (err: unknown) {
             console.error(err);
+            isLoggingInRef.current = false;
             setError(getErrorMessage(err) || 'Không thể chuyển hướng đăng nhập');
             setIsLoggingIn(false);
         }

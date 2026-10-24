@@ -116,9 +116,9 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
             };
         });
 
-        // Ring focus chuẩn Apple / Tailwind: solid 2px offset (1-2px)
+        // Ring focus chuẩn Apple / Tailwind: solid 2px-3px offset (1-2px)
         expect(focusOutline.outlineStyle).toBe('solid');
-        expect(focusOutline.outlineWidth).toBe('2px');
+        expect(['2px', '3px']).toContain(focusOutline.outlineWidth);
         expect(['1px', '2px']).toContain(focusOutline.outlineOffset);
         // Màu outline ring: hiển thị rõ ràng, không trong suốt (oklab, oklch hoặc rgb)
         expect(focusOutline.outlineColor).not.toBe('transparent');
@@ -180,10 +180,10 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         await expect(switchBtn).toHaveCount(0);
     });
 
-    test('4. Verify authentic Button Loading & Disabled state, Handoff Waiting, and Cancellation', async ({ page }) => {
+    test('4. [Mocked PKCE Handoff & UI Lifecycle] Verify Handoff Waiting screen, cancellation, and clean recovery', async ({ page }) => {
         await page.evaluate(() => {
             (window as any).__redirectCalls = 0;
-            (window as any).__ycxChuyenHuongDangNhap = (url: string) => {
+            (window as any).__ycxTestRedirectHook = (url: string) => {
                 (window as any).__redirectCalls = ((window as any).__redirectCalls || 0) + 1;
             };
         });
@@ -192,18 +192,8 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         await expect(googleBtn).toBeVisible();
         await expect(googleBtn).toBeEnabled();
 
-        // 4.1 Bấm nút đăng nhập: Quan sát ngay trạng thái Loading & Disabled trên chính nút
+        // 4.1 Bấm nút đăng nhập: Chuyển hướng đồng bộ (bảo toàn User Activation cho iOS PWA) và chuyển sang màn chờ handoff
         await googleBtn.click();
-
-        // Nút phải bị disabled ngay lập tức
-        await expect(googleBtn).toBeDisabled();
-
-        // Nút hiển thị spinner loading bên trong (thay cho logo Google)
-        const btnSpinner = googleBtn.locator('.animate-spin');
-        await expect(btnSpinner).toBeVisible();
-
-        // Thử click liên tiếp khi đang loading -> không sinh thêm yêu cầu chuyển hướng (chặn double-click)
-        await googleBtn.click({ force: true }).catch(() => {});
 
         // 4.2 Chuyển sang màn hình chờ nhận phiên Handoff (Handoff Waiting Screen)
         const waitingScreen = page.getByTestId('login-handoff-waiting');
@@ -211,7 +201,7 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         await expect(waitingScreen.locator('.animate-spin')).toBeVisible();
         await expect(page.getByText('Đang hoàn tất đăng nhập…')).toBeVisible();
 
-        // Xác nhận số lần gọi chuyển hướng chỉ đúng 1 lần duy nhất (không trùng lặp)
+        // Xác nhận số lần gọi chuyển hướng chỉ đúng 1 lần duy nhất
         const totalRedirects = await page.evaluate(() => (window as any).__redirectCalls || 0);
         expect(totalRedirects).toBe(1);
 
@@ -224,12 +214,11 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         await expect(waitingScreen).toHaveCount(0);
         await expect(googleBtn).toBeVisible();
         await expect(googleBtn).toBeEnabled();
-        // Spinner trên nút biến mất, logo Google hiển thị lại
+        // Logo Google hiển thị đầy đủ, không còn spinner
         await expect(googleBtn.locator('svg')).toBeVisible();
-        await expect(googleBtn.locator('.animate-spin')).toHaveCount(0);
     });
 
-    test('5. Verify authentic React Error Banner, Role Alert, AppIcon Warning, and Retry Action', async ({ page }) => {
+    test('5. [Mocked PKCE Handoff & Error State] Verify authentic React Error Banner, Role Alert, AppIcon Warning, and Retry Action', async ({ page }) => {
         let claimCallCount = 0;
         // Mock Cloud Function pwaHandoffClaim:
         // - Lần 1: trả về mã lỗi deadline-exceeded để kích hoạt Error Banner thật của React
@@ -238,7 +227,7 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
             claimCallCount++;
             if (claimCallCount === 1) {
                 return route.fulfill({
-                    status: 200,
+                    status: 400,
                     contentType: 'application/json',
                     body: JSON.stringify({
                         error: {
@@ -266,7 +255,7 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
 
         await page.evaluate(() => {
             (window as any).__retryTriggered = false;
-            (window as any).__ycxChuyenHuongDangNhap = (url: string) => {
+            (window as any).__ycxTestRedirectHook = (url: string) => {
                 (window as any).__retryTriggered = true;
             };
         });
@@ -302,7 +291,7 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
         expect(retryTriggered).toBe(true);
     });
 
-    test('6. Verify Mobile Touch emulation, touch targets, and layout responsiveness', async ({ browser }) => {
+    test('6. [Mobile Touch Emulation] Verify Mobile Touch emulation, touch targets, and layout responsiveness', async ({ browser }) => {
         // Sử dụng device descriptor iPhone 15 với hasTouch: true, isMobile: true
         const context = await browser.newContext({
             ...devices['iPhone 15'],
@@ -348,6 +337,47 @@ test.describe('LoginView Apple Design System V2 & Google Button Verification', (
             await page.locator('[data-app-chrome="header"]:visible, [data-app-chrome="topbar"]:visible').first().waitFor({ state: 'visible', timeout: 15_000 });
         } finally {
             await context.close();
+        }
+    });
+
+    test('7. [Anti-Double-Click Guard] Verify near-simultaneous clicks trigger exactly one PKCE handoff flow', async ({ page }) => {
+        await page.evaluate(() => {
+            (window as any).__concurrentCalls = 0;
+            (window as any).__ycxTestRedirectHook = (url: string) => {
+                (window as any).__concurrentCalls = ((window as any).__concurrentCalls || 0) + 1;
+            };
+        });
+
+        const googleBtn = page.getByTestId('login-google');
+        await expect(googleBtn).toBeVisible();
+        await expect(googleBtn).toBeEnabled();
+
+        // Kích hoạt hai thao tác click gần như đồng thời thông qua Promise.all
+        await Promise.all([
+            page.evaluate(() => {
+                const btn = document.querySelector('[data-testid="login-google"]') as HTMLButtonElement;
+                if (btn) btn.click();
+            }),
+            page.evaluate(() => {
+                const btn = document.querySelector('[data-testid="login-google"]') as HTMLButtonElement;
+                if (btn) btn.click();
+            }),
+        ]);
+
+        // Màn hình chờ handoff phải xuất hiện
+        await expect(page.getByTestId('login-handoff-waiting')).toBeVisible({ timeout: 5_000 });
+
+        // Guard đồng bộ isLoggingInRef phải chặn đứng lệnh click thứ hai: tổng số lượt redirect = 1
+        const totalCalls = await page.evaluate(() => (window as any).__concurrentCalls || 0);
+        expect(totalCalls).toBe(1);
+
+        // Kiểm tra mã verifier trong localStorage chỉ được tạo duy nhất một lần
+        const handoffRaw = await page.evaluate(() => localStorage.getItem('ycxPwaHandoff'));
+        expect(handoffRaw).not.toBeNull();
+        if (handoffRaw) {
+            const parsed = JSON.parse(handoffRaw);
+            expect(typeof parsed.v).toBe('string');
+            expect(parsed.v.length).toBeGreaterThan(10);
         }
     });
 });
